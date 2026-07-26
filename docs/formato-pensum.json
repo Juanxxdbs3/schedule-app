@@ -1,0 +1,53 @@
+{
+  "nombre": "Ingeniería de Sistemas - Universidad de Cartagena",
+  "materias": [
+    {
+      "codigo": "FP0417",
+      "nombre": "Sistemas Dinámicos",
+      "creditos": 3,
+      "semestre": 5,
+      "requiere": ["FP0416"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1017",
+      "nombre": "Sistemas Digitales",
+      "creditos": 3,
+      "semestre": 5,
+      "requiere": ["FP0416"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1018",
+      "nombre": "Ingeniería de Servicios de Internet",
+      "creditos": 3,
+      "semestre": 5,
+      "requiere": ["IA1015"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1020",
+      "nombre": "Organización de Computadores",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["IA1017"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1021",
+      "nombre": "Comunicación de Datos",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["IA1018"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1023",
+      "nombre": "Ingeniería de Software",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["IA1018"],
+      "estado": "activo"
+    }
+  ]
+}

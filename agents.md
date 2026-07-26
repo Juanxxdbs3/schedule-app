@@ -128,27 +128,27 @@ fases — cada una depende de la anterior.
 
 ## Fase 0 — Infraestructura (agente: infra)
 
-- [ ] Crear estructura de carpetas del monorepo: `backend/`, `frontend/`, `package.json` raíz con `workspaces`
-- [ ] Crear `backend/.env.example` y `frontend/.env.example`
-- [ ] Crear `backend/src/config/env.ts` (validación de `MONGO_URI`, `JWT_SECRET`, `PORT`, `CORS_ORIGIN`)
-- [ ] Crear `backend/src/config/db.ts` (conexión Mongoose con pool)
-- [ ] Configurar `backend/package.json` (scripts `dev`, `build`, `start`, `test`, `test:watch`) y `tsconfig.json`
-- [ ] Inicializar `frontend/` con Vite (template `react-ts`)
-- [ ] Crear `.gitignore` raíz (`node_modules`, `.env`, `dist`)
+- [x] Crear estructura de carpetas del monorepo: `backend/`, `frontend/`, `package.json` raíz con `workspaces`
+- [x] Crear `backend/.env.example` y `frontend/.env.example`
+- [x] Crear `backend/src/config/env.ts` (validación de `MONGO_URI`, `JWT_SECRET`, `PORT`, `CORS_ORIGIN`)
+- [x] Crear `backend/src/config/db.ts` (conexión Mongoose con pool)
+- [x] Configurar `backend/package.json` (scripts `dev`, `build`, `start`, `test`, `test:watch`) y `tsconfig.json`
+- [x] Inicializar `frontend/` con Vite (template `react-ts`)
+- [x] Crear `.gitignore` raíz (`node_modules`, `.env`, `dist`)
 
 ## Fase 1 — Backend: dominio y autenticación (agente: backend)
 
-- [ ] Crear `domain/entities/` (Usuario, Materia, Pensum, Horario, Bloque — tipos puros)
-- [ ] Crear `domain/interfaces/` (IUserRepository, IPensumRepository, IHorarioRepository)
-- [ ] Crear `modules/auth/auth.repository.mongo.ts` (schema Mongoose de `users` + implementación de IUserRepository)
-- [ ] Crear `modules/auth/auth.service.ts` (register, login con bcrypt + JWT)
-- [ ] Crear `modules/auth/auth.controller.ts`
-- [ ] Crear `modules/auth/auth.routes.ts`
-- [ ] Crear `shared/middlewares/authGuard.ts`
-- [ ] Crear `shared/errors/AppError.ts` (+ subclases NotFoundError, ValidationError)
-- [ ] Crear `shared/middlewares/errorHandler.ts`
-- [ ] Crear `app.ts` (CORS, cookie-parser, montar rutas de auth, error handler)
-- [ ] Crear `server.ts` (bootstrap: `connectDB()` + `app.listen()`)
+- [x] Crear `domain/entities/` (Usuario, Materia, Pensum, Horario, Bloque — tipos puros)
+- [x] Crear `domain/interfaces/` (IUserRepository, IPensumRepository, IHorarioRepository)
+- [x] Crear `modules/auth/auth.repository.mongo.ts` (schema Mongoose de `users` + implementación de IUserRepository)
+- [x] Crear `modules/auth/auth.service.ts` (register, login con bcrypt + JWT)
+- [x] Crear `modules/auth/auth.controller.ts`
+- [x] Crear `modules/auth/auth.routes.ts`
+- [x] Crear `shared/middlewares/authGuard.ts`
+- [x] Crear `shared/errors/AppError.ts` (+ subclases NotFoundError, ValidationError)
+- [x] Crear `shared/middlewares/errorHandler.ts`
+- [x] Crear `app.ts` (CORS, cookie-parser, montar rutas de auth, error handler)
+- [x] Crear `server.ts` (bootstrap: `connectDB()` + `app.listen()`)
 
 ## Fase 2 — Backend: pensum (agente: backend)
 

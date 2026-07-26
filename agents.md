@@ -152,13 +152,13 @@ fases — cada una depende de la anterior.
 
 ## Fase 2 — Backend: pensum (agente: backend)
 
-- [ ] Crear `modules/pensum/pensum.repository.interface.ts`
-- [ ] Crear `modules/pensum/pensum.repository.mongo.ts` (schema Mongoose con `materias` embebidas)
-- [ ] Crear `modules/pensum/pensum.validation.ts` (validación contra `docs/formato-pensum.json`)
-- [ ] Crear `modules/pensum/pensum.service.ts` (crear, listar, obtener, actualizar estado de materia)
-- [ ] Crear `modules/pensum/pensum.controller.ts`
-- [ ] Crear `modules/pensum/pensum.routes.ts`
-- [ ] Montar rutas de pensum en `app.ts`
+- [x] Crear `modules/pensum/pensum.repository.interface.ts`
+- [x] Crear `modules/pensum/pensum.repository.mongo.ts` (schema Mongoose con `materias` embebidas)
+- [x] Crear `modules/pensum/pensum.validation.ts` (validación contra `docs/formato-pensum.json`)
+- [x] Crear `modules/pensum/pensum.service.ts` (crear, listar, obtener, actualizar estado de materia)
+- [x] Crear `modules/pensum/pensum.controller.ts`
+- [x] Crear `modules/pensum/pensum.routes.ts`
+- [x] Montar rutas de pensum en `app.ts`
 
 ## Fase 3 — Backend: horario y strategies (agente: backend)
 

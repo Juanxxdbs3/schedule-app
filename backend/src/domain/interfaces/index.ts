@@ -11,6 +11,14 @@ export interface IUserRepository {
   create(data: { username: string; email: string; passwordHash: string }): Promise<Usuario>;
 }
 
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-export interface IPensumRepository {}
+import { Pensum, Materia, EstadoMateria } from "../entities/index.js";
+
+export interface IPensumRepository {
+  findAllByUserId(userId: string): Promise<Pensum[]>;
+  findById(id: string): Promise<Pensum | null>;
+  create(data: { userId: string; nombre: string; materias: Materia[] }): Promise<Pensum>;
+  updateMateriaEstado(pensumId: string, materiaCodigo: string, nuevoEstado: EstadoMateria): Promise<void>;
+  delete(id: string): Promise<void>;
+}
+
 export interface IHorarioRepository {}

@@ -29,7 +29,7 @@ campos, no cambies nombres de claves):
 ```
 
 Reglas:
-1. Usa el PDF para el código, nombre y créditos exactos (evita inventar códigos).
+1. Usa el PDF para el código, nombre y créditos exactos (evita inventar códigos, solo házlo cuando el código no se te dé explícitamente y escribe uno coherente a los demás y a la materia. No inventes códigos, pero más importante es que no dejes códigos vacios).
 2. Usa el flujograma para determinar `semestre` (la columna donde está el bloque)
    y `requiere` (sigue las líneas que entran a cada bloque).
 3. Si una materia no tiene ninguna línea de entrada, `requiere` debe ser un array vacío `[]`.

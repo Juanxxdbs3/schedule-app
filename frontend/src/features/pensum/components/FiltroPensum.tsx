@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import type { Materia } from "../types.ts";
 
 interface FiltroPensumProps {
@@ -6,30 +6,37 @@ interface FiltroPensumProps {
   onFilter: (filtradas: Materia[]) => void;
 }
 
+function filtrar(materias: Materia[], nombre: string, semestre: number | "", creditosMax: number | ""): Materia[] {
+  return materias.filter((m) => {
+    if (nombre && !m.nombre.toLowerCase().includes(nombre.toLowerCase())) return false;
+    if (semestre !== "" && m.semestre !== semestre) return false;
+    if (creditosMax !== "" && m.creditos > creditosMax) return false;
+    return true;
+  });
+}
+
 export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) {
   const [nombre, setNombre] = useState("");
   const [semestre, setSemestre] = useState<number | "">("");
   const [creditosMax, setCreditosMax] = useState<number | "">("");
 
-  const aplicarFiltro = useCallback(() => {
-    const filtradas = materias.filter((m) => {
-      if (nombre && !m.nombre.toLowerCase().includes(nombre.toLowerCase())) {
-        return false;
-      }
-      if (semestre !== "" && m.semestre !== Number(semestre)) {
-        return false;
-      }
-      if (creditosMax !== "" && m.creditos > Number(creditosMax)) {
-        return false;
-      }
-      return true;
-    });
-    onFilter(filtradas);
-  }, [materias, nombre, semestre, creditosMax, onFilter]);
+  function handleNombre(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value;
+    setNombre(v);
+    onFilter(filtrar(materias, v, semestre, creditosMax));
+  }
 
-  useEffect(() => {
-    aplicarFiltro();
-  }, [aplicarFiltro]);
+  function handleSemestre(e: React.ChangeEvent<HTMLSelectElement>) {
+    const v = e.target.value ? Number(e.target.value) : "";
+    setSemestre(v);
+    onFilter(filtrar(materias, nombre, v, creditosMax));
+  }
+
+  function handleCreditos(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value ? Number(e.target.value) : "";
+    setCreditosMax(v);
+    onFilter(filtrar(materias, nombre, semestre, v));
+  }
 
   const semestreOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
@@ -65,49 +72,41 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
   return (
     <div style={containerStyle}>
       <div style={fieldStyle}>
-        <label htmlFor="filtro-nombre" style={labelStyle}>
-          Nombre
-        </label>
+        <label htmlFor="filtro-nombre" style={labelStyle}>Nombre</label>
         <input
           id="filtro-nombre"
           type="text"
           placeholder="Buscar materia..."
           value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          onChange={handleNombre}
           style={inputStyle}
         />
       </div>
 
       <div style={fieldStyle}>
-        <label htmlFor="filtro-semestre" style={labelStyle}>
-          Semestre
-        </label>
+        <label htmlFor="filtro-semestre" style={labelStyle}>Semestre</label>
         <select
           id="filtro-semestre"
           value={semestre}
-          onChange={(e) => setSemestre(e.target.value ? Number(e.target.value) : "")}
+          onChange={handleSemestre}
           style={inputStyle}
         >
           <option value="">Todos</option>
           {semestreOptions.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </div>
 
       <div style={fieldStyle}>
-        <label htmlFor="filtro-creditos" style={labelStyle}>
-          Créditos máx.
-        </label>
+        <label htmlFor="filtro-creditos" style={labelStyle}>Créditos máx.</label>
         <input
           id="filtro-creditos"
           type="number"
           min={1}
           placeholder="Sin límite"
           value={creditosMax}
-          onChange={(e) => setCreditosMax(e.target.value ? Number(e.target.value) : "")}
+          onChange={handleCreditos}
           style={{ ...inputStyle, minWidth: 120 }}
         />
       </div>

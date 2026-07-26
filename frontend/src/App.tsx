@@ -29,6 +29,11 @@ function PensumDashboard() {
   const [pensum, setPensum] = useState<Pensum | null>(() => PensumService.storage.get());
   const [filtradas, setFiltradas] = useState<Materia[]>([]);
 
+  const materiasDisponibles = useMemo(
+    () => (pensum ? pensum.materias.filter((m) => m.estado !== "cursado") : []),
+    [pensum],
+  );
+
   const handlePensumLoaded = useCallback((p: Pensum) => {
     setPensum(p);
     setFiltradas(p.materias.filter((m) => m.estado !== "cursado"));
@@ -79,10 +84,6 @@ function PensumDashboard() {
     );
   }
 
-  const materiasDisponibles = useMemo(
-    () => pensum.materias.filter((m) => m.estado !== "cursado"),
-    [pensum],
-  );
   const materiasMostrar = filtradas.length > 0 ? filtradas : materiasDisponibles;
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./features/auth/hooks/useAuth.tsx";
 import LoginForm from "./features/auth/components/LoginForm.tsx";
@@ -79,7 +79,10 @@ function PensumDashboard() {
     );
   }
 
-  const materiasDisponibles = pensum.materias.filter((m) => m.estado !== "cursado");
+  const materiasDisponibles = useMemo(
+    () => pensum.materias.filter((m) => m.estado !== "cursado"),
+    [pensum],
+  );
   const materiasMostrar = filtradas.length > 0 ? filtradas : materiasDisponibles;
 
   return (

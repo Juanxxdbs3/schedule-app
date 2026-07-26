@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.tsx";
 
 export default function LoginForm() {
-  const { user, login, error, clearError } = useAuth();
+  const { user, login, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

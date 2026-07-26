@@ -184,14 +184,14 @@ fases — cada una depende de la anterior.
 
 ## Fase 5 — Frontend: pensum (agente: frontend)
 
-- [ ] Crear `features/pensum/repositories/IPensumStorageRepository.ts`
-- [ ] Crear `features/pensum/repositories/WebLocalStoragePensumRepository.ts`
-- [ ] Crear `features/pensum/repositories/MobileStoragePensumRepository.ts` (stub)
-- [ ] Crear `features/pensum/services/PensumService.ts` (cargar JSON, sincronizar con backend)
-- [ ] Crear `features/pensum/components/FiltroPensum.tsx`
-- [ ] Crear `features/pensum/components/PoolMaterias.tsx`
-- [ ] Crear `features/pensum/components/MateriaBlock.tsx` (draggable)
-- [ ] Pantalla de carga de pensum (input de archivo JSON + validación de forma)
+- [x] Crear `features/pensum/repositories/IPensumStorageRepository.ts`
+- [x] Crear `features/pensum/repositories/WebLocalStoragePensumRepository.ts`
+- [x] Crear `features/pensum/repositories/MobileStoragePensumRepository.ts` (stub)
+- [x] Crear `features/pensum/services/PensumService.ts` (cargar JSON, sincronizar con backend)
+- [x] Crear `features/pensum/components/FiltroPensum.tsx`
+- [x] Crear `features/pensum/components/PoolMaterias.tsx`
+- [x] Crear `features/pensum/components/MateriaBlock.tsx` (draggable)
+- [x] Pantalla de carga de pensum (input de archivo JSON + validación de forma)
 
 ## Fase 6 — Frontend: horario y drag-and-drop (agente: frontend)
 

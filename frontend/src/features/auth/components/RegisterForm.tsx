@@ -4,8 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.tsx";
 
 export default function RegisterForm() {
-  const { register, error, clearError } = useAuth();
+  const { user, register, error, clearError } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => { if (user) navigate("/", { replace: true }); }, [user, navigate]);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

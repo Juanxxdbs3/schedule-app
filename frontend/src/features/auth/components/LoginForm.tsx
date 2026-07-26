@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import type { SyntheticEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.tsx";
 
 export default function LoginForm() {
-  const { login, error, loading, clearError } = useAuth();
+  const { user, login, error, clearError } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => { clearError(); }, [clearError]);
+  useEffect(() => { if (user) navigate("/", { replace: true }); }, [user, navigate]);
 
   async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -17,6 +19,7 @@ export default function LoginForm() {
     setSubmitting(true);
     try {
       await login(email, password);
+      navigate("/", { replace: true });
     } catch {
       // error ya se guarda en el hook
     } finally {

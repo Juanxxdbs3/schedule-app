@@ -1,7 +1,14 @@
+import { useState, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./features/auth/hooks/useAuth.tsx";
 import LoginForm from "./features/auth/components/LoginForm.tsx";
 import RegisterForm from "./features/auth/components/RegisterForm.tsx";
+import type { Pensum } from "./features/pensum/types.ts";
+import type { Materia } from "./features/pensum/types.ts";
+import { PensumService } from "./features/pensum/services/PensumService.ts";
+import CargarPensum from "./features/pensum/components/CargarPensum.tsx";
+import FiltroPensum from "./features/pensum/components/FiltroPensum.tsx";
+import PoolMaterias from "./features/pensum/components/PoolMaterias.tsx";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -17,17 +24,101 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function Dashboard() {
+function PensumDashboard() {
   const { user, logout } = useAuth();
+  const [pensum, setPensum] = useState<Pensum | null>(() => PensumService.storage.get());
+  const [filtradas, setFiltradas] = useState<Materia[]>([]);
+
+  const handlePensumLoaded = useCallback((p: Pensum) => {
+    setPensum(p);
+    setFiltradas(p.materias.filter((m) => m.estado !== "cursado"));
+  }, []);
+
+  const handleCargarNuevo = useCallback(() => {
+    PensumService.storage.remove();
+    setPensum(null);
+    setFiltradas([]);
+  }, []);
+
+  if (!pensum) {
+    return (
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
+        <header
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "var(--spacing-4)",
+          }}
+        >
+          <h1>Horario App</h1>
+          <div>
+            <span style={{ marginRight: "1rem", color: "var(--color-text-muted)" }}>
+              {user?.username}
+            </span>
+            <button
+              type="button"
+              onClick={logout}
+              style={{
+                padding: "0.4rem 1rem",
+                background: "var(--color-primary)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+              }}
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </header>
+        <main>
+          <CargarPensum onPensumLoaded={handlePensumLoaded} />
+        </main>
+      </div>
+    );
+  }
+
+  const materiasDisponibles = pensum.materias.filter((m) => m.estado !== "cursado");
+  const materiasMostrar = filtradas.length > 0 ? filtradas : materiasDisponibles;
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>Horario App</h1>
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1rem" }}>
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "var(--spacing-4)",
+          flexWrap: "wrap",
+          gap: "var(--spacing-2)",
+        }}
+      >
         <div>
-          <span style={{ marginRight: "1rem", color: "var(--color-text-muted)" }}>
+          <h1 style={{ margin: 0 }}>Horario App</h1>
+          <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", margin: 0 }}>
+            {pensum.nombre}
+          </p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-3)" }}>
+          <span style={{ color: "var(--color-text-muted)", fontSize: "var(--font-size-sm)" }}>
             {user?.username}
           </span>
+          <button
+            type="button"
+            onClick={handleCargarNuevo}
+            style={{
+              padding: "0.4rem 0.8rem",
+              background: "transparent",
+              color: "var(--color-text-muted)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-md)",
+              cursor: "pointer",
+              fontSize: "var(--font-size-sm)",
+            }}
+          >
+            Cargar nuevo pensum
+          </button>
           <button
             type="button"
             onClick={logout}
@@ -45,22 +136,9 @@ function Dashboard() {
         </div>
       </header>
 
-      <main style={{ marginTop: "2rem" }}>
-        <div
-          style={{
-            padding: "3rem 2rem",
-            textAlign: "center",
-            border: "2px dashed var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            color: "var(--color-text-muted)",
-          }}
-        >
-          <h2>Bienvenido a Horario App</h2>
-          <p>Aquí podrás cargar tu pensum y organizar tu horario de clases.</p>
-          <p style={{ marginTop: "1rem", fontSize: "var(--font-size-sm)" }}>
-            Próximamente: carga de pensum y editor de horario.
-          </p>
-        </div>
+      <main>
+        <FiltroPensum materias={materiasDisponibles} onFilter={setFiltradas} />
+        <PoolMaterias materias={materiasMostrar} />
       </main>
     </div>
   );
@@ -75,7 +153,7 @@ function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <PensumDashboard />
           </ProtectedRoute>
         }
       />

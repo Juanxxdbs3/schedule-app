@@ -93,7 +93,8 @@ store. El backend siempre revalida al guardar (nunca confíes solo en el cliente
 | GET | `/api/horarios?pensumId=&estado=` | Lista horarios (histórico = `estado=finalizado`) |
 | GET | `/api/horarios/:id` | Detalle de un horario |
 | PATCH | `/api/horarios/:id/bloques` | Agrega/quita un bloque (valida créditos y choques) |
-| PATCH | `/api/horarios/:id/finalizar` | Marca cada materia aprobada/perdida, actualiza el pensum |
+| PATCH | `/api/horarios/:id/resultados` | Marca UNA materia como aprobada/perdida (incremental, no cierra el horario) |
+| PATCH | `/api/horarios/:id/finalizar` | Cierra el horario (sin body), cambia estado a `finalizado` |
 | DELETE | `/api/horarios/:id` | Elimina un horario |
 
 Todas las rutas (excepto `register`/`login`) pasan por `authGuard`.

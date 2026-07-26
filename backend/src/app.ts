@@ -13,6 +13,12 @@ import { PensumService } from "./modules/pensum/pensum.service.js";
 import { PensumController } from "./modules/pensum/pensum.controller.js";
 import { createPensumRouter } from "./modules/pensum/pensum.routes.js";
 import { errorHandler } from "./shared/middlewares/errorHandler.js";
+import { HorarioRepositoryMongo } from "./modules/horario/horario.repository.mongo.js";
+import { SimpleCreditLimitStrategy } from "./modules/horario/strategies/impl/SimpleCreditLimitStrategy.js";
+import { SimpleConflictDetectionStrategy } from "./modules/horario/strategies/impl/SimpleConflictDetectionStrategy.js";
+import { HorarioService } from "./modules/horario/horario.service.js";
+import { HorarioController } from "./modules/horario/horario.controller.js";
+import { createHorarioRouter } from "./modules/horario/horario.routes.js";
 
 // --- Wiring (DI manual) ---
 const userRepo = new UserRepositoryMongo();
@@ -24,6 +30,13 @@ const pensumRepo = new PensumRepositoryMongo();
 const pensumService = new PensumService(pensumRepo);
 const pensumController = new PensumController(pensumService);
 const pensumRouter = createPensumRouter(pensumController);
+
+const horarioRepo = new HorarioRepositoryMongo();
+const creditLimitStrategy = new SimpleCreditLimitStrategy();
+const conflictStrategy = new SimpleConflictDetectionStrategy();
+const horarioService = new HorarioService(horarioRepo, pensumRepo, creditLimitStrategy, conflictStrategy);
+const horarioController = new HorarioController(horarioService);
+const horarioRouter = createHorarioRouter(horarioController);
 
 // --- Express app ---
 const app = express();
@@ -38,6 +51,7 @@ app.use(cookieParser());
 // --- Routes ---
 app.use("/api/auth", authRouter);
 app.use("/api/pensums", pensumRouter);
+app.use("/api/horarios", horarioRouter);
 
 // --- Error handler (must be last) ---
 app.use(errorHandler);

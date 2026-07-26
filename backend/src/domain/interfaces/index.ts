@@ -21,4 +21,20 @@ export interface IPensumRepository {
   delete(id: string): Promise<void>;
 }
 
-export interface IHorarioRepository {}
+import { Horario, Bloque } from "../entities/index.js";
+
+export interface IHorarioRepository {
+  findByUserId(userId: string): Promise<Horario[]>;
+  findById(id: string): Promise<Horario | null>;
+  create(data: {
+    userId: string;
+    pensumId: string;
+    semestreLabel: string;
+    maxCreditos: number;
+    unidadHoraMinutos: number;
+  }): Promise<Horario>;
+  addBloque(horarioId: string, bloque: Bloque): Promise<void>;
+  removeBloque(horarioId: string, materiaCodigo: string): Promise<void>;
+  finalizar(horarioId: string, finalizadoAt: Date): Promise<void>;
+  delete(id: string): Promise<void>;
+}

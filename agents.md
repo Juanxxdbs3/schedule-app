@@ -109,14 +109,17 @@ no importados directo del backend — son dos proyectos separados en el MVP).
    d. Todo cambio se persiste también en `localStorage` de inmediato, sin
       esperar la respuesta del backend.
 
-**Flujo 4 — Finalizar semestre**
-1. Usuario marca cada materia del horario como aprobada o perdida.
-2. `PATCH /api/horarios/:id/finalizar` con `{ resultados: [{ materiaCodigo, aprobada }] }`.
-3. Backend actualiza `estado` de cada materia en el `pensum` asociado
-   (`'cursado'` si aprobó, `'activo'` si perdió) y marca el horario como
-   `estado: 'finalizado'`, `finalizadoAt: now`.
-4. Frontend refresca el pool de materias disponibles (ya sin las que se
-   acaban de aprobar) y el horario queda visible como histórico.
+**Flujo 4 — Finalizar semestre (incremental)**
+1. Durante el semestre, a medida que llegan las notas, el usuario marca cada
+   materia individualmente: `PATCH /api/horarios/:id/resultados` con
+   `{ materiaCodigo, aprobada: true | false }`. El backend actualiza el `estado`
+   de esa materia en el pensum (`'cursado'` si aprobó, `'activo'` si perdió)
+   **sin cerrar el horario**.
+2. Cuando ya todas las materias tienen resultado (o el semestre termina),
+   el usuario cierra el horario: `PATCH /api/horarios/:id/finalizar` (sin body).
+   El backend marca `estado: 'finalizado'`, `finalizadoAt: now`.
+3. Frontend refresca el pool de materias disponibles (ya sin las aprobadas)
+   y el horario finalizado queda visible como histórico.
 
 ## Cómo usar este tablero
 
@@ -162,14 +165,14 @@ fases — cada una depende de la anterior.
 
 ## Fase 3 — Backend: horario y strategies (agente: backend)
 
-- [ ] Crear `modules/horario/strategies/ICreditLimitStrategy.ts` + `impl/SimpleCreditLimitStrategy.ts`
-- [ ] Crear `modules/horario/strategies/IConflictDetectionStrategy.ts` + `impl/SimpleConflictDetectionStrategy.ts`
-- [ ] Crear `modules/horario/horario.repository.interface.ts`
-- [ ] Crear `modules/horario/horario.repository.mongo.ts`
-- [ ] Crear `modules/horario/horario.service.ts` (crear horario, agregar/quitar bloque validando ambas strategies, finalizar horario actualizando el pensum)
-- [ ] Crear `modules/horario/horario.controller.ts`
-- [ ] Crear `modules/horario/horario.routes.ts`
-- [ ] Montar rutas de horario en `app.ts`
+- [x] Crear `modules/horario/strategies/ICreditLimitStrategy.ts` + `impl/SimpleCreditLimitStrategy.ts`
+- [x] Crear `modules/horario/strategies/IConflictDetectionStrategy.ts` + `impl/SimpleConflictDetectionStrategy.ts`
+- [x] Crear `modules/horario/horario.repository.interface.ts`
+- [x] Crear `modules/horario/horario.repository.mongo.ts`
+- [x] Crear `modules/horario/horario.service.ts` (crear horario, agregar/quitar bloque validando ambas strategies, finalizar horario actualizando el pensum)
+- [x] Crear `modules/horario/horario.controller.ts`
+- [x] Crear `modules/horario/horario.routes.ts`
+- [x] Montar rutas de horario en `app.ts`
 
 ## Fase 4 — Frontend: base y autenticación (agente: frontend)
 

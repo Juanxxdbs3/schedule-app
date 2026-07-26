@@ -16,7 +16,16 @@ de Mongoose, ni tocas Express.
 
 1. Lee `docs/arquitectura.md` — estructura de carpetas y responsabilidades.
 2. Lee `docs/formato-pensum.json` — forma exacta del JSON que el usuario carga.
-3. Revisa `agents.md` para la tarea actual.
+3. Lee `docs/theming.md` — variables CSS y mapeo a Tailwind. MANDATORIO antes
+   de escribir cualquier estilo.
+4. Revisa `agents.md` para la tarea actual.
+
+## Theming — MANDATORIO
+
+Todos los colores vienen de `docs/theming.md` (variables CSS custom properties
+en `styles/globals.css`, mapeadas a Tailwind). Nunca `bg-[#hex]` ni `style={{color}}`
+inline para nada temático. Si falta un token, agrégalo en `globals.css` antes
+de usarlo.
 
 ## Estructura (existente, respétala)
 

@@ -21,6 +21,103 @@ Lee siempre antes de programar:
 Stack: Node.js + Express + Mongoose + TypeScript (backend) · React + Vite +
 TypeScript + dnd-kit + Zustand (frontend) · Vitest (testing) · MongoDB.
 
+## Entidades de dominio (`domain/entities/`)
+
+Estas son las interfaces TypeScript exactas que la Fase 1 debe crear (sin
+`ObjectId` de Mongoose — son tipos puros que usan Service y Controller; la
+conversión a/desde documentos de Mongoose vive solo en el Repository):
+
+```ts
+type EstadoMateria = 'activo' | 'matriculado' | 'cursado' | 'en_espera';
+type EstadoHorario = 'en_progreso' | 'finalizado';
+type DiaSemana = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
+
+interface Usuario {
+  id: string;
+  username: string;
+  email: string;
+  createdAt: Date;
+}
+
+interface Materia {
+  codigo: string;
+  nombre: string;
+  creditos: number;
+  semestre: number;
+  requiere: string[];       // códigos de prerrequisitos
+  estado: EstadoMateria;
+}
+
+interface Pensum {
+  id: string;
+  userId: string;
+  nombre: string;
+  materias: Materia[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Bloque {
+  materiaCodigo: string;
+  dia: DiaSemana;
+  horaInicio: string;       // "07:00"
+  horaFin: string;          // "09:30"
+}
+
+interface Horario {
+  id: string;
+  userId: string;
+  pensumId: string;
+  semestreLabel: string;
+  maxCreditos: number;
+  unidadHoraMinutos: number;
+  estado: EstadoHorario;
+  bloques: Bloque[];
+  createdAt: Date;
+  finalizadoAt: Date | null;
+}
+```
+
+El frontend reutiliza estos mismos tipos (copiados a `shared/types/domain.ts`,
+no importados directo del backend — son dos proyectos separados en el MVP).
+
+## Flujo end-to-end (qué mensaje se dispara en qué momento)
+
+**Flujo 1 — Registro y sesión**
+1. `POST /api/auth/register` → crea usuario.
+2. `POST /api/auth/login` → backend responde y setea cookie httpOnly con JWT.
+3. Frontend llama `GET /api/auth/me` al montar la app para saber si hay sesión activa.
+
+**Flujo 2 — Cargar pensum**
+1. Usuario selecciona el archivo JSON (formato `docs/formato-pensum.json`).
+2. Frontend valida la forma localmente (feedback inmediato si el JSON está mal).
+3. `POST /api/pensums` con `{ nombre, materias }` → backend revalida con zod y guarda.
+4. Frontend guarda una copia en `localStorage` vía `WebLocalStoragePensumRepository`
+   (para poder seguir filtrando/trabajando sin conexión).
+
+**Flujo 3 — Crear horario y arrastrar materias**
+1. Usuario elige un pensum, define `maxCreditos` y `unidadHoraMinutos` →
+   `POST /api/horarios` → backend crea el horario en `estado: 'en_progreso'`.
+2. Por cada drag-and-drop de una materia a la grilla:
+   a. El frontend valida localmente con `ICreditLimitStrategy` e
+      `IConflictDetectionStrategy` (feedback instantáneo, sin esperar red).
+   b. Si pasa, actualiza el store (Zustand) de forma optimista y en paralelo
+      llama `PATCH /api/horarios/:id/bloques`.
+   c. El backend vuelve a correr las mismas validaciones. Si las rechaza
+      (por ejemplo, el frontend tenía datos desactualizados), responde error
+      y el frontend revierte el cambio optimista.
+   d. Todo cambio se persiste también en `localStorage` de inmediato, sin
+      esperar la respuesta del backend.
+
+**Flujo 4 — Finalizar semestre**
+1. Usuario marca cada materia del horario como aprobada o perdida.
+2. `PATCH /api/horarios/:id/finalizar` con `{ resultados: [{ materiaCodigo, aprobada }] }`.
+3. Backend actualiza `estado` de cada materia en el `pensum` asociado
+   (`'cursado'` si aprobó, `'activo'` si perdió) y marca el horario como
+   `estado: 'finalizado'`, `finalizadoAt: now`.
+4. Frontend refresca el pool de materias disponibles (ya sin las que se
+   acaban de aprobar) y el horario queda visible como histórico.
+
 ## Cómo usar este tablero
 
 Cada tarea está pensada para ser pequeña y acotada a uno o pocos archivos.

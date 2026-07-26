@@ -176,11 +176,11 @@ fases — cada una depende de la anterior.
 
 ## Fase 4 — Frontend: base y autenticación (agente: frontend)
 
-- [ ] Configurar `shared/api/api.ts` (apiGet/apiPost/apiPatch/apiDelete, `credentials: 'include'`)
-- [ ] Crear `features/auth/services/AuthService.ts`
-- [ ] Crear `features/auth/components/LoginForm.tsx`, `RegisterForm.tsx`
-- [ ] Crear `features/auth/hooks/useAuth.ts`
-- [ ] Configurar routing base (React Router) con rutas protegidas
+- [x] Configurar `shared/api/api.ts` (apiGet/apiPost/apiPatch/apiDelete, `credentials: 'include'`)
+- [x] Crear `features/auth/services/AuthService.ts`
+- [x] Crear `features/auth/components/LoginForm.tsx`, `RegisterForm.tsx`
+- [x] Crear `features/auth/hooks/useAuth.ts`
+- [x] Configurar routing base (React Router) con rutas protegidas
 
 ## Fase 5 — Frontend: pensum (agente: frontend)
 

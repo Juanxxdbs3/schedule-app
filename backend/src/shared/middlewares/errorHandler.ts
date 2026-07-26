@@ -18,6 +18,11 @@ export function errorHandler(
     return;
   }
 
+  if (err instanceof mongoose.Error.CastError) {
+    res.status(400).json({ error: "ID inválido: " + err.value });
+    return;
+  }
+
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Internal server error" });
 }

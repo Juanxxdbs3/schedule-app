@@ -14,21 +14,11 @@ export default function DropZone({ id, label }: DropZoneProps) {
   return (
     <div
       ref={setNodeRef}
-      style={{
-        marginTop: "var(--spacing-3)",
-        padding: "var(--spacing-3)",
-        border: `2px dashed ${isOver ? "var(--color-primary)" : "var(--color-border)"}`,
-        borderRadius: "var(--radius-md)",
-        textAlign: "center",
-        fontSize: "var(--font-size-sm)",
-        color: isOver ? "var(--color-primary)" : "var(--color-text-muted)",
-        background: isOver ? "var(--color-primary-muted, #dbeafe)" : "transparent",
-        transition: "all 0.15s",
-        minHeight: 48,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      className={`mt-3 p-3 rounded-md text-center text-sm transition-all duration-150 min-h-12 flex items-center justify-center ${
+        isOver
+          ? "border-2 border-dashed border-primary text-primary bg-primary-muted"
+          : "border-2 border-dashed border-border text-muted bg-transparent"
+      }`}
     >
       {label ?? "Suelta aquí para quitar del horario"}
     </div>

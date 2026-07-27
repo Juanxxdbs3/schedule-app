@@ -45,27 +45,19 @@ export default function FinalizarHorario({ bloques, materias, onMarcar, onCerrar
   }
 
   return (
-    <div style={{ maxWidth: 500, margin: "0 auto", padding: "var(--spacing-4)" }}>
-      <h2 style={{ marginBottom: "var(--spacing-4)" }}>Finalizar semestre</h2>
-      <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", marginBottom: "var(--spacing-4)" }}>
+    <div className="max-w-md mx-auto p-4">
+      <h2 className="mb-4">Finalizar semestre</h2>
+      <p className="text-sm text-muted mb-4">
         Marca cada materia como aprobada o perdida
       </p>
 
       {error && (
-        <div style={{
-          padding: "var(--spacing-2) var(--spacing-3)",
-          background: "var(--color-danger-bg, #fef2f2)",
-          border: "1px solid var(--color-danger, #ef4444)",
-          borderRadius: "var(--radius-md)",
-          color: "var(--color-danger, #ef4444)",
-          fontSize: "var(--font-size-sm)",
-          marginBottom: "var(--spacing-3)",
-        }}>
+        <div className="px-3 py-2 bg-danger-bg border border-solid border-danger rounded-md text-danger text-sm mb-3">
           {error}
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)" }}>
+      <div className="flex flex-col gap-2">
         {bloques.map((b) => {
           const m = materiaMap.get(b.materiaCodigo);
           if (!m) return null;
@@ -74,50 +66,34 @@ export default function FinalizarHorario({ bloques, materias, onMarcar, onCerrar
           return (
             <div
               key={b.materiaCodigo}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "var(--spacing-3)",
-                background: "var(--color-surface)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-md)",
-              }}
+              className="flex justify-between items-center p-3 bg-surface border border-border rounded-md"
             >
               <div>
-                <div style={{ fontWeight: 600, fontSize: "var(--font-size-sm)" }}>{m.nombre}</div>
-                <div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
+                <div className="font-semibold text-sm">{m.nombre}</div>
+                <div className="text-xs text-muted">
                   {m.codigo} · {m.creditos} créditos
                 </div>
               </div>
-              <div style={{ display: "flex", gap: "var(--spacing-2)" }}>
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => handleToggle(b.materiaCodigo, true)}
-                  style={{
-                    padding: "0.3rem 0.8rem",
-                    border: `1px solid ${marcado === true ? "var(--color-success, #22c55e)" : "var(--color-border)"}`,
-                    borderRadius: "var(--radius-sm)",
-                    background: marcado === true ? "var(--color-success-bg, #f0fdf4)" : "transparent",
-                    color: marcado === true ? "var(--color-success, #22c55e)" : "var(--color-text-muted)",
-                    cursor: "pointer",
-                    fontSize: "var(--font-size-sm)",
-                  }}
+                  className={`px-3 py-1 rounded-sm cursor-pointer text-sm ${
+                    marcado === true
+                      ? "border border-solid border-success bg-success-bg text-success"
+                      : "border border-solid border-border bg-transparent text-muted"
+                  }`}
                 >
                   Aprobada
                 </button>
                 <button
                   type="button"
                   onClick={() => handleToggle(b.materiaCodigo, false)}
-                  style={{
-                    padding: "0.3rem 0.8rem",
-                    border: `1px solid ${marcado === false ? "var(--color-danger, #ef4444)" : "var(--color-border)"}`,
-                    borderRadius: "var(--radius-sm)",
-                    background: marcado === false ? "var(--color-danger-bg, #fef2f2)" : "transparent",
-                    color: marcado === false ? "var(--color-danger, #ef4444)" : "var(--color-text-muted)",
-                    cursor: "pointer",
-                    fontSize: "var(--font-size-sm)",
-                  }}
+                  className={`px-3 py-1 rounded-sm cursor-pointer text-sm ${
+                    marcado === false
+                      ? "border border-solid border-danger bg-danger-bg text-danger"
+                      : "border border-solid border-border bg-transparent text-muted"
+                  }`}
                 >
                   Perdida
                 </button>
@@ -127,19 +103,11 @@ export default function FinalizarHorario({ bloques, materias, onMarcar, onCerrar
         })}
       </div>
 
-      <div style={{ display: "flex", gap: "var(--spacing-3)", marginTop: "var(--spacing-4)" }}>
+      <div className="flex gap-3 mt-4">
         <button
           type="button"
           onClick={onCancelar}
-          style={{
-            padding: "0.5rem 1.2rem",
-            background: "transparent",
-            color: "var(--color-text-muted)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            cursor: "pointer",
-            flex: 1,
-          }}
+          className="flex-1 px-5 py-2 bg-transparent text-muted border border-border rounded-md cursor-pointer"
         >
           Cancelar
         </button>
@@ -147,16 +115,11 @@ export default function FinalizarHorario({ bloques, materias, onMarcar, onCerrar
           type="button"
           onClick={handleCerrar}
           disabled={!todasMarcadas || cerrando}
-          style={{
-            padding: "0.5rem 1.2rem",
-            background: todasMarcadas && !cerrando ? "var(--color-primary)" : "var(--color-muted-block)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "var(--radius-md)",
-            cursor: todasMarcadas && !cerrando ? "pointer" : "not-allowed",
-            flex: 1,
-            opacity: todasMarcadas ? 1 : 0.6,
-          }}
+          className={`flex-1 px-5 py-2 text-white border-none rounded-md ${
+            todasMarcadas && !cerrando
+              ? "bg-primary cursor-pointer opacity-100"
+              : "bg-muted-block cursor-not-allowed opacity-60"
+          }`}
         >
           {cerrando ? "Cerrando..." : "Cerrar semestre"}
         </button>

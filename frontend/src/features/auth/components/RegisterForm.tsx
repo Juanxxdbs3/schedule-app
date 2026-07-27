@@ -47,16 +47,16 @@ export default function RegisterForm() {
   const displayError = validationError || error;
 
   return (
-    <div style={{ maxWidth: 400, margin: "0 auto", padding: "2rem 1rem" }}>
+    <div className="max-w-sm mx-auto p-8">
       <h1>Crear cuenta</h1>
 
       {displayError && (
-        <div style={{ color: "var(--color-danger)", marginBottom: "1rem" }}>
+        <div className="text-danger mb-4">
           {displayError}
           <button
             type="button"
             onClick={() => { clearError(); setValidationError(null); }}
-            style={{ marginLeft: 8, background: "none", border: "none", cursor: "pointer" }}
+            className="ml-2 bg-none border-none cursor-pointer"
           >
             ✕
           </button>
@@ -64,8 +64,8 @@ export default function RegisterForm() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="username" style={{ display: "block", marginBottom: 4 }}>
+        <div className="mb-4">
+          <label htmlFor="username" className="block mb-1">
             Nombre de usuario
           </label>
           <input
@@ -74,12 +74,12 @@ export default function RegisterForm() {
             required
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", boxSizing: "border-box" }}
+            className="w-full p-2 box-border"
           />
         </div>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="email" style={{ display: "block", marginBottom: 4 }}>
+        <div className="mb-4">
+          <label htmlFor="email" className="block mb-1">
             Correo electrónico
           </label>
           <input
@@ -88,12 +88,12 @@ export default function RegisterForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", boxSizing: "border-box" }}
+            className="w-full p-2 box-border"
           />
         </div>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="password" style={{ display: "block", marginBottom: 4 }}>
+        <div className="mb-4">
+          <label htmlFor="password" className="block mb-1">
             Contraseña
           </label>
           <input
@@ -102,12 +102,12 @@ export default function RegisterForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", boxSizing: "border-box" }}
+            className="w-full p-2 box-border"
           />
         </div>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="confirm-password" style={{ display: "block", marginBottom: 4 }}>
+        <div className="mb-4">
+          <label htmlFor="confirm-password" className="block mb-1">
             Confirmar contraseña
           </label>
           <input
@@ -116,28 +116,22 @@ export default function RegisterForm() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", boxSizing: "border-box" }}
+            className="w-full p-2 box-border"
           />
         </div>
 
         <button
           type="submit"
           disabled={submitting}
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            background: "var(--color-primary)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "var(--radius-md)",
-            cursor: submitting ? "not-allowed" : "pointer",
-          }}
+          className={`w-full p-2 text-white border-none rounded-md ${
+            submitting ? "cursor-not-allowed" : "cursor-pointer"
+          } bg-primary`}
         >
           {submitting ? "Creando cuenta..." : "Crear cuenta"}
         </button>
       </form>
 
-      <p style={{ marginTop: "1rem", textAlign: "center" }}>
+      <p className="mt-4 text-center">
         ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
       </p>
     </div>

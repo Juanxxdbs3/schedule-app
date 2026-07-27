@@ -18,7 +18,7 @@ import NavBar from "./shared/components/NavBar.tsx";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <div style={{ textAlign: "center", padding: "2rem" }}>Cargando...</div>;
+  if (loading) return <div className="text-center p-8">Cargando...</div>;
   if (!user) return <Navigate to="/login" replace />;
   return <><NavBar />{children}</>;
 }
@@ -90,7 +90,7 @@ function DashboardPage() {
     }
   }
 
-  if (!syncDone) return <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>Cargando...</div>;
+  if (!syncDone) return <div className="text-center p-8 text-muted">Cargando...</div>;
 
   const pensumActual = pensum;
   const materiasDisponibles = pensumActual
@@ -98,18 +98,15 @@ function DashboardPage() {
     : [];
 
   return (
-    <div style={{ maxWidth: 1060, margin: "0 auto", padding: "2rem 1rem" }}>
-      <div style={{ display: "flex", gap: "var(--spacing-4)", marginBottom: "var(--spacing-6)" }}>
+    <div className="max-w-5xl mx-auto p-8">
+      <div className="flex gap-4 mb-6">
         {/* Pensums section */}
-        <div style={{ flex: 7, minWidth: 0 }}>
+        <div className="flex-[7] min-w-0">
           <section>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-3)" }}>
-              <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>Pensums</h2>
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="m-0 text-lg">Pensums</h2>
               {pensums.length > 0 && (
-                <button type="button" onClick={() => setShowCrear(!showCrear)} style={{
-                  padding: "0.4rem 1rem", background: "var(--color-primary)", color: "#fff",
-                  border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", fontWeight: 600, fontSize: "var(--font-size-sm)",
-                }}>
+                <button type="button" onClick={() => setShowCrear(!showCrear)} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
                   {showCrear ? "Cancelar" : "Crear horario"}
                 </button>
               )}
@@ -118,16 +115,13 @@ function DashboardPage() {
             {pensums.length === 0 ? (
               <CargarPensum onPensumLoaded={handlePensumLoaded} />
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)" }}>
+              <div className="flex flex-col gap-2">
                 {pensums.map((p) => (
-                  <div key={p.id} onClick={() => setPensum(p)} style={{
-                    padding: "var(--spacing-3)", borderRadius: "var(--radius-md)", cursor: "pointer",
-                    border: `1px solid ${pensumActual?.id === p.id ? "var(--color-primary)" : "var(--color-border)"}`,
-                    background: pensumActual?.id === p.id ? "var(--color-primary-muted, #dbeafe)" : "var(--color-surface)",
-                    transition: "all 0.15s",
-                  }}>
-                    <div style={{ fontWeight: 600, fontSize: "var(--font-size-sm)" }}>{p.nombre}</div>
-                    <div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
+                  <div key={p.id} onClick={() => setPensum(p)} className={`p-3 rounded-md cursor-pointer border transition-all duration-150 ${
+                    pensumActual?.id === p.id ? "border-primary bg-primary-muted" : "border-border bg-surface"
+                  }`}>
+                    <div className="font-semibold text-sm">{p.nombre}</div>
+                    <div className="text-xs text-muted">
                       {p.materias.length} materias
                     </div>
                   </div>
@@ -137,46 +131,33 @@ function DashboardPage() {
 
             {/* Crear horario form */}
             {showCrear && pensums.length > 0 && (
-              <div style={{ marginTop: "var(--spacing-4)", padding: "var(--spacing-4)", background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)" }}>
-                <h3 style={{ fontSize: "var(--font-size-sm)", marginBottom: "var(--spacing-3)" }}>Configurar nuevo horario</h3>
-                {crearError && <div style={{ padding: "var(--spacing-2)", background: "#fef2f2", border: "1px solid #ef4444", borderRadius: "var(--radius-sm)", marginBottom: "var(--spacing-2)", fontSize: "var(--font-size-xs)", color: "#ef4444" }}>{crearError}</div>}
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-3)" }}>
+              <div className="mt-4 p-4 bg-surface border border-border rounded-md">
+                <h3 className="text-sm mb-3">Configurar nuevo horario</h3>
+                {crearError && <div className="p-2 bg-danger-bg border border-danger rounded-sm mb-2 text-xs text-danger">{crearError}</div>}
+                <div className="flex flex-col gap-3">
                   <div>
-                    <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Pensum</label>
-                    <select value={crearParams.pensumId} onChange={(e) => setCrearParams((p) => ({ ...p, pensumId: e.target.value }))} style={{
-                      width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
-                    }}>
+                    <label className="text-xs text-muted font-medium">Pensum</label>
+                    <select value={crearParams.pensumId} onChange={(e) => setCrearParams((p) => ({ ...p, pensumId: e.target.value }))} className="w-full p-2 border border-border rounded-md bg-surface text-text">
                       {pensums.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                     </select>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--spacing-3)" }}>
+                  <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Semestre</label>
-                      <input type="text" value={crearParams.semestreLabel} onChange={(e) => setCrearParams((p) => ({ ...p, semestreLabel: e.target.value }))} style={{
-                        width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
-                        borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
-                      }} />
+                      <label className="text-xs text-muted font-medium">Semestre</label>
+                      <input type="text" value={crearParams.semestreLabel} onChange={(e) => setCrearParams((p) => ({ ...p, semestreLabel: e.target.value }))} className="w-full p-2 border border-border rounded-md bg-surface text-text" />
                     </div>
                     <div>
-                      <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Créd. máx</label>
-                      <input type="number" min={1} value={crearParams.maxCreditos} onChange={(e) => setCrearParams((p) => ({ ...p, maxCreditos: Number(e.target.value) }))} style={{
-                        width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
-                        borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
-                      }} />
+                      <label className="text-xs text-muted font-medium">Créd. máx</label>
+                      <input type="number" min={1} value={crearParams.maxCreditos} onChange={(e) => setCrearParams((p) => ({ ...p, maxCreditos: Number(e.target.value) }))} className="w-full p-2 border border-border rounded-md bg-surface text-text" />
                     </div>
                     <div>
-                      <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Unidad (min)</label>
-                      <input type="number" min={10} max={120} step={5} value={crearParams.unidadHoraMinutos} onChange={(e) => setCrearParams((p) => ({ ...p, unidadHoraMinutos: Number(e.target.value) }))} style={{
-                        width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
-                        borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
-                      }} />
+                      <label className="text-xs text-muted font-medium">Unidad (min)</label>
+                      <input type="number" min={10} max={120} step={5} value={crearParams.unidadHoraMinutos} onChange={(e) => setCrearParams((p) => ({ ...p, unidadHoraMinutos: Number(e.target.value) }))} className="w-full p-2 border border-border rounded-md bg-surface text-text" />
                     </div>
                   </div>
-              <button type="button" onClick={handleCrearHorario} disabled={creando} style={{
-                padding: "var(--spacing-2) var(--spacing-4)", background: creando ? "var(--color-muted-block)" : "var(--color-primary)",
-                color: "#fff", border: "none", borderRadius: "var(--radius-md)", cursor: creando ? "not-allowed" : "pointer", fontWeight: 600,
-              }}>
+              <button type="button" onClick={handleCrearHorario} disabled={creando} className={`p-2 px-4 text-white border-none rounded-md font-semibold ${
+                creando ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
+              }`}>
                 {creando ? "Preparando..." : "Ir al horario"}
               </button>
                 </div>
@@ -186,32 +167,26 @@ function DashboardPage() {
         </div>
 
         {/* Horarios section */}
-        <div style={{ flex: 3, minWidth: 0 }}>
+        <div className="flex-[3] min-w-0">
           <section>
-            <h2 style={{ margin: 0, marginBottom: "var(--spacing-3)", fontSize: "var(--font-size-lg)" }}>Mis horarios</h2>
+            <h2 className="m-0 mb-3 text-lg">Mis horarios</h2>
             {horarios.length === 0 ? (
-              <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", textAlign: "center", padding: "var(--spacing-4)" }}>
+              <p className="text-sm text-muted text-center p-4">
                 No hay horarios aún. Carga un pensum y crea tu primer horario.
               </p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)" }}>
+              <div className="flex flex-col gap-2">
                 {horarios.map((h) => (
-                  <div key={h.id} onClick={() => navigate(`/horario/${h.id}`)} style={{
-                    padding: "var(--spacing-3)", borderRadius: "var(--radius-md)", cursor: "pointer",
-                    border: "1px solid var(--color-border)", background: "var(--color-surface)", transition: "all 0.15s",
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                  }}>
+                  <div key={h.id} onClick={() => navigate(`/horario/${h.id}`)} className="p-3 rounded-md cursor-pointer border border-border bg-surface transition-all duration-150 flex justify-between items-center">
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: "var(--font-size-sm)" }}>{h.semestreLabel}</div>
-                      <div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
+                      <div className="font-semibold text-sm">{h.semestreLabel}</div>
+                      <div className="text-xs text-muted">
                         {h.bloques.length} bloque{h.bloques.length !== 1 ? "s" : ""} · {h.estado === "finalizado" ? "Finalizado" : "En progreso"}
                       </div>
                     </div>
-                    <span style={{
-                      fontSize: "var(--font-size-xs)", padding: "2px 8px", borderRadius: "var(--radius-sm)",
-                      background: h.estado === "finalizado" ? "#f3f4f6" : "#dcfce7",
-                      color: h.estado === "finalizado" ? "#6b7280" : "#166534", fontWeight: 600,
-                    }}>
+                    <span className={`text-xs px-2 py-0.5 rounded-sm font-semibold ${
+                      h.estado === "finalizado" ? "bg-[#f3f4f6] text-[#6b7280]" : "bg-success-bg text-[#166534]"
+                    }`}>
                       {h.estado === "finalizado" ? "Finalizado" : "Activo"}
                     </span>
                   </div>
@@ -224,13 +199,10 @@ function DashboardPage() {
 
       {/* Pensum detail */}
       {pensumActual && (
-        <section style={{ marginBottom: "var(--spacing-6)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-3)" }}>
-            <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>{pensumActual.nombre}</h2>
-            <button type="button" onClick={handleCargarNuevo} style={{
-              padding: "0.3rem 0.8rem", background: "transparent", color: "var(--color-text-muted)",
-              border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", cursor: "pointer", fontSize: "var(--font-size-xs)",
-            }}>Cargar nuevo pensum</button>
+        <section className="mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="m-0 text-lg">{pensumActual.nombre}</h2>
+            <button type="button" onClick={handleCargarNuevo} className="px-3 py-1 bg-transparent text-muted border border-border rounded-md cursor-pointer text-xs">Cargar nuevo pensum</button>
           </div>
           <FiltroPensum materias={materiasDisponibles} onFilter={setFiltradas} />
           <PoolMaterias materias={filtradas} />

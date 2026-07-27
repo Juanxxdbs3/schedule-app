@@ -22,65 +22,41 @@ export default function MateriaBlock({ materia }: MateriaBlockProps) {
     disabled: isCursado,
   });
 
-  const cardStyle: React.CSSProperties = {
-    background: "var(--color-surface)",
-    border: `1px solid ${colors.border}`,
-    borderRadius: "var(--radius-md)",
-    padding: "var(--spacing-3)",
-    opacity: isDragging ? 0.3 : isCursado ? 0.6 : 1,
-    cursor: isCursado ? "not-allowed" : "grab",
-    transition: "box-shadow 0.15s, border-color 0.15s, opacity 0.15s",
-    userSelect: "none",
-    touchAction: "none",
+  const dragStyle: React.CSSProperties = {
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-    position: "relative" as const,
-    zIndex: isDragging ? 999 : 1,
-  };
-
-  const headerStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "var(--spacing-2)",
-  };
-
-  const codigoStyle: React.CSSProperties = {
-    fontSize: "var(--font-size-sm)",
-    color: isCursado ? "var(--color-text-muted)" : "var(--color-primary)",
-    fontWeight: 600,
-    fontFamily: "monospace",
-  };
-
-  const nombreStyle: React.CSSProperties = {
-    fontSize: "var(--font-size-base)",
-    fontWeight: 600,
-    color: isCursado ? "var(--color-text-muted)" : "var(--color-text)",
-    marginBottom: "var(--spacing-1)",
-  };
-
-  const badgeStyle: React.CSSProperties = {
-    fontSize: "var(--font-size-sm)",
-    padding: "2px 8px",
-    borderRadius: "var(--radius-sm)",
-    background: colors.badgeBg,
-    color: colors.badgeText,
-  };
-
-  const metaStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "var(--spacing-2)",
-    fontSize: "var(--font-size-sm)",
-    color: "var(--color-text-muted)",
+    touchAction: "none",
   };
 
   return (
-    <div ref={setNodeRef} style={cardStyle} {...listeners} {...attributes}>
-      <div style={headerStyle}>
-        <span style={codigoStyle}>{materia.codigo}</span>
-        <span style={badgeStyle}>{materia.estado}</span>
+    <div
+      ref={setNodeRef}
+      className={`bg-surface border border-solid rounded-md p-3 select-none relative transition-all duration-150 ${
+        isCursado ? "cursor-not-allowed" : "cursor-grab"
+      }`}
+      style={{
+        ...dragStyle,
+        borderColor: colors.border,
+        opacity: isDragging ? 0.3 : isCursado ? 0.6 : 1,
+        zIndex: isDragging ? 999 : 1,
+      }}
+      {...listeners}
+      {...attributes}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <span className={`text-sm font-semibold font-mono ${isCursado ? "text-muted" : "text-primary"}`}>
+          {materia.codigo}
+        </span>
+        <span
+          className="text-sm px-2 py-0.5 rounded-sm"
+          style={{ background: colors.badgeBg, color: colors.badgeText }}
+        >
+          {materia.estado}
+        </span>
       </div>
-      <div style={nombreStyle}>{materia.nombre}</div>
-      <div style={metaStyle}>
+      <div className={`text-base font-semibold mb-1 ${isCursado ? "text-muted" : "text-text"}`}>
+        {materia.nombre}
+      </div>
+      <div className="flex gap-2 text-sm text-muted">
         <span>{materia.creditos} crédito{materia.creditos !== 1 ? "s" : ""}</span>
         <span>•</span>
         <span>Semestre {materia.semestre}</span>

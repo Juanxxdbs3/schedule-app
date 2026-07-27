@@ -32,56 +32,27 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
 
   const semestreOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "var(--spacing-3)",
-    flexWrap: "wrap",
-    alignItems: "flex-end",
-    marginBottom: "var(--spacing-4)",
-  };
-
-  const fieldStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "var(--spacing-1)",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: "var(--font-size-sm)",
-    color: "var(--color-text-muted)",
-    fontWeight: 500,
-  };
-
-  const inputStyle: React.CSSProperties = {
-    padding: "var(--spacing-2) var(--spacing-3)",
-    border: "1px solid var(--color-border)",
-    borderRadius: "var(--radius-md)",
-    background: "var(--color-surface)",
-    color: "var(--color-text)",
-    minWidth: 160,
-  };
-
   return (
-    <div style={containerStyle}>
-      <div style={fieldStyle}>
-        <label htmlFor="filtro-nombre" style={labelStyle}>Nombre</label>
+    <div className="flex gap-3 flex-wrap items-end mb-4">
+      <div className="flex flex-col gap-1">
+        <label htmlFor="filtro-nombre" className="text-sm text-muted font-medium">Nombre</label>
         <input
           id="filtro-nombre"
           type="text"
           placeholder="Buscar materia..."
           value={nombre}
           onChange={handleNombre}
-          style={inputStyle}
+          className="px-3 py-2 border border-border rounded-md bg-surface text-text min-w-40"
         />
       </div>
 
-      <div style={fieldStyle}>
-        <label htmlFor="filtro-semestre" style={labelStyle}>Semestre</label>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="filtro-semestre" className="text-sm text-muted font-medium">Semestre</label>
         <select
           id="filtro-semestre"
           value={semestre}
           onChange={handleSemestre}
-          style={inputStyle}
+          className="px-3 py-2 border border-border rounded-md bg-surface text-text min-w-40"
         >
           <option value="">Todos</option>
           {semestreOptions.map((s) => (
@@ -90,8 +61,8 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
         </select>
       </div>
 
-      <div style={fieldStyle}>
-        <label htmlFor="filtro-creditos" style={labelStyle}>Créditos máx.</label>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="filtro-creditos" className="text-sm text-muted font-medium">Créditos máx.</label>
         <input
           id="filtro-creditos"
           type="number"
@@ -99,7 +70,7 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
           placeholder="Sin límite"
           value={creditosMax}
           onChange={handleCreditos}
-          style={{ ...inputStyle, minWidth: 120 }}
+          className="px-3 py-2 border border-border rounded-md bg-surface text-text min-w-30"
         />
       </div>
     </div>

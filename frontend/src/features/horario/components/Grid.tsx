@@ -44,10 +44,7 @@ function DroppableCell({ dia, horaInicio, horaFin }: { dia: DiaSemana; horaInici
   });
 
   return (
-    <div ref={setNodeRef} style={{
-      height: "100%", background: isOver ? "var(--color-primary-muted, #dbeafe)" : "transparent",
-      transition: "background 0.15s",
-    }} />
+    <div ref={setNodeRef} className={`h-full transition-colors duration-150 ${isOver ? "bg-primary-muted" : "bg-transparent"}`} />
   );
 }
 
@@ -71,18 +68,8 @@ interface GridProps {
   resultados?: Record<string, boolean>;
 }
 
-const headStyle: React.CSSProperties = {
-  padding: "var(--spacing-2)", fontWeight: 600, textAlign: "center",
-  borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)",
-  background: "var(--color-surface)",
-};
-
-const timeStyle: React.CSSProperties = {
-  padding: "var(--spacing-1)", fontWeight: 400, fontSize: "var(--font-size-xs)",
-  color: "var(--color-text-muted)", textAlign: "center",
-  borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)",
-  background: "var(--color-surface)",
-};
+const headClasses = "p-2 font-semibold text-center border-b border-border border-r border-border bg-surface";
+const timeClasses = "p-1 font-normal text-xs text-muted text-center border-b border-border border-r border-border bg-surface";
 
 export default function Grid({
   bloques, materias, unidadHoraMinutos: u, modo,
@@ -116,14 +103,14 @@ export default function Grid({
 
   const items: GridItem[] = [];
 
-  items.push({ key: "hdr-time", row: 1, col: 1, rowSpan: 1, element: <div style={headStyle}>Hora</div> });
+  items.push({ key: "hdr-time", row: 1, col: 1, rowSpan: 1, element: <div className={headClasses}>Hora</div> });
   DIAS.forEach((dia, i) => {
-    items.push({ key: `hdr-${dia}`, row: 1, col: i + 2, rowSpan: 1, element: <div style={headStyle}>{DIAS_LABEL[dia]}</div> });
+    items.push({ key: `hdr-${dia}`, row: 1, col: i + 2, rowSpan: 1, element: <div className={headClasses}>{DIAS_LABEL[dia]}</div> });
   });
 
   slots.forEach((slot, si) => {
     const row = si + 2;
-    items.push({ key: `t-${slot.horaInicio}`, row, col: 1, rowSpan: 1, element: <div style={timeStyle}>{slot.horaInicio}</div> });
+    items.push({ key: `t-${slot.horaInicio}`, row, col: 1, rowSpan: 1, element: <div className={timeClasses}>{slot.horaInicio}</div> });
 
     DIAS.forEach((dia, di) => {
       const col = di + 2;
@@ -141,7 +128,7 @@ export default function Grid({
           key: `b-${key}`,
           row, col, rowSpan: span,
           element: (
-            <div style={{ height: "100%", borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)", background: "var(--color-surface)", position: "relative" }}>
+            <div className="h-full border-b border-border border-r border-border bg-surface relative">
               {materia && (
                 <MateriaSlot
                   bloque={bloque} materia={materia} conflicto={conflicto} span={span} modo={modo}
@@ -159,7 +146,7 @@ export default function Grid({
         items.push({
           key: `c-${key}`, row, col, rowSpan: 1,
           element: (
-            <div style={{ height: "100%", borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)" }}>
+            <div className="h-full border-b border-border border-r border-border">
               {isEdicion && <DroppableCell dia={dia} horaInicio={slot.horaInicio} horaFin={slot.horaFin} />}
             </div>
           ),
@@ -168,17 +155,16 @@ export default function Grid({
     });
   });
 
+  const numCols = DIAS.length + 1;
+
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: `60px repeat(${DIAS.length}, 1fr)`,
-      gridAutoRows: 52,
-      borderTop: "1px solid var(--color-border)",
-      borderLeft: "1px solid var(--color-border)",
-      borderRadius: "var(--radius-md)",
-      overflow: "hidden",
-      fontSize: "var(--font-size-sm)",
-    }}>
+    <div
+      className="grid border-t border-border border-l border-border rounded-md overflow-hidden text-sm"
+      style={{
+        gridTemplateColumns: `60px repeat(${DIAS.length}, 1fr)`,
+        gridAutoRows: 52,
+      }}
+    >
       {items.map((it) => (
         <div key={it.key} style={{ gridRow: `${it.row} / span ${it.rowSpan}`, gridColumn: it.col }}>
           {it.element}

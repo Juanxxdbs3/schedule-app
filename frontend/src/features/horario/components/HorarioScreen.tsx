@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { CheckCircle2, XCircle } from "lucide-react";
 import type { Horario, Bloque, DiaSemana } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 import type { Pensum } from "../../pensum/types.ts";
@@ -134,30 +135,28 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
   }
 
   const leyenda = [
-    { emoji: "😊", label: "Aprobada", color: "#7c3aed" },
-    { emoji: "😢", label: "Perdida", color: "#ea580c" },
+    { Icon: CheckCircle2, label: "Aprobada", color: "text-success" },
+    { Icon: XCircle, label: "Perdida", color: "text-danger" },
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-4)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--spacing-2)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-3)" }}>
-          <span style={{
-            padding: "2px 8px", borderRadius: "var(--radius-sm)", fontSize: "var(--font-size-xs)", fontWeight: 600,
-            background: modo === "edicion" ? "#dbeafe" : modo === "curso" ? "#dcfce7" : "#f3f4f6",
-            color: modo === "edicion" ? "#1e40af" : modo === "curso" ? "#166534" : "#6b7280",
-          }}>
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <div className="flex items-center gap-3">
+          <span className={`px-2 py-0.5 rounded-sm text-xs font-semibold ${
+            modo === "edicion" ? "bg-[#dbeafe] text-[#1e40af]" : modo === "curso" ? "bg-success-bg text-[#166534]" : "bg-[#f3f4f6] text-[#6b7280]"
+          }`}>
             {modo === "edicion" ? "Modo edición" : modo === "curso" ? "En curso" : "Finalizado"}
           </span>
           <ContadorCreditos bloques={bloques} materias={materiasTodas} maxCreditos={horario.maxCreditos} />
         </div>
 
         {modo === "curso" && (
-          <div style={{ display: "flex", gap: "var(--spacing-2)", fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
-            {leyenda.map(({ emoji, label, color }) => (
-              <span key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ fontSize: 14 }}>{emoji}</span>
-                <span style={{ color }}>{label}</span>
+          <div className="flex gap-2 text-xs text-muted">
+            {leyenda.map(({ Icon, label, color }) => (
+              <span key={label} className="flex items-center gap-1">
+                <Icon className={`w-3.5 h-3.5 ${color}`} />
+                <span className={color}>{label}</span>
               </span>
             ))}
           </div>
@@ -166,62 +165,59 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
         {modo === "curso" && (
           <button type="button" onClick={() => onModoChange("finalizado")}
             disabled={!todasResultadas}
-            style={{
-              padding: "0.4rem 1rem", background: todasResultadas ? "var(--color-primary)" : "var(--color-muted-block)",
-              color: "#fff", border: "none", borderRadius: "var(--radius-md)",
-              cursor: todasResultadas ? "pointer" : "not-allowed",
-              fontSize: "var(--font-size-sm)", opacity: todasResultadas ? 1 : 0.6,
-            }}
+            className={`px-4 py-1.5 text-white border-none rounded-md text-sm ${
+              todasResultadas ? "bg-primary cursor-pointer opacity-100" : "bg-muted-block cursor-not-allowed opacity-60"
+            }`}
           >Finalizar semestre</button>
         )}
       </div>
 
       {error && (
-        <div style={{ padding: "var(--spacing-2) var(--spacing-3)", background: "#fef2f2", border: "1px solid #ef4444", borderRadius: "var(--radius-md)", color: "#ef4444", fontSize: "var(--font-size-sm)" }}>
+        <div className="px-3 py-2 bg-danger-bg border border-solid border-danger rounded-md text-danger text-sm">
           {error}
         </div>
       )}
 
       {modo === "edicion" ? (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "var(--spacing-4)", alignItems: "start" }}>
+          <div className="grid grid-cols-[1fr_300px] gap-4 items-start">
             <Grid
               bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
               onRemoveBloque={handleRemoveBloque} onExpandBloqueDown={handleExpandDown} onExpandBloqueUp={handleExpandUp}
             />
-            <div style={{ background: "var(--color-surface)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", padding: "var(--spacing-3)", position: "sticky", top: "var(--spacing-3)" }}>
-              <h3 style={{ fontSize: "var(--font-size-sm)", marginBottom: "var(--spacing-2)" }}>Materias ({materiasEnPool.length})</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-1)", marginBottom: "var(--spacing-2)" }}>
+            <div className="bg-surface rounded-md border border-border p-3 sticky top-3">
+              <h3 className="text-sm mb-2">Materias ({materiasEnPool.length})</h3>
+              <div className="flex flex-col gap-1 mb-2">
                 <input type="text" placeholder="Buscar..." value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)}
-                  style={{ padding: "4px 8px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", fontSize: "var(--font-size-xs)", background: "var(--color-surface)", color: "var(--color-text)" }} />
-                <div style={{ display: "flex", gap: "var(--spacing-1)" }}>
+                  className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text" />
+                <div className="flex gap-1">
                   <select value={filtroSemestre} onChange={(e) => setFiltroSemestre(e.target.value ? Number(e.target.value) : "")}
-                    style={{ padding: "4px 8px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", fontSize: "var(--font-size-xs)", background: "var(--color-surface)", color: "var(--color-text)", flex: 1 }}>
+                    className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text flex-1">
                     <option value="">Semestre</option>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                   <input type="number" placeholder="Créd. máx" value={filtroCreditos} onChange={(e) => setFiltroCreditos(e.target.value ? Number(e.target.value) : "")}
-                    style={{ padding: "4px 8px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", fontSize: "var(--font-size-xs)", background: "var(--color-surface)", color: "var(--color-text)", width: 80 }} />
+                    className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text w-20" />
                 </div>
               </div>
               {materiasEnPool.length === 0 ? (
-                <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", textAlign: "center", padding: "var(--spacing-3)" }}>No hay materias disponibles</p>
+                <p className="text-sm text-muted text-center p-3">No hay materias disponibles</p>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)", maxHeight: "calc(100vh - 400px)", overflowY: "auto" }}>
-                  {materiasEnPool.map((m) => <div key={m.codigo} style={{ fontSize: "var(--font-size-sm)" }}><MateriaBlock materia={m} /></div>)}
+                <div className="flex flex-col gap-2 max-h-[calc(100vh-400px)] overflow-y-auto">
+                  {materiasEnPool.map((m) => <div key={m.codigo} className="text-sm"><MateriaBlock materia={m} /></div>)}
                 </div>
               )}
               <DropZone id="pool-drop" />
             </div>
           </div>
           <DragOverlay>
-            {activeMateria ? <div style={{ transform: "rotate(3deg)", opacity: 0.9 }}><MateriaBlock materia={activeMateria} /></div> : null}
+            {activeMateria ? <div className="rotate-3 opacity-90"><MateriaBlock materia={activeMateria} /></div> : null}
           </DragOverlay>
         </DndContext>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-4)" }}>
+        <div className="grid grid-cols-1 gap-4">
           {bloques.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>No hay materias en el horario</div>
+            <div className="text-center p-8 text-muted">No hay materias en el horario</div>
           ) : (
             <Grid
               bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}

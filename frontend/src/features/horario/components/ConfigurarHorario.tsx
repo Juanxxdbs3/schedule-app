@@ -5,27 +5,6 @@ interface ConfigurarHorarioProps {
   loading: boolean;
 }
 
-const fieldStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "var(--spacing-1)",
-};
-
-const labelStyle: React.CSSProperties = {
-  fontSize: "var(--font-size-sm)",
-  color: "var(--color-text-muted)",
-  fontWeight: 500,
-};
-
-const inputStyle: React.CSSProperties = {
-  padding: "var(--spacing-2) var(--spacing-3)",
-  border: "1px solid var(--color-border)",
-  borderRadius: "var(--radius-md)",
-  background: "var(--color-surface)",
-  color: "var(--color-text)",
-  fontSize: "var(--font-size-md)",
-};
-
 export default function ConfigurarHorario({ onSubmit, loading }: ConfigurarHorarioProps) {
   const [semestreLabel, setSemestreLabel] = useState("2026-2");
   const [maxCreditos, setMaxCreditos] = useState(18);
@@ -37,18 +16,12 @@ export default function ConfigurarHorario({ onSubmit, loading }: ConfigurarHorar
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 480,
-        margin: "0 auto",
-        padding: "var(--spacing-6) var(--spacing-4)",
-      }}
-    >
-      <h2 style={{ marginBottom: "var(--spacing-4)" }}>Configurar horario</h2>
+    <div className="max-w-md mx-auto py-6 px-4">
+      <h2 className="mb-4">Configurar horario</h2>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-4)" }}>
-        <div style={fieldStyle}>
-          <label htmlFor="semestre-label" style={labelStyle}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="semestre-label" className="text-sm text-muted font-medium">
             Etiqueta del semestre
           </label>
           <input
@@ -56,14 +29,14 @@ export default function ConfigurarHorario({ onSubmit, loading }: ConfigurarHorar
             type="text"
             value={semestreLabel}
             onChange={(e) => setSemestreLabel(e.target.value)}
-            style={inputStyle}
+            className="px-3 py-2 border border-border rounded-md bg-surface text-text text-md"
             placeholder="ej. 2026-2"
             required
           />
         </div>
 
-        <div style={fieldStyle}>
-          <label htmlFor="max-creditos" style={labelStyle}>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="max-creditos" className="text-sm text-muted font-medium">
             Créditos máximos
           </label>
           <input
@@ -72,13 +45,13 @@ export default function ConfigurarHorario({ onSubmit, loading }: ConfigurarHorar
             min={1}
             value={maxCreditos}
             onChange={(e) => setMaxCreditos(Number(e.target.value))}
-            style={inputStyle}
+            className="px-3 py-2 border border-border rounded-md bg-surface text-text text-md"
             required
           />
         </div>
 
-        <div style={fieldStyle}>
-          <label htmlFor="unidad-hora" style={labelStyle}>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="unidad-hora" className="text-sm text-muted font-medium">
             Unidad de hora (minutos)
           </label>
           <input
@@ -89,7 +62,7 @@ export default function ConfigurarHorario({ onSubmit, loading }: ConfigurarHorar
             step={5}
             value={unidadHoraMinutos}
             onChange={(e) => setUnidadHoraMinutos(Number(e.target.value))}
-            style={inputStyle}
+            className="px-3 py-2 border border-border rounded-md bg-surface text-text text-md"
             required
           />
         </div>
@@ -97,17 +70,9 @@ export default function ConfigurarHorario({ onSubmit, loading }: ConfigurarHorar
         <button
           type="submit"
           disabled={loading}
-          style={{
-            padding: "var(--spacing-3) var(--spacing-5)",
-            background: loading ? "var(--color-primary-muted)" : "var(--color-primary)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "var(--radius-md)",
-            cursor: loading ? "not-allowed" : "pointer",
-            fontSize: "var(--font-size-md)",
-            fontWeight: 600,
-            marginTop: "var(--spacing-2)",
-          }}
+          className={`px-5 py-3 text-white border-none rounded-md cursor-pointer text-md font-semibold mt-2 ${
+            loading ? "bg-primary-muted cursor-not-allowed" : "bg-primary cursor-pointer"
+          }`}
         >
           {loading ? "Creando..." : "Crear horario"}
         </button>

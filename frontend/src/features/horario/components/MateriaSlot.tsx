@@ -1,4 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
+import { CheckCircle2, XCircle } from "lucide-react";
 import type { Bloque, ModoHorario } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 
@@ -32,40 +33,24 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
     disabled: !isEdicion,
   });
 
-  const bg = conflicto ? "#fef2f2" : resultado === true ? "#f5f3ff" : resultado === false ? "#fff7ed" : colors.bg;
+  function bgClass() {
+    if (conflicto) return "bg-danger-bg";
+    if (resultado === true) return "bg-[#f5f3ff]";
+    if (resultado === false) return "bg-[#fff7ed]";
+    return "";
+  }
 
-  const containerStyle: React.CSSProperties = {
-    padding: isEdicion ? "2px" : "4px 6px",
-    borderRadius: "var(--radius-sm)",
-    fontSize: "11px",
-    cursor: isEdicion ? "grab" : "default",
-    background: bg,
-    border: `1px solid ${conflicto ? "#ef4444" : resultado === true ? "#7c3aed" : resultado === false ? "#ea580c" : colors.border}`,
-    color: conflicto ? "#ef4444" : colors.text,
-    overflow: "visible",
-    userSelect: "none",
-    touchAction: isEdicion ? "none" : "auto",
-    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 999 : 1,
-    position: "relative",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    boxSizing: "border-box",
-  };
+  function borderColor() {
+    if (conflicto) return "border-danger";
+    if (resultado === true) return "border-[#7c3aed]";
+    if (resultado === false) return "border-[#ea580c]";
+    return `border-[${colors.border}]`;
+  }
 
-  const handleInvisibleStyle: React.CSSProperties = {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    height: 12,
-    cursor: "ns-resize",
-    zIndex: 10,
-    userSelect: "none",
-    touchAction: "none",
-  };
+  function textColor() {
+    if (conflicto) return "text-danger";
+    return `text-[${colors.text}]`;
+  }
 
   function makeDragHandler(dir: "up" | "down", cb: (() => void) | undefined) {
     if (!cb) return undefined;
@@ -90,66 +75,88 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
     };
   }
 
+  const draggingStyle: React.CSSProperties = {
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+    touchAction: isEdicion ? "none" : "auto",
+  };
+
   return (
-    <div ref={setNodeRef} style={containerStyle} {...(isEdicion ? { ...listeners, ...attributes } : {})} title={materia.nombre}>
+    <div
+      ref={setNodeRef}
+      className={`rounded-sm text-[11px] overflow-visible select-none relative h-full flex flex-col justify-between box-border ${
+        isEdicion ? "p-0.5" : "px-1.5 py-1"
+      } ${isEdicion ? "cursor-grab" : "cursor-default"} ${bgClass()} border border-solid ${borderColor()} ${textColor()} ${
+        isDragging ? "opacity-50 z-[999]" : "opacity-100 z-[1]"
+      }`}
+      style={draggingStyle}
+      {...(isEdicion ? { ...listeners, ...attributes } : {})}
+      title={materia.nombre}
+    >
       {/* Top expand handle */}
       {isEdicion && onExpandUp && (
         <div
-          style={{ ...handleInvisibleStyle, top: -6 }}
+          className="absolute left-0 right-0 top-[-6px] h-3 z-10 select-none"
+          style={{ touchAction: "none", cursor: "ns-resize" }}
           onPointerDown={makeDragHandler("up", onExpandUp)}
         >
-          <div style={{ textAlign: "center", fontSize: 10, color: colors.border, opacity: 0.5, lineHeight: 1 }}>⋮</div>
+          <div className="text-center text-[10px] opacity-50 leading-none" style={{ color: colors.border }}>⋮</div>
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="flex justify-between items-start">
         <div>
-          <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{materia.nombre}</div>
-          <div style={{ fontSize: 10, lineHeight: 1.2, opacity: 0.8 }}>
+          <div className="font-semibold leading-tight">{materia.nombre}</div>
+          <div className="text-[10px] leading-tight opacity-80">
             {bloque.horaInicio}–{bloque.horaFin}
           </div>
         </div>
         {isEdicion && onRemove && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(); }} style={{
-            width: 16, height: 16, padding: 0, border: "none", borderRadius: "50%",
-            cursor: "pointer", fontSize: 10, lineHeight: "16px", textAlign: "center",
-            background: "rgba(0,0,0,0.1)", color: "#666", flexShrink: 0, marginLeft: 2,
-          }} title="Quitar del horario">✕</button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(); }}
+            className="w-4 h-4 p-0 border-none rounded-full cursor-pointer text-[10px] text-center leading-4 flex-shrink-0 ml-0.5"
+            style={{ background: "rgba(0,0,0,0.1)", color: "#666" }}
+            title="Quitar del horario">✕</button>
         )}
       </div>
 
       {/* Result */}
       {modo === "curso" && resultado !== undefined && (
-        <div style={{ fontSize: 14, textAlign: "center", lineHeight: 1, marginTop: 2 }}>
-          {resultado ? "😊" : "😢"}
+        <div className="text-center leading-none mt-0.5">
+          {resultado ? (
+            <CheckCircle2 className="w-3.5 h-3.5 text-success inline" />
+          ) : (
+            <XCircle className="w-3.5 h-3.5 text-danger inline" />
+          )}
         </div>
       )}
 
-      {/* Emoji buttons */}
+      {/* Icon buttons */}
       {modo === "curso" && onMarcar && (
-        <div style={{ display: "flex", gap: 4, justifyContent: "center", marginTop: 2 }}>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar(true); }} style={{
-            padding: "0 4px", border: resultado === true ? "1px solid #7c3aed" : "1px solid transparent",
-            borderRadius: "var(--radius-sm)", cursor: "pointer", fontSize: 14, lineHeight: "18px",
-            background: resultado === true ? "#f5f3ff" : "transparent",
-            opacity: resultado === true ? 1 : 0.5,
-          }} title="Aprobada">😊</button>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar(false); }} style={{
-            padding: "0 4px", border: resultado === false ? "1px solid #ea580c" : "1px solid transparent",
-            borderRadius: "var(--radius-sm)", cursor: "pointer", fontSize: 14, lineHeight: "18px",
-            background: resultado === false ? "#fff7ed" : "transparent",
-            opacity: resultado === false ? 1 : 0.5,
-          }} title="Perdida">😢</button>
+        <div className="flex gap-1 justify-center mt-0.5">
+          <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar(true); }}
+            className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
+              resultado === true ? "bg-[#f5f3ff] border border-solid border-[#7c3aed] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
+            }`}
+            title="Aprobada">
+            <CheckCircle2 className="w-3.5 h-3.5" style={{ color: resultado === true ? "#7c3aed" : "inherit" }} />
+          </button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar(false); }}
+            className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
+              resultado === false ? "bg-[#fff7ed] border border-solid border-[#ea580c] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
+            }`}
+            title="Perdida">
+            <XCircle className="w-3.5 h-3.5" style={{ color: resultado === false ? "#ea580c" : "inherit" }} />
+          </button>
         </div>
       )}
 
       {/* Bottom expand handle */}
       {isEdicion && onExpandDown && span < 5 && (
         <div
-          style={{ ...handleInvisibleStyle, bottom: -6 }}
+          className="absolute left-0 right-0 bottom-[-6px] h-3 z-10 select-none"
+          style={{ touchAction: "none", cursor: "ns-resize" }}
           onPointerDown={makeDragHandler("down", onExpandDown)}
         >
-          <div style={{ textAlign: "center", fontSize: 10, color: colors.border, opacity: 0.5, lineHeight: 1 }}>⋮</div>
+          <div className="text-center text-[10px] opacity-50 leading-none" style={{ color: colors.border }}>⋮</div>
         </div>
       )}
     </div>

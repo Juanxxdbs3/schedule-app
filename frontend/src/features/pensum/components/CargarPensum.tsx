@@ -83,51 +83,22 @@ export default function CargarPensum({ onPensumLoaded }: CargarPensumProps) {
     }
   }
 
-  const containerStyle: React.CSSProperties = {
-    maxWidth: 600,
-    margin: "0 auto",
-    padding: "var(--spacing-4)",
-  };
-
-  const dropZoneStyle: React.CSSProperties = {
-    border: "2px dashed var(--color-border)",
-    borderRadius: "var(--radius-md)",
-    padding: "var(--spacing-4)",
-    textAlign: "center",
-    cursor: "pointer",
-    transition: "border-color 0.15s",
-    background: "var(--color-surface)",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: "var(--font-size-lg)",
-    fontWeight: 600,
-    marginBottom: "var(--spacing-3)",
-  };
-
   return (
-    <div style={containerStyle}>
-      <h2 style={titleStyle}>Cargar pensum</h2>
-      <p style={{ color: "var(--color-text-muted)", marginBottom: "var(--spacing-4)" }}>
+    <div className="max-w-lg mx-auto p-4">
+      <h2 className="text-lg font-semibold mb-3">Cargar pensum</h2>
+      <p className="text-muted mb-4">
         Selecciona el archivo JSON de tu pensum para comenzar.
       </p>
 
       {estado.tipo === "inicial" && (
-        <label style={dropZoneStyle}>
-          <div
-            style={{
-              marginBottom: "var(--spacing-2)",
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              color: "var(--color-primary)",
-            }}
-          >
+        <label className="border-2 border-dashed border-border rounded-md p-4 text-center cursor-pointer transition-colors duration-150 bg-surface block">
+          <div className="mb-2 text-2xl font-bold text-primary">
             {"{ }"}
           </div>
-          <p style={{ fontWeight: 500, color: "var(--color-text)" }}>
+          <p className="font-medium text-text">
             Haz clic para seleccionar el archivo JSON
           </p>
-          <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)" }}>
+          <p className="text-sm text-muted">
             Solo archivos .json
           </p>
           <input
@@ -135,65 +106,43 @@ export default function CargarPensum({ onPensumLoaded }: CargarPensumProps) {
             type="file"
             accept=".json"
             onChange={handleFileChange}
-            style={{ display: "none" }}
+            className="hidden"
           />
         </label>
       )}
 
       {estado.tipo === "validando" && (
-        <div style={{ textAlign: "center", padding: "var(--spacing-4)", color: "var(--color-text-muted)" }}>
+        <div className="text-center p-4 text-muted">
           Validando pensum...
         </div>
       )}
 
       {estado.tipo === "resumen" && (
-        <div
-          style={{
-            background: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            padding: "var(--spacing-4)",
-          }}
-        >
-          <h3 style={{ marginBottom: "var(--spacing-3)" }}>Resumen del pensum</h3>
+        <div className="bg-surface border border-border rounded-md p-4">
+          <h3 className="mb-3">Resumen del pensum</h3>
 
-          <div style={{ marginBottom: "var(--spacing-3)" }}>
-            <span style={{ fontWeight: 600, color: "var(--color-text)" }}>Nombre: </span>
-            <span style={{ color: "var(--color-text-muted)" }}>{estado.nombre}</span>
+          <div className="mb-3">
+            <span className="font-semibold text-text">Nombre: </span>
+            <span className="text-muted">{estado.nombre}</span>
           </div>
 
-          <div style={{ marginBottom: "var(--spacing-4)" }}>
-            <span style={{ fontWeight: 600, color: "var(--color-text)" }}>Materias: </span>
-            <span style={{ color: "var(--color-text-muted)" }}>{estado.materias.length}</span>
+          <div className="mb-4">
+            <span className="font-semibold text-text">Materias: </span>
+            <span className="text-muted">{estado.materias.length}</span>
           </div>
 
-          <div style={{ display: "flex", gap: "var(--spacing-3)" }}>
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={handleGuardar}
-              style={{
-                padding: "var(--spacing-2) var(--spacing-4)",
-                background: "var(--color-primary)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "var(--radius-md)",
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
+              className="px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-medium"
             >
               Guardar pensum
             </button>
             <button
               type="button"
               onClick={handleReintentar}
-              style={{
-                padding: "var(--spacing-2) var(--spacing-4)",
-                background: "transparent",
-                color: "var(--color-text-muted)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-md)",
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 bg-transparent text-muted border border-border rounded-md cursor-pointer"
             >
               Cancelar
             </button>
@@ -202,34 +151,20 @@ export default function CargarPensum({ onPensumLoaded }: CargarPensumProps) {
       )}
 
       {estado.tipo === "guardando" && (
-        <div style={{ textAlign: "center", padding: "var(--spacing-4)", color: "var(--color-text-muted)" }}>
+        <div className="text-center p-4 text-muted">
           Guardando pensum...
         </div>
       )}
 
       {estado.tipo === "error" && (
-        <div
-          style={{
-            background: "var(--color-surface)",
-            border: "1px solid var(--color-danger)",
-            borderRadius: "var(--radius-md)",
-            padding: "var(--spacing-4)",
-          }}
-        >
-          <p style={{ color: "var(--color-danger)", fontWeight: 500, marginBottom: "var(--spacing-3)" }}>
+        <div className="bg-surface border border-danger rounded-md p-4">
+          <p className="text-danger font-medium mb-3">
             {estado.mensaje}
           </p>
           <button
             type="button"
             onClick={handleReintentar}
-            style={{
-              padding: "var(--spacing-2) var(--spacing-4)",
-              background: "var(--color-primary)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "var(--radius-md)",
-              cursor: "pointer",
-            }}
+            className="px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer"
           >
             Intentar de nuevo
           </button>

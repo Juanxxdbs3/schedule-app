@@ -66,42 +66,32 @@ export default function HorarioPage() {
   }
 
   if (loading || !ready || !storeHorario || !pensum) {
-    return <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>{loading ? "Cargando..." : "Horario no encontrado"}</div>;
+    return <div className="text-center p-8 text-muted">{loading ? "Cargando..." : "Horario no encontrado"}</div>;
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem 1rem" }}>
+    <div className="max-w-6xl mx-auto p-8">
       <main>
         <HorarioScreen modo={modo} horario={storeHorario} pensum={pensum} onModoChange={handleModoChange} />
       </main>
 
       {modo === "edicion" && (
-        <div style={{ position: "fixed", bottom: "var(--spacing-4)", right: "var(--spacing-4)", zIndex: 50, display: "flex", gap: "var(--spacing-2)" }}>
-          <button type="button" onClick={handleEliminar} disabled={loading || deleting} style={{
-            padding: "0.7rem 1.5rem", background: "transparent",
-            color: "#ef4444", border: "1px solid #ef4444",
-            borderRadius: "var(--radius-lg)", cursor: loading || deleting ? "not-allowed" : "pointer",
-            fontWeight: 600, fontSize: "var(--font-size-md)", opacity: loading || deleting ? 0.6 : 1,
-          }}>
+        <div className="fixed bottom-4 right-4 z-50 flex gap-2">
+          <button type="button" onClick={handleEliminar} disabled={loading || deleting} className={`px-6 py-2.5 bg-transparent border border-solid rounded-lg font-semibold text-md ${
+            loading || deleting ? "border-[#ef4444] text-[#ef4444] opacity-60 cursor-not-allowed" : "border-[#ef4444] text-[#ef4444] cursor-pointer opacity-100"
+          }`}>
             {deleting ? "Eliminando..." : "Eliminar horario"}
           </button>
-          <button type="button" onClick={handleGuardar} disabled={loading} style={{
-            padding: "0.7rem 2rem", background: loading ? "var(--color-muted-block)" : "var(--color-primary)",
-            color: "#fff", border: "none", borderRadius: "var(--radius-lg)", cursor: loading ? "not-allowed" : "pointer",
-            fontWeight: 600, fontSize: "var(--font-size-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          }}>
+          <button type="button" onClick={handleGuardar} disabled={loading} className={`px-8 py-2.5 text-white border-none rounded-lg font-semibold text-md shadow-lg ${
+            loading ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
+          }`}>
             {loading ? "Guardando..." : "Guardar cambios"}
           </button>
         </div>
       )}
       {modo === "curso" && (
-        <div style={{ position: "fixed", bottom: "var(--spacing-4)", right: "var(--spacing-4)", zIndex: 50 }}>
-          <button type="button" onClick={handleEditar} style={{
-            padding: "0.7rem 2rem", background: "transparent",
-            color: "var(--color-text)", border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-lg)", cursor: "pointer", fontWeight: 500,
-            fontSize: "var(--font-size-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          }}>
+        <div className="fixed bottom-4 right-4 z-50">
+          <button type="button" onClick={handleEditar} className="px-8 py-2.5 bg-transparent text-text border border-border rounded-lg cursor-pointer font-medium text-md shadow-md">
             Editar horario
           </button>
         </div>

@@ -3,13 +3,18 @@ import { AppError } from "../errors/AppError.js";
 import mongoose from "mongoose";
 
 export function errorHandler(
-  err: Error,
+  err: Error & { code?: number },
   _req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
   if (err instanceof AppError) {
     res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+
+  if (err.code === 11000) {
+    res.status(409).json({ error: "El nombre de usuario o email ya está en uso" });
     return;
   }
 

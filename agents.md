@@ -205,26 +205,26 @@ fases — cada una depende de la anterior.
 
 ## Fase 6.5 — Corrección: consistencia de estado + estilos (agentes: backend, frontend)
  
-- [ ] Fix en `horario.service.ts::saveBloques`: calcular diff de códigos de
+- [x] Fix en `horario.service.ts::saveBloques`: calcular diff de códigos de
       materia (agregados/quitados) contra el horario ya persistido, ANTES de
       llamar `replaceBloques`, y actualizar el pensum en consecuencia
       (agregados → `matriculado`, quitados → `activo`)
-- [ ] Simplificar `HorarioPage.tsx`: quitar `initialBloquesRef` y el loop de
+- [x] Simplificar `HorarioPage.tsx`: quitar `initialBloquesRef` y el loop de
       `PensumService.updateMateriaEstado` en `handleGuardar` — el backend ya
       se encarga de esto en un solo `saveBloques()`
-- [ ] Test unitario de `horario.service`: guardar bloques sin una materia que
+- [x] Test unitario de `horario.service`: guardar bloques sin una materia que
       antes estaba matriculada debe dejarla en `activo`
-- [ ] Instalar Tailwind CSS en `frontend/` y conectarlo a Vite
-- [ ] Agregar a `docs/theming.md`/`globals.css` los tokens que faltan:
+- [x] Instalar Tailwind CSS en `frontend/` y conectarlo a Vite
+- [x] Agregar a `docs/theming.md`/`globals.css` los tokens que faltan:
       `--spacing-5`, `--spacing-6`, `--font-size-xs`, `--font-size-md`,
       `--radius-lg`, `--color-primary-muted`, `--color-success-bg`, `--color-danger-bg`
-- [ ] Refactorizar a clases de Tailwind (quitar `style={{}}` y hex sueltos) en:
+- [x] Refactorizar a clases de Tailwind (quitar `style={{}}` y hex sueltos) en:
       `App.tsx`, `NavBar.tsx`, `LoginForm.tsx`, `RegisterForm.tsx`,
       `CargarPensum.tsx`, `FiltroPensum.tsx`, `PoolMaterias.tsx`, `Grid.tsx`,
       `MateriaSlot.tsx`, `DropZone.tsx`, `ContadorCreditos.tsx`,
       `ConfigurarHorario.tsx`, `FinalizarHorario.tsx`, `HorarioScreen.tsx`,
       `HorarioPage.tsx`
-- [ ] Reemplazar los emojis 😊/😢 de aprobada/perdida por íconos de `lucide-react`
+- [x] Reemplazar los emojis 😊/😢 de aprobada/perdida por íconos de `lucide-react`
 
 ## Fase 7 — Testing (agente: testing)
  

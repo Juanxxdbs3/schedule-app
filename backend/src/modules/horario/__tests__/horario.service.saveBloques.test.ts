@@ -107,7 +107,7 @@ class FakePensumRepository implements IPensumRepository {
 
 const PENSUM_ID = "pensum-test-1";
 const HORARIO_ID = "horario-test-1";
-const USER_ID = "user-test-1";
+const USER_ID = "user-1";
 
 function makeMateria(codigo: string, creditos = 3): Materia {
   return {
@@ -168,6 +168,7 @@ describe("HorarioService.saveBloques", () => {
   let creditStrategy: ICreditLimitStrategy;
   let conflictStrategy: IConflictDetectionStrategy;
   let service: HorarioService;
+  const userId = "user-1";
 
   beforeEach(() => {
     horarioRepo = new FakeHorarioRepository();
@@ -193,7 +194,7 @@ describe("HorarioService.saveBloques", () => {
       horarioRepo.setHorario(makeHorario([makeBloque("X")]));
       pensumRepo.setPensum(makePensum([materiaX]));
 
-      await service.saveBloques(HORARIO_ID, []);
+      await service.saveBloques(HORARIO_ID, [], userId);
 
       expect(pensumRepo.updateCalls).toHaveLength(1);
       expect(pensumRepo.updateCalls[0]).toEqual({
@@ -212,7 +213,7 @@ describe("HorarioService.saveBloques", () => {
       horarioRepo.setHorario(makeHorario([]));
       pensumRepo.setPensum(makePensum([materiaY]));
 
-      await service.saveBloques(HORARIO_ID, [makeBloque("Y")]);
+      await service.saveBloques(HORARIO_ID, [makeBloque("Y")], userId);
 
       expect(pensumRepo.updateCalls).toHaveLength(1);
       expect(pensumRepo.updateCalls[0]).toEqual({
@@ -231,7 +232,7 @@ describe("HorarioService.saveBloques", () => {
       horarioRepo.setHorario(makeHorario([makeBloque("X")]));
       pensumRepo.setPensum(makePensum([materiaX]));
 
-      await service.saveBloques(HORARIO_ID, [makeBloque("X")]);
+      await service.saveBloques(HORARIO_ID, [makeBloque("X")], userId);
 
       expect(pensumRepo.updateCalls).toHaveLength(0);
     });
@@ -246,7 +247,7 @@ describe("HorarioService.saveBloques", () => {
       horarioRepo.setHorario(makeHorario([makeBloque("X")]));
       pensumRepo.setPensum(makePensum([materiaX, materiaY]));
 
-      await service.saveBloques(HORARIO_ID, [makeBloque("Y", "martes")]);
+      await service.saveBloques(HORARIO_ID, [makeBloque("Y", "martes")], userId);
 
       expect(pensumRepo.updateCalls).toHaveLength(2);
       expect(pensumRepo.updateCalls).toContainEqual({
@@ -270,11 +271,11 @@ describe("HorarioService.saveBloques", () => {
       pensumRepo.setPensum(makePensum([]));
 
       await expect(
-        service.saveBloques(HORARIO_ID, null as unknown as Bloque[]),
+        service.saveBloques(HORARIO_ID, null as unknown as Bloque[], userId),
       ).rejects.toThrow(ValidationError);
 
       await expect(
-        service.saveBloques(HORARIO_ID, "no-es-array" as unknown as Bloque[]),
+        service.saveBloques(HORARIO_ID, "no-es-array" as unknown as Bloque[], userId),
       ).rejects.toThrow(ValidationError);
     });
 
@@ -289,7 +290,7 @@ describe("HorarioService.saveBloques", () => {
       pensumRepo.setPensum(makePensum([materiaX]));
 
       await expect(
-        service.saveBloques(HORARIO_ID, [makeBloque("X")]),
+        service.saveBloques(HORARIO_ID, [makeBloque("X")], userId),
       ).rejects.toThrow(ValidationError);
 
       // La validación falló antes de tocar el repositorio
@@ -308,7 +309,7 @@ describe("HorarioService.saveBloques", () => {
       pensumRepo.setPensum(makePensum([materiaX, materiaY]));
 
       await expect(
-        service.saveBloques(HORARIO_ID, [makeBloque("X"), makeBloque("Y")]),
+        service.saveBloques(HORARIO_ID, [makeBloque("X"), makeBloque("Y")], userId),
       ).rejects.toThrow(ValidationError);
 
       expect(pensumRepo.updateCalls).toHaveLength(0);

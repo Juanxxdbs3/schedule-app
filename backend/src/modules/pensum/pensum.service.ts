@@ -13,9 +13,9 @@ export class PensumService {
     return this.pensumRepo.findAllByUserId(userId);
   }
 
-  async getById(id: string): Promise<Pensum> {
+  async getById(id: string, userId: string): Promise<Pensum> {
     const pensum = await this.pensumRepo.findById(id);
-    if (!pensum) {
+    if (!pensum || pensum.userId !== userId) {
       throw new NotFoundError("Pensum not found");
     }
     return pensum;
@@ -25,13 +25,14 @@ export class PensumService {
     pensumId: string,
     materiaCodigo: string,
     nuevoEstado: EstadoMateria,
+    userId: string,
   ): Promise<void> {
-    // Ensure the pensum exists before updating
-    await this.getById(pensumId);
+    await this.getById(pensumId, userId);
     await this.pensumRepo.updateMateriaEstado(pensumId, materiaCodigo, nuevoEstado);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, userId: string): Promise<void> {
+    await this.getById(id, userId);
     await this.pensumRepo.delete(id);
   }
 }

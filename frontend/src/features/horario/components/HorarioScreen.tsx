@@ -45,12 +45,12 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
   const [filtroSemestre, setFiltroSemestre] = useState<number | "">("");
   const [filtroCreditos, setFiltroCreditos] = useState<number | "">("");
   const [localActivos, setLocalActivos] = useState<Set<string>>(new Set());
-  const todasResultadas = bloques.every((b) => resultados[b.materiaCodigo] !== undefined);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const bloques = storeHorario?.bloques ?? [];
   const materiasTodas = pensum.materias;
+  const todasResultadas = bloques.every((b) => resultados[b.materiaCodigo] !== undefined);
   const codigosEnHorario = new Set(bloques.map((b) => b.materiaCodigo));
 
   const materiasEnPool = useMemo(() => {

@@ -33,8 +33,9 @@ export class PensumController {
 
   getByIdHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const userId = (req as any).userId;
       const id = req.params.id as string;
-      const pensum = await this.pensumService.getById(id);
+      const pensum = await this.pensumService.getById(id, userId);
       res.json({ pensum });
     } catch (error) {
       next(error);
@@ -43,10 +44,11 @@ export class PensumController {
 
   updateMateriaEstadoHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const userId = (req as any).userId;
       const id = req.params.id as string;
       const codigo = req.params.codigo as string;
       const { estado } = req.body;
-      await this.pensumService.updateMateriaEstado(id, codigo, estado);
+      await this.pensumService.updateMateriaEstado(id, codigo, estado, userId);
       res.json({ message: "Estado actualizado" });
     } catch (error) {
       next(error);
@@ -55,8 +57,9 @@ export class PensumController {
 
   deleteHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const userId = (req as any).userId;
       const id = req.params.id as string;
-      await this.pensumService.delete(id);
+      await this.pensumService.delete(id, userId);
       res.status(204).send();
     } catch (error) {
       next(error);

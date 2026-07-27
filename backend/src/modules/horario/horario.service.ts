@@ -25,7 +25,7 @@ export class HorarioService {
     unidadHoraMinutos: number,
   ): Promise<Horario> {
     const pensum = await this.pensumRepo.findById(pensumId);
-    if (!pensum) {
+    if (!pensum || pensum.userId !== userId) {
       throw new NotFoundError("Pensum not found");
     }
 
@@ -48,16 +48,16 @@ export class HorarioService {
     });
   }
 
-  async getById(id: string): Promise<Horario> {
+  async getById(id: string, userId: string): Promise<Horario> {
     const horario = await this.horarioRepo.findById(id);
-    if (!horario) {
+    if (!horario || horario.userId !== userId) {
       throw new NotFoundError("Horario not found");
     }
     return horario;
   }
 
-  async addBloque(horarioId: string, bloque: Bloque): Promise<void> {
-    const horario = await this.getById(horarioId);
+  async addBloque(horarioId: string, bloque: Bloque, userId: string): Promise<void> {
+    const horario = await this.getById(horarioId, userId);
     const pensum = await this.pensumRepo.findById(horario.pensumId);
     if (!pensum) {
       throw new NotFoundError("Pensum not found for this horario");
@@ -76,11 +76,11 @@ export class HorarioService {
     await this.pensumRepo.updateMateriaEstado(horario.pensumId, bloque.materiaCodigo, "matriculado");
   }
 
-  async saveBloques(horarioId: string, bloques: Bloque[]): Promise<void> {
+  async saveBloques(horarioId: string, bloques: Bloque[], userId: string): Promise<void> {
     if (!Array.isArray(bloques)) {
       throw new ValidationError("'bloques' debe ser un array");
     }
-    const horario = await this.getById(horarioId);
+    const horario = await this.getById(horarioId, userId);
     const pensum = await this.pensumRepo.findById(horario.pensumId);
     if (!pensum) {
       throw new NotFoundError("Pensum not found for this horario");
@@ -114,26 +114,25 @@ export class HorarioService {
     }
   }
 
-  async removeBloque(horarioId: string, materiaCodigo: string): Promise<void> {
-    const horario = await this.getById(horarioId);
+  async removeBloque(horarioId: string, materiaCodigo: string, userId: string): Promise<void> {
+    const horario = await this.getById(horarioId, userId);
     await this.horarioRepo.removeBloque(horarioId, materiaCodigo);
     await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, "activo");
   }
 
-  async marcarResultado(horarioId: string, materiaCodigo: string, aprobada: boolean): Promise<void> {
-    const horario = await this.getById(horarioId);
+  async marcarResultado(horarioId: string, materiaCodigo: string, aprobada: boolean, userId: string): Promise<void> {
+    const horario = await this.getById(horarioId, userId);
     const nuevoEstado: EstadoMateria = aprobada ? "cursado" : "activo";
     await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, nuevoEstado);
   }
 
-  async finalizar(horarioId: string): Promise<void> {
-    await this.getById(horarioId);
+  async finalizar(horarioId: string, userId: string): Promise<void> {
+    await this.getById(horarioId, userId);
     await this.horarioRepo.finalizar(horarioId, new Date());
   }
 
-  async delete(id: string): Promise<void> {
-    const horario = await this.getById(id);
-    console.log(`[HorarioService.delete] Eliminando horario ${id} (${horario.bloques.length} bloques)`);
-    await this.horarioRepo.delete(id);
+  async delete(horarioId: string, userId: string): Promise<void> {
+    await this.getById(horarioId, userId);
+    await this.horarioRepo.delete(horarioId);
   }
 }

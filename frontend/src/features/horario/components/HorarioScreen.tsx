@@ -7,6 +7,7 @@ import type { Materia } from "../../pensum/types.ts";
 import type { Pensum } from "../../pensum/types.ts";
 import type { ModoHorario } from "../types.ts";
 import { useHorarioStore } from "../store/horarioStore.ts";
+import { generarFilasHora } from "../utils/generarFilasHora.ts";
 import { filtrarMaterias } from "../../../shared/utils/filterMaterias.ts";
 import Grid from "./Grid.tsx";
 import ContadorCreditos from "./ContadorCreditos.tsx";
@@ -144,86 +145,71 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
   }
 
   function handleDuplicateBloque(bloque: Bloque) {
-    const slotDuracion = horario.unidadHoraMinutos;
-    const minutosInicio = aMinutos(bloque.horaInicio);
-    const minutosFin = aMinutos(bloque.horaFin);
-    const duracion = minutosFin - minutosInicio;
-    const horasCompletas = Math.round(duracion / slotDuracion);
+    const duracion = aMinutos(bloque.horaFin) - aMinutos(bloque.horaInicio);
+    const filas = generarFilasHora(horario.unidadHoraMinutos);
 
-    // Buscar celda libre: mismo día, hora siguiente libre
-    const diaActual = bloque.dia;
-    const nuevoInicio = minutosFin; // justo después del bloque actual
-
-    function slotStr(m: number): string {
-      return fmt(m);
-    }
-
-    // Verificar si una celda está ocupada
-    function celdaOcupada(dia: DiaSemana, inicio: number): boolean {
-      const fin = inicio + duracion;
+    function celdaOcupada(dia: DiaSemana, inicio: string): boolean {
+      const mIni = aMinutos(inicio);
+      const mFin = mIni + duracion;
       return bloques.some((b) => {
         if (b.id === bloque.id) return false;
         if (b.dia !== dia) return false;
         const bIni = aMinutos(b.horaInicio);
         const bFin = aMinutos(b.horaFin);
-        return inicio < bFin && fin > bIni;
+        return mIni < bFin && mFin > bIni;
       });
     }
 
-    // Función para intentar colocar en un día/hora
-    function intentarColocar(dia: DiaSemana, inicio: number): Bloque | null {
-      const fin = inicio + duracion;
-      const finStr = slotStr(fin);
-      // No pasarse de 22:00
+    function colocarEn(dia: DiaSemana, inicio: string): Bloque | null {
+      const fin = aMinutos(inicio) + duracion;
       if (fin > 22 * 60) return null;
       if (celdaOcupada(dia, inicio)) return null;
-
-      const nuevoBloque: Bloque = {
+      const nuevo: Bloque = {
         id: generarId(),
         materiaCodigo: bloque.materiaCodigo,
         dia,
-        horaInicio: slotStr(inicio),
-        horaFin: finStr,
+        horaInicio: inicio,
+        horaFin: fmt(fin),
         nombrePersonalizado: bloque.nombrePersonalizado,
         profesor: bloque.profesor,
         salon: bloque.salon,
       };
-
-      const result = addBloqueLocal(nuevoBloque, materiasTodas);
-      if (result.ok) return nuevoBloque;
-      return null;
+      const result = addBloqueLocal(nuevo, materiasTodas);
+      return result.ok ? nuevo : null;
     }
 
-    // 1) mismo día, hora siguiente libre
-    let colocado = intentarColocar(diaActual, nuevoInicio);
-    // 2) día siguiente, misma hora
-    const dias: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+    const diaActual = bloque.dia;
+    const endM = aMinutos(bloque.horaFin);
+    const startIdx = filas.findIndex((f) => aMinutos(f) >= endM);
+    const dias: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes"];
     const idxHoy = dias.indexOf(diaActual);
-    if (!colocado) {
-      for (let i = 1; i < dias.length; i++) {
-        const sigDia = dias[(idxHoy + i) % dias.length];
-        colocado = intentarColocar(sigDia, minutosInicio);
-        if (colocado) break;
-      }
-    }
-    // 3) cualquier celda vacía (first fit)
-    if (!colocado) {
-      for (const dia of dias) {
-        if (colocado) break;
-        const filas = [7 * 60]; // 07:00
-        for (let m = 7 * 60 + slotDuracion; m < 22 * 60; m += slotDuracion) {
-          filas.push(m);
-        }
-        for (const inicio of filas) {
-          colocado = intentarColocar(dia, inicio);
-          if (colocado) break;
-        }
+
+    // 1) Mismo día: slots después del bloque actual
+    if (startIdx >= 0) {
+      for (let si = startIdx; si < filas.length; si++) {
+        const c = colocarEn(diaActual, filas[si]);
+        if (c) return;
       }
     }
 
-    if (!colocado) {
-      setError("No hay espacio disponible para duplicar esta materia");
+    // 2) Otros días: slot correspondiente + siguientes
+    for (let d = 1; d < dias.length; d++) {
+      const dia = dias[(idxHoy + d) % dias.length];
+      for (let si = Math.max(0, startIdx); si < filas.length; si++) {
+        const c = colocarEn(dia, filas[si]);
+        if (c) return;
+      }
     }
+
+    // 3) First-fit: cualquier celda libre
+    for (const dia of dias) {
+      for (const inicio of filas) {
+        const c = colocarEn(dia, inicio);
+        if (c) return;
+      }
+    }
+
+    setError("No hay espacio disponible para duplicar esta materia");
   }
 
   async function handleMarcarResultado(codigo: string, aprobada: boolean) {

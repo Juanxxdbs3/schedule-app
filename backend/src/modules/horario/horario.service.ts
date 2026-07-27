@@ -148,7 +148,12 @@ export class HorarioService {
   }
 
   async delete(horarioId: string, userId: string): Promise<void> {
-    await this.getById(horarioId, userId);
+    const horario = await this.getById(horarioId, userId);
+    if (horario.estado === "en_progreso") {
+      for (const bloque of horario.bloques) {
+        await this.pensumRepo.updateMateriaEstado(horario.pensumId, bloque.materiaCodigo, "activo");
+      }
+    }
     await this.horarioRepo.delete(horarioId);
   }
 }

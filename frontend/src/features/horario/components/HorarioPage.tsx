@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useHorarioStore } from "../store/horarioStore.ts";
 import { HorarioService } from "../services/HorarioService.ts";
 import { PensumService } from "../../pensum/services/PensumService.ts";
+import Modal from "../../../shared/components/Modal.tsx";
 import type { Pensum } from "../../pensum/types.ts";
 import type { ModoHorario } from "../types.ts";
 import HorarioScreen from "./HorarioScreen.tsx";
@@ -21,6 +22,7 @@ export default function HorarioPage() {
   const [modo, setModo] = useState<ModoHorario>("edicion");
   const [ready, setReady] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     setReady(false);
@@ -44,8 +46,12 @@ export default function HorarioPage() {
     } catch {}
   }
 
-  async function handleEliminar() {
-    if (!window.confirm("¿Eliminar este horario permanentemente?")) return;
+  function handleEliminarClick() {
+    setShowDeleteConfirm(true);
+  }
+
+  async function confirmDelete() {
+    setShowDeleteConfirm(false);
     setDeleting(true);
     try {
       await HorarioService.delete(id);
@@ -54,6 +60,10 @@ export default function HorarioPage() {
     } catch {
       setDeleting(false);
     }
+  }
+
+  function cancelDelete() {
+    setShowDeleteConfirm(false);
   }
 
   function handleEditar() { setModo("edicion"); }
@@ -78,11 +88,30 @@ export default function HorarioPage() {
           pensum={pensum}
           onModoChange={handleModoChange}
           onGuardar={modo === "edicion" ? handleGuardar : undefined}
-          onEliminar={modo === "edicion" ? handleEliminar : undefined}
+          onEliminar={modo === "edicion" ? handleEliminarClick : undefined}
           guardarLoading={loading}
           eliminando={deleting}
         />
       </main>
+
+      <Modal isOpen={showDeleteConfirm} onClose={cancelDelete} title="Eliminar horario">
+        <p className="text-sm text-muted mb-4">
+          ¿Estás seguro de que deseas eliminar este horario permanentemente? Esta acción no se puede deshacer.
+          {storeHorario.estado === "en_progreso" && (
+            <> Las materias que contiene volverán a estar disponibles.</>
+          )}
+        </p>
+        <div className="flex gap-3">
+          <button type="button" onClick={cancelDelete} className="flex-1 px-4 py-2 bg-transparent text-text border border-border rounded-md cursor-pointer text-md font-semibold">
+            Cancelar
+          </button>
+          <button type="button" onClick={confirmDelete} disabled={deleting} className={`flex-1 px-4 py-2 text-white border-none rounded-md cursor-pointer text-md font-semibold ${
+            deleting ? "bg-muted-block cursor-not-allowed" : "bg-danger cursor-pointer"
+          }`}>
+            {deleting ? "Eliminando..." : "Eliminar"}
+          </button>
+        </div>
+      </Modal>
 
       {modo === "curso" && (
         <div className="fixed bottom-4 right-4 z-50">

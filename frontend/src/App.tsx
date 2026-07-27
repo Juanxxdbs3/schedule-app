@@ -16,6 +16,7 @@ import HorarioPage from "./features/horario/components/HorarioPage.tsx";
 import ConfigurarHorario from "./features/horario/components/ConfigurarHorario.tsx";
 
 import NavBar from "./shared/components/NavBar.tsx";
+import GlobalStatus from "./shared/components/GlobalStatus.tsx";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -211,6 +212,7 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
+      <GlobalStatus />
       <AppRoutes />
     </AuthProvider>
   );

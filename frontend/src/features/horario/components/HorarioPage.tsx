@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useHorarioStore } from "../store/horarioStore.ts";
 import { HorarioService } from "../services/HorarioService.ts";
 import { PensumService } from "../../pensum/services/PensumService.ts";
 import type { Pensum } from "../../pensum/types.ts";
-import type { Bloque, ModoHorario } from "../types.ts";
+import type { ModoHorario } from "../types.ts";
 import HorarioScreen from "./HorarioScreen.tsx";
 
 export default function HorarioPage() {
@@ -14,7 +14,6 @@ export default function HorarioPage() {
   const storeHorario = useHorarioStore((s) => s.horario);
   const fetchById = useHorarioStore((s) => s.fetchById);
   const saveBloques = useHorarioStore((s) => s.saveBloques);
-  const marcarResultado = useHorarioStore((s) => s.marcarResultado);
   const clear = useHorarioStore((s) => s.clear);
   const loading = useHorarioStore((s) => s.loading);
 
@@ -22,49 +21,25 @@ export default function HorarioPage() {
   const [modo, setModo] = useState<ModoHorario>("edicion");
   const [ready, setReady] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const initialBloquesRef = useRef<Bloque[]>([]);
-  const mountedRef = useRef(true);
 
   useEffect(() => {
-    mountedRef.current = true;
     setReady(false);
     setPensum(null);
-    initialBloquesRef.current = [];
     fetchById(id);
-
-    return () => {
-      mountedRef.current = false;
-    };
   }, [id]);
 
   useEffect(() => {
     if (!storeHorario || storeHorario.id !== id) return;
-    initialBloquesRef.current = storeHorario.bloques;
     PensumService.getById(storeHorario.pensumId)
-      .then((res) => { if (mountedRef.current) { setPensum(res.pensum); setModo(storeHorario.estado === "finalizado" ? "finalizado" : "edicion"); setReady(true); } })
-      .catch(() => { if (mountedRef.current) setReady(true); });
+      .then((res) => { setPensum(res.pensum); setModo(storeHorario.estado === "finalizado" ? "finalizado" : "edicion"); setReady(true); })
+      .catch(() => setReady(true));
   }, [storeHorario, id]);
 
   async function handleGuardar() {
     try {
       await saveBloques();
-
-      const initialBloques = initialBloquesRef.current;
-      const currentBloques = storeHorario?.bloques ?? [];
-      const toActivar = initialBloques
-        .filter((b) => !currentBloques.some((cb) => cb.materiaCodigo === b.materiaCodigo))
-        .map((b) => b.materiaCodigo);
-      if (toActivar.length > 0 && pensum) {
-        for (const codigo of toActivar) {
-          try {
-            await PensumService.updateMateriaEstado(pensum.id, codigo, "activo");
-          } catch { /* individual fail should not block the rest */ }
-        }
-      }
-
       const { pensum: p } = await PensumService.getById(pensum!.id);
       setPensum(p);
-
       setModo("curso");
     } catch {}
   }

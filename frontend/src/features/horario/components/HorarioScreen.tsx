@@ -44,6 +44,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
   const [filtroSemestre, setFiltroSemestre] = useState<number | "">("");
   const [filtroCreditos, setFiltroCreditos] = useState<number | "">("");
   const [localActivos, setLocalActivos] = useState<Set<string>>(new Set());
+  const todasResultadas = bloques.every((b) => resultados[b.materiaCodigo] !== undefined);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -164,12 +165,12 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
 
         {modo === "curso" && (
           <button type="button" onClick={() => onModoChange("finalizado")}
-            disabled={Object.keys(resultados).length === 0}
+            disabled={!todasResultadas}
             style={{
-              padding: "0.4rem 1rem", background: Object.keys(resultados).length > 0 ? "var(--color-primary)" : "var(--color-muted-block)",
+              padding: "0.4rem 1rem", background: todasResultadas ? "var(--color-primary)" : "var(--color-muted-block)",
               color: "#fff", border: "none", borderRadius: "var(--radius-md)",
-              cursor: Object.keys(resultados).length > 0 ? "pointer" : "not-allowed",
-              fontSize: "var(--font-size-sm)", opacity: Object.keys(resultados).length > 0 ? 1 : 0.6,
+              cursor: todasResultadas ? "pointer" : "not-allowed",
+              fontSize: "var(--font-size-sm)", opacity: todasResultadas ? 1 : 0.6,
             }}
           >Finalizar semestre</button>
         )}

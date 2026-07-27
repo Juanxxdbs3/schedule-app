@@ -63,18 +63,17 @@ export class HorarioService {
       throw new NotFoundError("Pensum not found for this horario");
     }
 
-    // Validar choque de horario
     if (this.conflictStrategy.hayChoque(bloque, horario.bloques)) {
       throw new ValidationError("El bloque se superpone con un bloque existente");
     }
 
-    // Validar límite de créditos
     const nuevosBloques = [...horario.bloques, bloque];
     if (!this.creditLimitStrategy.validar(nuevosBloques, pensum.materias, horario.maxCreditos)) {
       throw new ValidationError("El límite de créditos se excedería al agregar este bloque");
     }
 
     await this.horarioRepo.addBloque(horarioId, bloque);
+    await this.pensumRepo.updateMateriaEstado(horario.pensumId, bloque.materiaCodigo, "matriculado");
   }
 
   async saveBloques(horarioId: string, bloques: Bloque[]): Promise<void> {
@@ -87,12 +86,10 @@ export class HorarioService {
       throw new NotFoundError("Pensum not found for this horario");
     }
 
-    // Validate credit limit for the full set of bloques
     if (!this.creditLimitStrategy.validar(bloques, pensum.materias, horario.maxCreditos)) {
       throw new ValidationError("El límite de créditos se excedería con estos bloques");
     }
 
-    // Validate that no bloques conflict with each other
     const conflicted = bloques.some((bloque, index) => {
       const otros = bloques.filter((_, i) => i !== index);
       return this.conflictStrategy.hayChoque(bloque, otros);
@@ -101,18 +98,26 @@ export class HorarioService {
       throw new ValidationError("Uno o más bloques se superponen entre sí");
     }
 
+    // Diff contra estado anterior en BD
+    const codigosViejos = new Set(horario.bloques.map((b) => b.materiaCodigo));
+    const codigosNuevos = new Set(bloques.map((b) => b.materiaCodigo));
+    const agregados = [...codigosNuevos].filter((c) => !codigosViejos.has(c));
+    const quitados = [...codigosViejos].filter((c) => !codigosNuevos.has(c));
+
     await this.horarioRepo.replaceBloques(horarioId, bloques);
 
-    // Update estado of all referenced materias to "matriculado"
-    const codigosEnBloques = new Set(bloques.map((b) => b.materiaCodigo));
-    for (const codigo of codigosEnBloques) {
+    for (const codigo of agregados) {
       await this.pensumRepo.updateMateriaEstado(horario.pensumId, codigo, "matriculado");
+    }
+    for (const codigo of quitados) {
+      await this.pensumRepo.updateMateriaEstado(horario.pensumId, codigo, "activo");
     }
   }
 
   async removeBloque(horarioId: string, materiaCodigo: string): Promise<void> {
-    await this.getById(horarioId);
+    const horario = await this.getById(horarioId);
     await this.horarioRepo.removeBloque(horarioId, materiaCodigo);
+    await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, "activo");
   }
 
   async marcarResultado(horarioId: string, materiaCodigo: string, aprobada: boolean): Promise<void> {

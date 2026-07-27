@@ -231,7 +231,7 @@
       "creditos": 3,
       "semestre": 5,
       "requiere": ["FB1111"],
-      "estado": "cursado"
+      "estado": "activo"
     },
     {
       "codigo": "IA1017",
@@ -335,7 +335,7 @@
       "creditos": 1,
       "semestre": 6,
       "requiere": ["FC0437"],
-      "estado": "cursado"
+      "estado": "activo"
     },
     {
       "codigo": "IA1025",
@@ -383,7 +383,7 @@
       "creditos": 4,
       "semestre": 7,
       "requiere": [],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "FC0442",
@@ -391,7 +391,7 @@
       "creditos": 1,
       "semestre": 7,
       "requiere": ["FC0440"],
-      "estado": "activo"
+      "estado": "en_espera"
     },
     {
       "codigo": "IA1029",
@@ -431,7 +431,7 @@
       "creditos": 2,
       "semestre": 8,
       "requiere": ["FC0438", "FC0439"],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "EL1036",
@@ -439,7 +439,7 @@
       "creditos": 4,
       "semestre": 8,
       "requiere": ["IA1026", "IA1015"],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "IA1033",
@@ -447,7 +447,7 @@
       "creditos": 4,
       "semestre": 8,
       "requiere": [],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "CFP2231",
@@ -463,7 +463,7 @@
       "creditos": 4,
       "semestre": 8,
       "requiere": ["IA1029"],
-      "estado": "activo"
+      "estado": "en_espera"
     },
     {
       "codigo": "CURLIB01",
@@ -471,7 +471,7 @@
       "creditos": 2,
       "semestre": 8,
       "requiere": [],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "FC0444",
@@ -503,7 +503,7 @@
       "creditos": 3,
       "semestre": 9,
       "requiere": ["IA1015", "IA1018", "IA1027"],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "IA1037",
@@ -519,7 +519,7 @@
       "creditos": 4,
       "semestre": 9,
       "requiere": ["IA1034"],
-      "estado": "activo"
+      "estado": "en_espera"
     },
     {
       "codigo": "CURLIB02",
@@ -551,7 +551,7 @@
       "creditos": 4,
       "semestre": 10,
       "requiere": ["IA1038"],
-      "estado": "activo"
+      "estado": "en_espera"
     },
     {
       "codigo": "CLS0014",
@@ -559,7 +559,7 @@
       "creditos": 2,
       "semestre": 10,
       "requiere": [],
-      "estado": "activo"
+      "estado": "cursado"
     }
   ]
 }

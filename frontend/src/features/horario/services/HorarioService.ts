@@ -1,0 +1,43 @@
+import { apiGet, apiPost, apiPatch, apiDelete } from "../../../shared/api/api.ts";
+import type { Horario, Bloque } from "../types.ts";
+
+interface HorarioCreateResponse {
+  horario: Horario;
+}
+
+interface HorarioListResponse {
+  horarios: Horario[];
+}
+
+interface HorarioGetResponse {
+  horario: Horario;
+}
+
+export const HorarioService = {
+  create: (pensumId: string, semestreLabel: string, maxCreditos: number, unidadHoraMinutos: number) =>
+    apiPost<HorarioCreateResponse>("/horarios", { pensumId, semestreLabel, maxCreditos, unidadHoraMinutos }),
+
+  list: (params?: { pensumId?: string; estado?: string }) => {
+    const search = new URLSearchParams();
+    if (params?.pensumId) search.set("pensumId", params.pensumId);
+    if (params?.estado) search.set("estado", params.estado);
+    const qs = search.toString();
+    return apiGet<HorarioListResponse>(`/horarios${qs ? `?${qs}` : ""}`);
+  },
+
+  getById: (id: string) => apiGet<HorarioGetResponse>(`/horarios/${id}`),
+
+  addBloque: (horarioId: string, bloque: Bloque) =>
+    apiPatch<void>(`/horarios/${horarioId}/bloques`, bloque),
+
+  removeBloque: (horarioId: string, materiaCodigo: string) =>
+    apiDelete<void>(`/horarios/${horarioId}/bloques/${materiaCodigo}`),
+
+  marcarResultado: (horarioId: string, materiaCodigo: string, aprobada: boolean) =>
+    apiPatch<void>(`/horarios/${horarioId}/resultados`, { materiaCodigo, aprobada }),
+
+  finalizar: (horarioId: string) =>
+    apiPatch<void>(`/horarios/${horarioId}/finalizar`),
+
+  delete: (id: string) => apiDelete<void>(`/horarios/${id}`),
+};

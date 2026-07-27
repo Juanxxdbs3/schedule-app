@@ -1,3 +1,4 @@
+import { useDraggable } from "@dnd-kit/core";
 import type { Materia } from "../types.ts";
 
 interface MateriaBlockProps {
@@ -7,15 +8,25 @@ interface MateriaBlockProps {
 export default function MateriaBlock({ materia }: MateriaBlockProps) {
   const isCursado = materia.estado === "cursado";
 
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `pool-${materia.codigo}`,
+    data: { type: "materia", materia },
+    disabled: isCursado,
+  });
+
   const cardStyle: React.CSSProperties = {
     background: "var(--color-surface)",
     border: `1px solid ${isCursado ? "var(--color-muted-block)" : "var(--color-border)"}`,
     borderRadius: "var(--radius-md)",
     padding: "var(--spacing-3)",
-    opacity: isCursado ? 0.6 : 1,
+    opacity: isDragging ? 0.3 : isCursado ? 0.6 : 1,
     cursor: isCursado ? "not-allowed" : "grab",
-    transition: "box-shadow 0.15s, border-color 0.15s",
+    transition: "box-shadow 0.15s, border-color 0.15s, opacity 0.15s",
     userSelect: "none",
+    touchAction: "none",
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+    position: "relative" as const,
+    zIndex: isDragging ? 999 : 1,
   };
 
   const headerStyle: React.CSSProperties = {
@@ -55,7 +66,7 @@ export default function MateriaBlock({ materia }: MateriaBlockProps) {
   };
 
   return (
-    <div style={cardStyle}>
+    <div ref={setNodeRef} style={cardStyle} {...listeners} {...attributes}>
       <div style={headerStyle}>
         <span style={codigoStyle}>{materia.codigo}</span>
         <span style={badgeStyle}>{materia.estado}</span>

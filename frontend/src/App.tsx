@@ -31,6 +31,7 @@ function DashboardPage() {
   const [filtradas, setFiltradas] = useState<Materia[]>([]);
   const [syncDone, setSyncDone] = useState(false);
   const [showCrear, setShowCrear] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
   const [crearParams, setCrearParams] = useState({ pensumId: "", semestreLabel: "2026-2", maxCreditos: 18, unidadHoraMinutos: 50 });
   const [crearError, setCrearError] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
@@ -62,6 +63,7 @@ function DashboardPage() {
 
   function handlePensumLoaded(p: Pensum) {
     setPensum(p);
+    setShowUpload(false);
     setPensums((prev) => { const exists = prev.find((x) => x.id === p.id); return exists ? prev.map((x) => x.id === p.id ? p : x) : [...prev, p]; });
   }
 
@@ -69,6 +71,7 @@ function DashboardPage() {
     PensumService.storage.remove();
     setPensum(null);
     setFiltradas([]);
+    setShowUpload(true);
     useHorarioStore.getState().clear();
   }
 
@@ -102,17 +105,17 @@ function DashboardPage() {
       <div className="flex gap-4 mb-6">
         {/* Pensums section */}
         <div className="flex-[7] min-w-0">
-          <section>
+          <section className="border border-border rounded-md p-3">
             <div className="flex justify-between items-center mb-3">
               <h2 className="m-0 text-lg">Pensums</h2>
               {pensums.length > 0 && (
-                <button type="button" onClick={() => setShowCrear(!showCrear)} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
-                  {showCrear ? "Cancelar" : "Crear horario"}
+                <button type="button" onClick={handleCargarNuevo} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+                  + Cargar pensum
                 </button>
               )}
             </div>
 
-            {pensums.length === 0 ? (
+            {showUpload || pensums.length === 0 ? (
               <CargarPensum onPensumLoaded={handlePensumLoaded} />
             ) : (
               <div className="flex flex-col gap-2">
@@ -124,6 +127,43 @@ function DashboardPage() {
                     <div className="text-xs text-muted">
                       {p.materias.length} materias
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Horarios section */}
+        <div className="flex-[3] min-w-0">
+          <section className="border border-border rounded-md p-3">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="m-0 text-lg">Mis horarios</h2>
+              {pensums.length > 0 && (
+                <button type="button" onClick={() => setShowCrear(!showCrear)} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+                  + Crear horario
+                </button>
+              )}
+            </div>
+            {horarios.length === 0 ? (
+              <p className="text-sm text-muted text-center p-4">
+                No hay horarios aún. Carga un pensum y crea tu primer horario.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {horarios.map((h) => (
+                  <div key={h.id} onClick={() => navigate(`/horario/${h.id}`)} className="p-3 rounded-md cursor-pointer border border-border bg-surface transition-all duration-150 flex justify-between items-center">
+                    <div>
+                      <div className="font-semibold text-sm">{h.semestreLabel}</div>
+                      <div className="text-xs text-muted">
+                        {h.bloques.length} bloque{h.bloques.length !== 1 ? "s" : ""} · {h.estado === "finalizado" ? "Finalizado" : "En progreso"}
+                      </div>
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-sm font-semibold ${
+                      h.estado === "finalizado" ? "bg-[#f3f4f6] text-[#6b7280]" : "bg-success-bg text-[#166534]"
+                    }`}>
+                      {h.estado === "finalizado" ? "Finalizado" : "Activo"}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -155,42 +195,12 @@ function DashboardPage() {
                       <input type="number" min={10} max={120} step={5} value={crearParams.unidadHoraMinutos} onChange={(e) => setCrearParams((p) => ({ ...p, unidadHoraMinutos: Number(e.target.value) }))} className="w-full p-2 border border-border rounded-md bg-surface text-text" />
                     </div>
                   </div>
-              <button type="button" onClick={handleCrearHorario} disabled={creando} className={`p-2 px-4 text-white border-none rounded-md font-semibold ${
-                creando ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
-              }`}>
-                {creando ? "Preparando..." : "Ir al horario"}
-              </button>
+                  <button type="button" onClick={handleCrearHorario} disabled={creando} className={`p-2 px-4 text-white border-none rounded-md font-semibold ${
+                    creando ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
+                  }`}>
+                    {creando ? "Preparando..." : "Ir al horario"}
+                  </button>
                 </div>
-              </div>
-            )}
-          </section>
-        </div>
-
-        {/* Horarios section */}
-        <div className="flex-[3] min-w-0">
-          <section>
-            <h2 className="m-0 mb-3 text-lg">Mis horarios</h2>
-            {horarios.length === 0 ? (
-              <p className="text-sm text-muted text-center p-4">
-                No hay horarios aún. Carga un pensum y crea tu primer horario.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {horarios.map((h) => (
-                  <div key={h.id} onClick={() => navigate(`/horario/${h.id}`)} className="p-3 rounded-md cursor-pointer border border-border bg-surface transition-all duration-150 flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold text-sm">{h.semestreLabel}</div>
-                      <div className="text-xs text-muted">
-                        {h.bloques.length} bloque{h.bloques.length !== 1 ? "s" : ""} · {h.estado === "finalizado" ? "Finalizado" : "En progreso"}
-                      </div>
-                    </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-sm font-semibold ${
-                      h.estado === "finalizado" ? "bg-[#f3f4f6] text-[#6b7280]" : "bg-success-bg text-[#166534]"
-                    }`}>
-                      {h.estado === "finalizado" ? "Finalizado" : "Activo"}
-                    </span>
-                  </div>
-                ))}
               </div>
             )}
           </section>
@@ -198,11 +208,10 @@ function DashboardPage() {
       </div>
 
       {/* Pensum detail */}
-      {pensumActual && (
+      {pensumActual && !showUpload && (
         <section className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h2 className="m-0 text-lg">{pensumActual.nombre}</h2>
-            <button type="button" onClick={handleCargarNuevo} className="px-3 py-1 bg-transparent text-muted border border-border rounded-md cursor-pointer text-xs">Cargar nuevo pensum</button>
           </div>
           <FiltroPensum materias={materiasDisponibles} onFilter={setFiltradas} />
           <PoolMaterias materias={filtradas} />

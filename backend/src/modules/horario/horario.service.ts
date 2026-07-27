@@ -124,6 +124,22 @@ export class HorarioService {
     const horario = await this.getById(horarioId, userId);
     const nuevoEstado: EstadoMateria = aprobada ? "cursado" : "activo";
     await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, nuevoEstado);
+
+    // Si la materia fue aprobada, desbloquear materias en_espera cuyos prerrequisitos ya se cumplen
+    if (aprobada) {
+      const pensum = await this.pensumRepo.findById(horario.pensumId);
+      if (pensum) {
+        const codigosCursados = new Set(
+          pensum.materias.filter((m) => m.estado === "cursado").map((m) => m.codigo),
+        );
+        const toUnlock = pensum.materias.filter(
+          (m) => m.estado === "en_espera" && m.requiere.length > 0 && m.requiere.every((r) => codigosCursados.has(r)),
+        );
+        for (const m of toUnlock) {
+          await this.pensumRepo.updateMateriaEstado(horario.pensumId, m.codigo, "activo");
+        }
+      }
+    }
   }
 
   async finalizar(horarioId: string, userId: string): Promise<void> {

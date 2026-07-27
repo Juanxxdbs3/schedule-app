@@ -77,9 +77,9 @@ export class HorarioController {
     try {
       const userId = (req as any).userId;
       const id = req.params.id as string;
-      const materiaCodigo = req.params.materiaCodigo as string;
+      const bloqueId = req.params.bloqueId as string;
 
-      await this.horarioService.removeBloque(id, materiaCodigo, userId);
+      await this.horarioService.removeBloque(id, bloqueId, userId);
       res.json({ message: "Bloque eliminado" });
     } catch (error) {
       next(error);

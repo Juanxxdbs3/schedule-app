@@ -34,7 +34,7 @@ export interface IHorarioRepository {
     unidadHoraMinutos: number;
   }): Promise<Horario>;
   addBloque(horarioId: string, bloque: Bloque): Promise<void>;
-  removeBloque(horarioId: string, materiaCodigo: string): Promise<void>;
+  removeBloqueById(horarioId: string, bloqueId: string): Promise<void>;
   replaceBloques(horarioId: string, bloques: Bloque[]): Promise<void>;
   finalizar(horarioId: string, finalizadoAt: Date): Promise<void>;
   delete(id: string): Promise<void>;

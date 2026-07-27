@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Copy } from "lucide-react";
 import type { Bloque, ModoHorario } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 
@@ -13,6 +13,7 @@ interface MateriaSlotProps {
   onRemove?: () => void;
   onExpandDown?: () => void;
   onExpandUp?: () => void;
+  onDuplicate?: () => void;
   onMarcar?: (aprobada: boolean) => void;
 }
 
@@ -23,12 +24,12 @@ const COLOR_BY_ESTADO: Record<string, { border: string; bg: string; text: string
   en_espera: { border: "#2563eb", bg: "#dbeafe", text: "#1e40af" },
 };
 
-export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onMarcar }: MateriaSlotProps) {
+export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onDuplicate, onMarcar }: MateriaSlotProps) {
   const colors = COLOR_BY_ESTADO[materia.estado] ?? COLOR_BY_ESTADO.activo;
   const isEdicion = modo === "edicion";
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `placed-${materia.codigo}`,
+    id: `placed-${bloque.id}`,
     data: { type: "placed", materia, bloque },
     disabled: !isEdicion,
   });
@@ -110,11 +111,23 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
             {bloque.horaInicio}–{bloque.horaFin}
           </div>
         </div>
-        {isEdicion && onRemove && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            className="w-4 h-4 p-0 border-none rounded-full cursor-pointer text-[10px] text-center leading-4 flex-shrink-0 ml-0.5"
-            style={{ background: "rgba(0,0,0,0.1)", color: "#666" }}
-            title="Quitar del horario">✕</button>
+        {isEdicion && (
+          <div className="flex gap-0.5 items-start flex-shrink-0 ml-0.5">
+            {onDuplicate && (
+              <button type="button" onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+                className="w-4 h-4 p-0 border-none rounded-full cursor-pointer text-[10px] text-center leading-4 flex items-center justify-center"
+                style={{ background: "rgba(0,0,0,0.08)", color: "#666" }}
+                title="Duplicar bloque">
+                <Copy className="w-2.5 h-2.5" />
+              </button>
+            )}
+            {onRemove && (
+              <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                className="w-4 h-4 p-0 border-none rounded-full cursor-pointer text-[10px] text-center leading-4 flex-shrink-0"
+                style={{ background: "rgba(0,0,0,0.1)", color: "#666" }}
+                title="Quitar del horario">✕</button>
+            )}
+          </div>
         )}
       </div>
 

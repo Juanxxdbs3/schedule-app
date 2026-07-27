@@ -9,6 +9,9 @@ interface IBloqueSubDoc {
   dia: string;
   horaInicio: string;
   horaFin: string;
+  nombrePersonalizado?: string;
+  profesor?: string;
+  salon?: string;
 }
 
 interface IHorarioDocument extends Document {
@@ -35,8 +38,11 @@ const bloqueSubSchema = new Schema<IBloqueSubDoc>(
     },
     horaInicio: { type: String, required: true },
     horaFin: { type: String, required: true },
+    nombrePersonalizado: { type: String },
+    profesor: { type: String },
+    salon: { type: String },
   },
-  { _id: false },
+  { _id: true },
 );
 
 const horarioSchema = new Schema<IHorarioDocument>(
@@ -72,12 +78,19 @@ function toHorario(doc: IHorarioDocument): Horario {
     maxCreditos: doc.maxCreditos,
     unidadHoraMinutos: doc.unidadHoraMinutos,
     estado: doc.estado as EstadoHorario,
-    bloques: doc.bloques.map((b) => ({
-      materiaCodigo: b.materiaCodigo,
-      dia: b.dia as DiaSemana,
-      horaInicio: b.horaInicio,
-      horaFin: b.horaFin,
-    })),
+    bloques: doc.bloques.map((b) => {
+      const bloque: Bloque = {
+        id: (b as any)._id?.toString() ?? new mongoose.Types.ObjectId().toString(),
+        materiaCodigo: b.materiaCodigo,
+        dia: b.dia as DiaSemana,
+        horaInicio: b.horaInicio,
+        horaFin: b.horaFin,
+      };
+      if (b.nombrePersonalizado) bloque.nombrePersonalizado = b.nombrePersonalizado;
+      if (b.profesor) bloque.profesor = b.profesor;
+      if (b.salon) bloque.salon = b.salon;
+      return bloque;
+    }),
     createdAt: doc.createdAt,
     finalizadoAt: doc.finalizadoAt,
   };
@@ -123,9 +136,9 @@ export class HorarioRepositoryMongo implements IHorarioRepository {
     });
   }
 
-  async removeBloque(horarioId: string, materiaCodigo: string): Promise<void> {
+  async removeBloqueById(horarioId: string, bloqueId: string): Promise<void> {
     await HorarioModel.findByIdAndUpdate(horarioId, {
-      $pull: { bloques: { materiaCodigo } },
+      $pull: { bloques: { _id: bloqueId } },
     });
   }
 

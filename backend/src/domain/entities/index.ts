@@ -28,10 +28,14 @@ export interface Pensum {
 }
 
 export interface Bloque {
+  id?: string;
   materiaCodigo: string;
   dia: DiaSemana;
   horaInicio: string;
   horaFin: string;
+  nombrePersonalizado?: string;
+  profesor?: string;
+  salon?: string;
 }
 
 export interface Horario {

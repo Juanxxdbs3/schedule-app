@@ -8,10 +8,9 @@ interface ContadorCreditosProps {
 }
 
 export default function ContadorCreditos({ bloques, materias, maxCreditos }: ContadorCreditosProps) {
-  const usados = bloques.reduce((total, b) => {
-    const m = materias.find((m) => m.codigo === b.materiaCodigo);
-    return total + (m?.creditos ?? 0);
-  }, 0);
+  const materiaMap = new Map(materias.map((m) => [m.codigo, m]));
+  const codigosUnicos = new Set(bloques.map((b) => b.materiaCodigo));
+  const usados = [...codigosUnicos].reduce((total, c) => total + (materiaMap.get(c)?.creditos ?? 0), 0);
 
   const excedido = usados > maxCreditos;
 

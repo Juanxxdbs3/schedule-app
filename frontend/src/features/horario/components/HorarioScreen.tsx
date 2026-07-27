@@ -42,6 +42,11 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
   }
 
+  function generarId(): string {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+  }
+
   const [activeMateria, setActiveMateria] = useState<Materia | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resultados, setResultados] = useState<Record<string, boolean>>({});
@@ -89,7 +94,13 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
 
     if (ad?.type === "materia" && od?.type === "cell") {
       const materia = ad.materia as Materia;
-      const bloque: Bloque = { materiaCodigo: materia.codigo, dia: od.dia, horaInicio: od.horaInicio, horaFin: od.horaFin };
+      const bloque: Bloque = {
+        id: generarId(),
+        materiaCodigo: materia.codigo,
+        dia: od.dia,
+        horaInicio: od.horaInicio,
+        horaFin: od.horaFin,
+      };
       const result = addBloqueLocal(bloque, materiasTodas);
       if (result.ok) setLocalActivos((p) => { const n = new Set(p); n.delete(materia.codigo); return n; });
       if (!result.ok) setError(result.error);
@@ -109,25 +120,110 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     }
 
     if (ad?.type === "placed" && od?.type === "pool") {
-      const materia = ad.materia as Materia;
-      removeBloqueLocal(materia.codigo);
-      setLocalActivos((p) => new Set(p).add(materia.codigo));
+      const bloque = ad.bloque as Bloque;
+      removeBloqueLocal(bloque.id);
+      setLocalActivos((p) => new Set(p).add(bloque.materiaCodigo));
     }
   }
 
-  function handleRemoveBloque(codigo: string) {
-    removeBloqueLocal(codigo);
-    setLocalActivos((p) => new Set(p).add(codigo));
+  function handleRemoveBloque(bloqueId: string) {
+    const bloque = bloques.find((b) => b.id === bloqueId);
+    if (!bloque) return;
+    removeBloqueLocal(bloqueId);
+    setLocalActivos((p) => new Set(p).add(bloque.materiaCodigo));
   }
 
-  function handleExpandDown(codigo: string) {
-    const r = expandBloqueDown(codigo, materiasTodas);
+  function handleExpandDown(bloqueId: string) {
+    const r = expandBloqueDown(bloqueId, materiasTodas);
     if (!r.ok && r.error) setError(r.error);
   }
 
-  function handleExpandUp(codigo: string) {
-    const r = expandBloqueUp(codigo, materiasTodas);
+  function handleExpandUp(bloqueId: string) {
+    const r = expandBloqueUp(bloqueId, materiasTodas);
     if (!r.ok && r.error) setError(r.error);
+  }
+
+  function handleDuplicateBloque(bloque: Bloque) {
+    const slotDuracion = horario.unidadHoraMinutos;
+    const minutosInicio = aMinutos(bloque.horaInicio);
+    const minutosFin = aMinutos(bloque.horaFin);
+    const duracion = minutosFin - minutosInicio;
+    const horasCompletas = Math.round(duracion / slotDuracion);
+
+    // Buscar celda libre: mismo día, hora siguiente libre
+    const diaActual = bloque.dia;
+    const nuevoInicio = minutosFin; // justo después del bloque actual
+
+    function slotStr(m: number): string {
+      return fmt(m);
+    }
+
+    // Verificar si una celda está ocupada
+    function celdaOcupada(dia: DiaSemana, inicio: number): boolean {
+      const fin = inicio + duracion;
+      return bloques.some((b) => {
+        if (b.id === bloque.id) return false;
+        if (b.dia !== dia) return false;
+        const bIni = aMinutos(b.horaInicio);
+        const bFin = aMinutos(b.horaFin);
+        return inicio < bFin && fin > bIni;
+      });
+    }
+
+    // Función para intentar colocar en un día/hora
+    function intentarColocar(dia: DiaSemana, inicio: number): Bloque | null {
+      const fin = inicio + duracion;
+      const finStr = slotStr(fin);
+      // No pasarse de 22:00
+      if (fin > 22 * 60) return null;
+      if (celdaOcupada(dia, inicio)) return null;
+
+      const nuevoBloque: Bloque = {
+        id: generarId(),
+        materiaCodigo: bloque.materiaCodigo,
+        dia,
+        horaInicio: slotStr(inicio),
+        horaFin: finStr,
+        nombrePersonalizado: bloque.nombrePersonalizado,
+        profesor: bloque.profesor,
+        salon: bloque.salon,
+      };
+
+      const result = addBloqueLocal(nuevoBloque, materiasTodas);
+      if (result.ok) return nuevoBloque;
+      return null;
+    }
+
+    // 1) mismo día, hora siguiente libre
+    let colocado = intentarColocar(diaActual, nuevoInicio);
+    // 2) día siguiente, misma hora
+    const dias: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+    const idxHoy = dias.indexOf(diaActual);
+    if (!colocado) {
+      for (let i = 1; i < dias.length; i++) {
+        const sigDia = dias[(idxHoy + i) % dias.length];
+        colocado = intentarColocar(sigDia, minutosInicio);
+        if (colocado) break;
+      }
+    }
+    // 3) cualquier celda vacía (first fit)
+    if (!colocado) {
+      for (const dia of dias) {
+        if (colocado) break;
+        const filas = [7 * 60]; // 07:00
+        for (let m = 7 * 60 + slotDuracion; m < 22 * 60; m += slotDuracion) {
+          filas.push(m);
+        }
+        for (const inicio of filas) {
+          colocado = intentarColocar(dia, inicio);
+          if (colocado) break;
+        }
+      }
+    }
+
+    if (!colocado) {
+      setError("No hay espacio disponible para duplicar esta materia");
+    }
   }
 
   async function handleMarcarResultado(codigo: string, aprobada: boolean) {
@@ -202,6 +298,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
             <Grid
               bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
               onRemoveBloque={handleRemoveBloque} onExpandBloqueDown={handleExpandDown} onExpandBloqueUp={handleExpandUp}
+              onDuplicateBloque={handleDuplicateBloque}
             />
             <div className="bg-surface rounded-md border border-border p-3 sticky top-3">
               <h3 className="text-sm mb-2">Materias ({materiasEnPool.length})</h3>

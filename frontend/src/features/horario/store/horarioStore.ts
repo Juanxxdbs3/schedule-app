@@ -18,6 +18,11 @@ function fmt(m: number): string {
   return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 }
 
+function generarId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 interface HorarioState {
   horario: Horario | null;
   loading: boolean;
@@ -30,10 +35,10 @@ interface HorarioState {
   initHorarioReal: (h: Horario) => void;
 
   addBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
-  removeBloqueLocal: (materiaCodigo: string) => void;
+  removeBloqueLocal: (bloqueId: string) => void;
   moveBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
-  expandBloqueDown: (materiaCodigo: string, materias: Materia[]) => AddBloqueResult;
-  expandBloqueUp: (materiaCodigo: string, materias: Materia[]) => AddBloqueResult;
+  expandBloqueDown: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
+  expandBloqueUp: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
 
   saveNuevoHorario: () => Promise<Horario>;
   saveBloques: () => Promise<void>;
@@ -100,11 +105,13 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     const { horario } = get();
     if (!horario) return { ok: false, error: "No hay horario activo" };
 
-    if (conflictCheck.hayChoque(bloque, horario.bloques)) {
+    const bloqueConId: Bloque = { ...bloque, id: bloque.id || generarId() };
+
+    if (conflictCheck.hayChoque(bloqueConId, horario.bloques)) {
       return { ok: false, error: "La materia se superpone con un bloque existente" };
     }
 
-    const nuevosBloques = [...horario.bloques, bloque];
+    const nuevosBloques = [...horario.bloques, bloqueConId];
     if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
       return { ok: false, error: "Se excedería el límite de créditos" };
     }
@@ -115,10 +122,10 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     return { ok: true };
   },
 
-  removeBloqueLocal: (materiaCodigo) => {
+  removeBloqueLocal: (bloqueId) => {
     set((s) => ({
       horario: s.horario
-        ? { ...s.horario, bloques: s.horario.bloques.filter((b) => b.materiaCodigo !== materiaCodigo) }
+        ? { ...s.horario, bloques: s.horario.bloques.filter((b) => b.id !== bloqueId) }
         : null,
     }));
   },
@@ -127,7 +134,7 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     const { horario } = get();
     if (!horario) return { ok: false, error: "No hay horario activo" };
 
-    const otrosBloques = horario.bloques.filter((b) => b.materiaCodigo !== bloque.materiaCodigo);
+    const otrosBloques = horario.bloques.filter((b) => b.id !== bloque.id);
 
     if (conflictCheck.hayChoque(bloque, otrosBloques)) {
       return { ok: false, error: "Hay un choque de horario con otro bloque" };
@@ -144,11 +151,11 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     return { ok: true };
   },
 
-  expandBloqueDown: (materiaCodigo, materias) => {
+  expandBloqueDown: (bloqueId, materias) => {
     const { horario } = get();
     if (!horario) return { ok: false, error: "No hay horario activo" };
 
-    const idx = horario.bloques.findIndex((b) => b.materiaCodigo === materiaCodigo);
+    const idx = horario.bloques.findIndex((b) => b.id === bloqueId);
     if (idx === -1) return { ok: false, error: "Bloque no encontrado" };
 
     const original = horario.bloques[idx];
@@ -157,7 +164,7 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
 
     const nuevoFin = aMinutos(original.horaFin) + horario.unidadHoraMinutos;
     const expandido: Bloque = { ...original, horaFin: fmt(nuevoFin) };
-    const nuevosBloques = horario.bloques.map((b) => (b.materiaCodigo === materiaCodigo ? expandido : b));
+    const nuevosBloques = horario.bloques.map((b) => (b.id === bloqueId ? expandido : b));
 
     if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
       return { ok: false, error: "Se excedería el límite de créditos" };
@@ -167,11 +174,11 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     return { ok: true };
   },
 
-  expandBloqueUp: (materiaCodigo, materias) => {
+  expandBloqueUp: (bloqueId, materias) => {
     const { horario } = get();
     if (!horario) return { ok: false, error: "No hay horario activo" };
 
-    const idx = horario.bloques.findIndex((b) => b.materiaCodigo === materiaCodigo);
+    const idx = horario.bloques.findIndex((b) => b.id === bloqueId);
     if (idx === -1) return { ok: false, error: "Bloque no encontrado" };
 
     const original = horario.bloques[idx];
@@ -180,7 +187,7 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
 
     const nuevoInicio = aMinutos(original.horaInicio) - horario.unidadHoraMinutos;
     const expandido: Bloque = { ...original, horaInicio: fmt(nuevoInicio) };
-    const nuevosBloques = horario.bloques.map((b) => (b.materiaCodigo === materiaCodigo ? expandido : b));
+    const nuevosBloques = horario.bloques.map((b) => (b.id === bloqueId ? expandido : b));
 
     if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
       return { ok: false, error: "Se excedería el límite de créditos" };

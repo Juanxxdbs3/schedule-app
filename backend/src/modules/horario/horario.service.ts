@@ -114,10 +114,12 @@ export class HorarioService {
     }
   }
 
-  async removeBloque(horarioId: string, materiaCodigo: string, userId: string): Promise<void> {
+  async removeBloque(horarioId: string, bloqueId: string, userId: string): Promise<void> {
     const horario = await this.getById(horarioId, userId);
-    await this.horarioRepo.removeBloque(horarioId, materiaCodigo);
-    await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, "activo");
+    const bloque = horario.bloques.find((b) => b.id === bloqueId);
+    if (!bloque) throw new NotFoundError("Bloque not found");
+    await this.horarioRepo.removeBloqueById(horarioId, bloqueId);
+    await this.pensumRepo.updateMateriaEstado(horario.pensumId, bloque.materiaCodigo, "activo");
   }
 
   async marcarResultado(horarioId: string, materiaCodigo: string, aprobada: boolean, userId: string): Promise<void> {

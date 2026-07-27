@@ -44,7 +44,7 @@ class FakeHorarioRepository implements IHorarioRepository {
   async addBloque(): Promise<void> {
     throw new Error("No utilizado en saveBloques");
   }
-  async removeBloque(): Promise<void> {
+  async removeBloqueById(): Promise<void> {
     throw new Error("No utilizado en saveBloques");
   }
   async finalizar(): Promise<void> {

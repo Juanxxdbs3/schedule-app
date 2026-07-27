@@ -12,8 +12,8 @@ export class SimpleConflictDetectionStrategy implements IConflictDetectionStrate
     const finNuevo = aMinutos(nuevo.horaFin);
 
     return existentes.some((b) => {
+      if (b.id === nuevo.id) return false;
       if (b.dia !== nuevo.dia) return false;
-      if (b.materiaCodigo === nuevo.materiaCodigo) return false;
       const iniExist = aMinutos(b.horaInicio);
       const finExist = aMinutos(b.horaFin);
       return iniNuevo < finExist && finNuevo > iniExist;

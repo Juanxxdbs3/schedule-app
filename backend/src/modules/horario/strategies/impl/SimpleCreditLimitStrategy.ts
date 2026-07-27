@@ -11,9 +11,10 @@ export class SimpleCreditLimitStrategy implements ICreditLimitStrategy {
       creditosMap.set(m.codigo, m.creditos);
     }
 
+    const codigosUnicos = new Set(bloques.map((b) => b.materiaCodigo));
     let suma = 0;
-    for (const b of bloques) {
-      const creditos = creditosMap.get(b.materiaCodigo);
+    for (const codigo of codigosUnicos) {
+      const creditos = creditosMap.get(codigo);
       if (creditos !== undefined) {
         suma += creditos;
       }

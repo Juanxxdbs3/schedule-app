@@ -2,6 +2,7 @@ import { useDroppable } from "@dnd-kit/core";
 import type { Bloque, DiaSemana, ModoHorario } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 import MateriaSlot from "./MateriaSlot.tsx";
+import { generarFilasHora } from "../utils/generarFilasHora.ts";
 
 const DIAS: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 
@@ -14,27 +15,6 @@ const DIAS_LABEL: Record<DiaSemana, string> = {
 function aMinutos(h: string): number {
   const [hh, mm] = h.split(":").map(Number);
   return hh * 60 + mm;
-}
-
-function fmt(m: number): string {
-  return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-}
-
-function getSpan(bloque: Bloque, u: number): number {
-  return Math.round((aMinutos(bloque.horaFin) - aMinutos(bloque.horaInicio)) / u);
-}
-
-function generarSlots(u: number, desde: number, hasta: number): { horaInicio: string; horaFin: string }[] {
-  const s: { horaInicio: string; horaFin: string }[] = [];
-  let m = desde;
-  while (m + u <= hasta) { s.push({ horaInicio: fmt(m), horaFin: fmt(m + u) }); m += u; }
-  return s;
-}
-
-function calcularUltimoSlot(bloques: Bloque[], u: number): number {
-  let ultimo = 7 * 60;
-  for (const b of bloques) { const fin = aMinutos(b.horaFin); if (fin > ultimo) ultimo = fin; }
-  return Math.min(ultimo + u, 22 * 60);
 }
 
 function DroppableCell({ dia, horaInicio, horaFin }: { dia: DiaSemana; horaInicio: string; horaFin: string }) {
@@ -61,9 +41,10 @@ interface GridProps {
   materias: Materia[];
   unidadHoraMinutos: number;
   modo: ModoHorario;
-  onRemoveBloque?: (codigo: string) => void;
-  onExpandBloqueDown?: (codigo: string) => void;
-  onExpandBloqueUp?: (codigo: string) => void;
+  onRemoveBloque?: (bloqueId: string) => void;
+  onExpandBloqueDown?: (bloqueId: string) => void;
+  onExpandBloqueUp?: (bloqueId: string) => void;
+  onDuplicateBloque?: (bloque: Bloque) => void;
   onMarcarResultado?: (codigo: string, aprobada: boolean) => void;
   resultados?: Record<string, boolean>;
 }
@@ -73,13 +54,16 @@ const timeClasses = "p-1 font-normal text-xs text-muted text-center border-b bor
 
 export default function Grid({
   bloques, materias, unidadHoraMinutos: u, modo,
-  onRemoveBloque, onExpandBloqueDown, onExpandBloqueUp,
+  onRemoveBloque, onExpandBloqueDown, onExpandBloqueUp, onDuplicateBloque,
   onMarcarResultado, resultados,
 }: GridProps) {
   const isEdicion = modo === "edicion";
-  const desde = 7 * 60;
-  const hasta = isEdicion ? 22 * 60 : calcularUltimoSlot(bloques, u);
-  const slots = generarSlots(u, desde, hasta);
+  const filas = generarFilasHora(u);
+
+  const slots = filas.map((horaInicio, i) => ({
+    horaInicio,
+    horaFin: i < filas.length - 1 ? filas[i + 1] : horaInicio,
+  }));
 
   const materiaMap = new Map(materias.map((m) => [m.codigo, m]));
   const startBloques = new Map<string, Bloque>();
@@ -87,16 +71,32 @@ export default function Grid({
 
   for (const b of bloques) {
     startBloques.set(`${b.dia}-${b.horaInicio}`, b);
-    const span = getSpan(b, u);
+    const span = getGridSpan(b.horaInicio, b.horaFin, filas);
     if (span > 1) {
-      const ini = aMinutos(b.horaInicio);
-      for (let i = 1; i < span; i++) spannedCells.add(`${b.dia}-${fmt(ini + i * u)}`);
+      const idx = filas.indexOf(b.horaInicio);
+      if (idx !== -1) {
+        for (let i = 1; i < span; i++) {
+          if (idx + i < filas.length) spannedCells.add(`${b.dia}-${filas[idx + i]}`);
+        }
+      }
     }
+  }
+
+  function getGridSpan(horaInicio: string, horaFin: string, gridFilas: string[]): number {
+    const startMin = aMinutos(horaInicio);
+    const endMin = aMinutos(horaFin);
+    let count = 0;
+    for (const f of gridFilas) {
+      const t = aMinutos(f);
+      if (t >= startMin && t < endMin) count++;
+      else if (t >= endMin) break;
+    }
+    return Math.max(1, count);
   }
 
   function tieneChoque(bloque: Bloque): boolean {
     return bloques.some(
-      (b) => b.materiaCodigo !== bloque.materiaCodigo && b.dia === bloque.dia &&
+      (b) => b.id !== bloque.id && b.dia === bloque.dia &&
         aMinutos(b.horaInicio) < aMinutos(bloque.horaFin) && aMinutos(b.horaFin) > aMinutos(bloque.horaInicio),
     );
   }
@@ -120,7 +120,7 @@ export default function Grid({
 
       const bloque = startBloques.get(key);
       if (bloque) {
-        const span = getSpan(bloque, u);
+        const span = getGridSpan(bloque.horaInicio, bloque.horaFin, filas);
         const materia = materiaMap.get(bloque.materiaCodigo);
         const conflicto = tieneChoque(bloque);
 
@@ -133,9 +133,10 @@ export default function Grid({
                 <MateriaSlot
                   bloque={bloque} materia={materia} conflicto={conflicto} span={span} modo={modo}
                   resultado={resultados?.[materia.codigo]}
-                  onRemove={onRemoveBloque ? () => onRemoveBloque(materia.codigo) : undefined}
-                  onExpandDown={onExpandBloqueDown ? () => onExpandBloqueDown(materia.codigo) : undefined}
-                  onExpandUp={onExpandBloqueUp ? () => onExpandBloqueUp(materia.codigo) : undefined}
+                  onRemove={onRemoveBloque ? () => onRemoveBloque(bloque.id) : undefined}
+                  onExpandDown={onExpandBloqueDown ? () => onExpandBloqueDown(bloque.id) : undefined}
+                  onExpandUp={onExpandBloqueUp ? () => onExpandBloqueUp(bloque.id) : undefined}
+                  onDuplicate={onDuplicateBloque ? () => onDuplicateBloque(bloque) : undefined}
                   onMarcar={onMarcarResultado ? (a) => onMarcarResultado(materia.codigo, a) : undefined}
                 />
               )}

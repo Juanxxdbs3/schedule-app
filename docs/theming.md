@@ -32,16 +32,26 @@ la variable. Esto permite cambiar el tema completo sin tocar componentes.
   /* Espaciado y forma */
   --radius-sm: 4px;
   --radius-md: 8px;
+  --radius-lg: 12px;
   --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 16px;
   --spacing-4: 24px;
+  --spacing-5: 32px;
+  --spacing-6: 48px;
 
   /* Tipografía */
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
   --font-size-base: 1rem;
   --font-size-lg: 1.25rem;
+
+  /* Variantes suaves de los estados (para fondos, sin saturar) */
+  --color-primary-muted: #dbeafe;
+  --color-success-bg: #dcfce7;
+  --color-danger-bg: #fef2f2;
 }
 
 .dark {
@@ -59,6 +69,10 @@ la variable. Esto permite cambiar el tema completo sin tocar componentes.
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-muted-block: #475569;
+
+  --color-primary-muted: #1e3a5f;
+  --color-success-bg: #14532d;
+  --color-danger-bg: #450a0a;
 }
 ```
 

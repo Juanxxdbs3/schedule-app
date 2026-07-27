@@ -52,12 +52,17 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
   const codigosEnHorario = new Set(bloques.map((b) => b.materiaCodigo));
 
   const materiasEnPool = useMemo(() => {
-    const disponibles = materiasTodas.filter((m) => {
-      const estadoEfectivo = localActivos.has(m.codigo) ? "activo" : m.estado;
-      if (estadoEfectivo !== "activo") return false;
-      if (codigosEnHorario.has(m.codigo)) return false;
-      return true;
-    });
+    const disponibles = materiasTodas
+      .filter((m) => {
+        const estadoEfectivo = localActivos.has(m.codigo) ? "activo" : m.estado;
+        if (estadoEfectivo !== "activo") return false;
+        if (codigosEnHorario.has(m.codigo)) return false;
+        return true;
+      })
+      .map((m) => ({
+        ...m,
+        estado: (localActivos.has(m.codigo) ? "activo" : m.estado) as typeof m.estado,
+      }));
     if (!filtroNombre && filtroSemestre === "" && filtroCreditos === "") return disponibles;
     return filtrarMaterias(disponibles, filtroNombre, filtroSemestre, filtroCreditos);
   }, [materiasTodas, codigosEnHorario, localActivos, filtroNombre, filtroSemestre, filtroCreditos]);

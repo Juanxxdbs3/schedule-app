@@ -82,7 +82,7 @@ El frontend reutiliza estos mismos tipos (copiados a `shared/types/domain.ts`,
 no importados directo del backend — son dos proyectos separados en el MVP).
 
 ## Flujo end-to-end (qué mensaje se dispara en qué momento)
-
+ 
 **Flujo 1 — Registro y sesión**
 1. `POST /api/auth/register` → crea usuario.
 2. `POST /api/auth/login` → backend responde y setea cookie httpOnly con JWT.
@@ -109,17 +109,14 @@ no importados directo del backend — son dos proyectos separados en el MVP).
    d. Todo cambio se persiste también en `localStorage` de inmediato, sin
       esperar la respuesta del backend.
 
-**Flujo 4 — Finalizar semestre (incremental)**
-1. Durante el semestre, a medida que llegan las notas, el usuario marca cada
-   materia individualmente: `PATCH /api/horarios/:id/resultados` con
-   `{ materiaCodigo, aprobada: true | false }`. El backend actualiza el `estado`
-   de esa materia en el pensum (`'cursado'` si aprobó, `'activo'` si perdió)
-   **sin cerrar el horario**.
-2. Cuando ya todas las materias tienen resultado (o el semestre termina),
-   el usuario cierra el horario: `PATCH /api/horarios/:id/finalizar` (sin body).
-   El backend marca `estado: 'finalizado'`, `finalizadoAt: now`.
-3. Frontend refresca el pool de materias disponibles (ya sin las aprobadas)
-   y el horario finalizado queda visible como histórico.
+**Flujo 4 — Finalizar semestre**
+1. Usuario marca cada materia del horario como aprobada o perdida.
+2. `PATCH /api/horarios/:id/finalizar` con `{ resultados: [{ materiaCodigo, aprobada }] }`.
+3. Backend actualiza `estado` de cada materia en el `pensum` asociado
+   (`'cursado'` si aprobó, `'activo'` si perdió) y marca el horario como
+   `estado: 'finalizado'`, `finalizadoAt: now`.
+4. Frontend refresca el pool de materias disponibles (ya sin las que se
+   acaban de aprobar) y el horario queda visible como histórico.
 
 ## Cómo usar este tablero
 
@@ -206,22 +203,45 @@ fases — cada una depende de la anterior.
 - [x] Pantalla de configuración de horario (unidad de hora, créditos máx., elegir pensum)
 - [x] Flujo de "finalizar semestre" (marcar aprobada/perdida por materia)
 
-## Fase 7 — Testing (agente: testing)
+## Fase 6.5 — Corrección: consistencia de estado + estilos (agentes: backend, frontend)
+ 
+- [ ] Fix en `horario.service.ts::saveBloques`: calcular diff de códigos de
+      materia (agregados/quitados) contra el horario ya persistido, ANTES de
+      llamar `replaceBloques`, y actualizar el pensum en consecuencia
+      (agregados → `matriculado`, quitados → `activo`)
+- [ ] Simplificar `HorarioPage.tsx`: quitar `initialBloquesRef` y el loop de
+      `PensumService.updateMateriaEstado` en `handleGuardar` — el backend ya
+      se encarga de esto en un solo `saveBloques()`
+- [ ] Test unitario de `horario.service`: guardar bloques sin una materia que
+      antes estaba matriculada debe dejarla en `activo`
+- [ ] Instalar Tailwind CSS en `frontend/` y conectarlo a Vite
+- [ ] Agregar a `docs/theming.md`/`globals.css` los tokens que faltan:
+      `--spacing-5`, `--spacing-6`, `--font-size-xs`, `--font-size-md`,
+      `--radius-lg`, `--color-primary-muted`, `--color-success-bg`, `--color-danger-bg`
+- [ ] Refactorizar a clases de Tailwind (quitar `style={{}}` y hex sueltos) en:
+      `App.tsx`, `NavBar.tsx`, `LoginForm.tsx`, `RegisterForm.tsx`,
+      `CargarPensum.tsx`, `FiltroPensum.tsx`, `PoolMaterias.tsx`, `Grid.tsx`,
+      `MateriaSlot.tsx`, `DropZone.tsx`, `ContadorCreditos.tsx`,
+      `ConfigurarHorario.tsx`, `FinalizarHorario.tsx`, `HorarioScreen.tsx`,
+      `HorarioPage.tsx`
+- [ ] Reemplazar los emojis 😊/😢 de aprobada/perdida por íconos de `lucide-react`
 
+## Fase 7 — Testing (agente: testing)
+ 
 - [ ] Crear Fakes: `FakeUserRepository`, `FakePensumRepository`, `FakeHorarioRepository`
 - [ ] Tests unitarios: `auth.service`, `pensum.service`, `horario.service`
 - [ ] Tests unitarios: `SimpleCreditLimitStrategy`, `SimpleConflictDetectionStrategy` (casos límite)
 - [ ] Test de integración: `horario.repository.mongo` con `mongodb-memory-server`
 - [ ] Test de integración: `auth.routes` con `supertest`
 - [ ] Tests de componentes: `MateriaSlot`, `Grid` (testing-library)
-- [ ] Test de `horarioStore` (acciones puras)mite)
+- [ ] Test de `horarioStore` (acciones puras)
 - [x] Test de integración: `horario.repository.mongo` con `mongodb-memory-server`
 - [x] Test de integración: `auth.routes` con `supertest`
 - [x] Tests de componentes: `MateriaSlot`, `Grid` (testing-library)
 - [x] Test de `horarioStore` (acciones puras)
 
 ## Fase 8 — Integración final
-
+ 
 - [ ] Probar flujo completo: registro → login → cargar pensum → crear horario → arrastrar materias → finalizar semestre
 - [ ] Verificar CORS y cookies en flujo real navegador↔backend
 - [ ] Escribir `README.md` con instrucciones de levantamiento local

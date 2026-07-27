@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiDelete } from "../../../shared/api/api.ts";
+import { apiGet, apiPost, apiPatch, apiDelete } from "../../../shared/api/api.ts";
 import type { Pensum, Materia } from "../types.ts";
 import type { IPensumStorageRepository } from "../repositories/IPensumStorageRepository.ts";
 import { WebLocalStoragePensumRepository } from "../repositories/WebLocalStoragePensumRepository.ts";
@@ -32,6 +32,9 @@ export const PensumService = {
   list: () => apiGet<PensumListResponse>("/pensums"),
 
   getById: (id: string) => apiGet<PensumGetResponse>(`/pensums/${id}`),
+
+  updateMateriaEstado: (pensumId: string, codigo: string, estado: string) =>
+    apiPatch<void>(`/pensums/${pensumId}/materias/${codigo}/estado`, { estado }),
 
   remove: (id: string) => apiDelete<void>(`/pensums/${id}`),
 

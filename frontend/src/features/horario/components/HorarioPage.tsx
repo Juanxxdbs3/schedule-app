@@ -1,68 +1,77 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useHorarioStore } from "../store/horarioStore.ts";
+import { HorarioService } from "../services/HorarioService.ts";
 import { PensumService } from "../../pensum/services/PensumService.ts";
 import type { Pensum } from "../../pensum/types.ts";
-import type { ModoHorario } from "../types.ts";
+import type { Bloque, ModoHorario } from "../types.ts";
 import HorarioScreen from "./HorarioScreen.tsx";
 
 export default function HorarioPage() {
   const params = useParams<{ id: string }>();
-  const id = params.id;
+  const id = params.id!;
   const navigate = useNavigate();
-  const location = useLocation();
   const storeHorario = useHorarioStore((s) => s.horario);
   const fetchById = useHorarioStore((s) => s.fetchById);
-  const saveNuevoHorario = useHorarioStore((s) => s.saveNuevoHorario);
   const saveBloques = useHorarioStore((s) => s.saveBloques);
-  const initNuevoHorario = useHorarioStore((s) => s.initNuevoHorario);
+  const marcarResultado = useHorarioStore((s) => s.marcarResultado);
+  const clear = useHorarioStore((s) => s.clear);
   const loading = useHorarioStore((s) => s.loading);
 
   const [pensum, setPensum] = useState<Pensum | null>(null);
   const [modo, setModo] = useState<ModoHorario>("edicion");
   const [ready, setReady] = useState(false);
-  const esNuevo = !id || id === "nuevo";
+  const [deleting, setDeleting] = useState(false);
+  const initialBloquesRef = useRef<Bloque[]>([]);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    if (!id) return;
+    mountedRef.current = true;
     setReady(false);
     setPensum(null);
-    const state = location.state as Record<string, unknown> | null;
+    initialBloquesRef.current = [];
+    fetchById(id);
 
-    if (esNuevo && state) {
-      const h = initNuevoHorario(
-        state.pensumId as string,
-        state.semestreLabel as string,
-        state.maxCreditos as number,
-        state.unidadHoraMinutos as number,
-      );
-      PensumService.getById(h.pensumId)
-        .then((res) => { setPensum(res.pensum); setReady(true); })
-        .catch(() => setReady(true));
-    } else if (!esNuevo) {
-      fetchById(id);
-    }
+    return () => {
+      mountedRef.current = false;
+    };
   }, [id]);
 
   useEffect(() => {
-    if (!storeHorario || !id || esNuevo) return;
-    if (storeHorario.id !== id) return;
+    if (!storeHorario || storeHorario.id !== id) return;
+    initialBloquesRef.current = storeHorario.bloques;
     PensumService.getById(storeHorario.pensumId)
-      .then((res) => { setPensum(res.pensum); setModo(storeHorario.estado === "finalizado" ? "finalizado" : "edicion"); setReady(true); })
-      .catch(() => setReady(true));
+      .then((res) => { if (mountedRef.current) { setPensum(res.pensum); setModo(storeHorario.estado === "finalizado" ? "finalizado" : "edicion"); setReady(true); } })
+      .catch(() => { if (mountedRef.current) setReady(true); });
   }, [storeHorario, id]);
 
   async function handleGuardar() {
     try {
-      if (esNuevo) {
-        const creado = await saveNuevoHorario();
-        setModo("curso");
-        navigate(`/horario/${creado.id}`, { replace: true });
-      } else {
-        await saveBloques();
-        setModo("curso");
+      await saveBloques();
+
+      const initialBloques = initialBloquesRef.current;
+      const currentBloques = storeHorario?.bloques ?? [];
+      const toActivar = initialBloques
+        .filter((b) => !currentBloques.some((cb) => cb.materiaCodigo === b.materiaCodigo))
+        .map((b) => b.materiaCodigo);
+      for (const codigo of toActivar) {
+        await marcarResultado(codigo, false);
       }
+
+      setModo("curso");
     } catch {}
+  }
+
+  async function handleEliminar() {
+    if (!window.confirm("¿Eliminar este horario permanentemente?")) return;
+    setDeleting(true);
+    try {
+      await HorarioService.delete(id);
+      clear();
+      navigate("/dashboard", { replace: true });
+    } catch {
+      setDeleting(false);
+    }
   }
 
   function handleEditar() { setModo("edicion"); }
@@ -78,13 +87,21 @@ export default function HorarioPage() {
       </main>
 
       {modo === "edicion" && (
-        <div style={{ position: "fixed", bottom: "var(--spacing-4)", right: "var(--spacing-4)", zIndex: 50 }}>
+        <div style={{ position: "fixed", bottom: "var(--spacing-4)", right: "var(--spacing-4)", zIndex: 50, display: "flex", gap: "var(--spacing-2)" }}>
+          <button type="button" onClick={handleEliminar} disabled={loading || deleting} style={{
+            padding: "0.7rem 1.5rem", background: "transparent",
+            color: "#ef4444", border: "1px solid #ef4444",
+            borderRadius: "var(--radius-lg)", cursor: loading || deleting ? "not-allowed" : "pointer",
+            fontWeight: 600, fontSize: "var(--font-size-md)", opacity: loading || deleting ? 0.6 : 1,
+          }}>
+            {deleting ? "Eliminando..." : "Eliminar horario"}
+          </button>
           <button type="button" onClick={handleGuardar} disabled={loading} style={{
             padding: "0.7rem 2rem", background: loading ? "var(--color-muted-block)" : "var(--color-primary)",
             color: "#fff", border: "none", borderRadius: "var(--radius-lg)", cursor: loading ? "not-allowed" : "pointer",
             fontWeight: 600, fontSize: "var(--font-size-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
           }}>
-            {loading ? "Guardando..." : esNuevo ? "Guardar horario" : "Guardar cambios"}
+            {loading ? "Guardando..." : "Guardar cambios"}
           </button>
         </div>
       )}

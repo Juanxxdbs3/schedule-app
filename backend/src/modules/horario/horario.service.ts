@@ -78,6 +78,9 @@ export class HorarioService {
   }
 
   async saveBloques(horarioId: string, bloques: Bloque[]): Promise<void> {
+    if (!Array.isArray(bloques)) {
+      throw new ValidationError("'bloques' debe ser un array");
+    }
     const horario = await this.getById(horarioId);
     const pensum = await this.pensumRepo.findById(horario.pensumId);
     if (!pensum) {
@@ -124,7 +127,8 @@ export class HorarioService {
   }
 
   async delete(id: string): Promise<void> {
-    await this.getById(id);
+    const horario = await this.getById(id);
+    console.log(`[HorarioService.delete] Eliminando horario ${id} (${horario.bloques.length} bloques)`);
     await this.horarioRepo.delete(id);
   }
 }

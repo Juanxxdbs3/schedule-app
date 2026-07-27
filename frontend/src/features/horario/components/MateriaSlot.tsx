@@ -42,7 +42,7 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
     background: bg,
     border: `1px solid ${conflicto ? "#ef4444" : resultado === true ? "#7c3aed" : resultado === false ? "#ea580c" : colors.border}`,
     color: conflicto ? "#ef4444" : colors.text,
-    overflow: "hidden",
+    overflow: "visible",
     userSelect: "none",
     touchAction: isEdicion ? "none" : "auto",
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
@@ -104,7 +104,7 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{materia.codigo}</div>
+          <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{materia.nombre}</div>
           <div style={{ fontSize: 10, lineHeight: 1.2, opacity: 0.8 }}>
             {bloque.horaInicio}–{bloque.horaFin}
           </div>

@@ -108,6 +108,7 @@ export class HorarioController {
   deleteHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;
+      await this.horarioService.getById(id);
       await this.horarioService.delete(id);
       res.status(204).send();
     } catch (error) {

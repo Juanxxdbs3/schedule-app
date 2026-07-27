@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import type { Horario, Bloque } from "../types.ts";
+import type { Horario, Bloque, DiaSemana } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 import type { Pensum } from "../../pensum/types.ts";
 import type { ModoHorario } from "../types.ts";
@@ -22,10 +22,20 @@ interface HorarioScreenProps {
 export default function HorarioScreen({ modo, horario, pensum, onModoChange }: HorarioScreenProps) {
   const addBloqueLocal = useHorarioStore((s) => s.addBloqueLocal);
   const removeBloqueLocal = useHorarioStore((s) => s.removeBloqueLocal);
+  const moveBloqueLocal = useHorarioStore((s) => s.moveBloqueLocal);
   const expandBloqueDown = useHorarioStore((s) => s.expandBloqueDown);
   const expandBloqueUp = useHorarioStore((s) => s.expandBloqueUp);
   const marcarResultado = useHorarioStore((s) => s.marcarResultado);
   const storeHorario = useHorarioStore((s) => s.horario);
+
+  function aMinutos(h: string): number {
+    const [hh, mm] = h.split(":").map(Number);
+    return hh * 60 + mm;
+  }
+
+  function fmt(m: number): string {
+    return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  }
 
   const [activeMateria, setActiveMateria] = useState<Materia | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,23 +43,29 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroSemestre, setFiltroSemestre] = useState<number | "">("");
   const [filtroCreditos, setFiltroCreditos] = useState<number | "">("");
+  const [localActivos, setLocalActivos] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const bloques = storeHorario?.bloques ?? [];
   const materiasTodas = pensum.materias;
-  const materiasActivas = pensum.materias.filter((m) => m.estado === "activo");
   const codigosEnHorario = new Set(bloques.map((b) => b.materiaCodigo));
 
   const materiasEnPool = useMemo(() => {
-    const disponibles = materiasActivas.filter((m) => !codigosEnHorario.has(m.codigo));
+    const disponibles = materiasTodas.filter((m) => {
+      const estadoEfectivo = localActivos.has(m.codigo) ? "activo" : m.estado;
+      if (estadoEfectivo !== "activo") return false;
+      if (codigosEnHorario.has(m.codigo)) return false;
+      return true;
+    });
     if (!filtroNombre && filtroSemestre === "" && filtroCreditos === "") return disponibles;
     return filtrarMaterias(disponibles, filtroNombre, filtroSemestre, filtroCreditos);
-  }, [materiasActivas, codigosEnHorario, filtroNombre, filtroSemestre, filtroCreditos]);
+  }, [materiasTodas, codigosEnHorario, localActivos, filtroNombre, filtroSemestre, filtroCreditos]);
 
   function handleDragStart(event: DragStartEvent) {
     const data = event.active.data.current;
     if (data?.type === "materia") setActiveMateria(data.materia as Materia);
+    if (data?.type === "placed") setActiveMateria(data.materia as Materia);
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -64,15 +80,34 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
       const materia = ad.materia as Materia;
       const bloque: Bloque = { materiaCodigo: materia.codigo, dia: od.dia, horaInicio: od.horaInicio, horaFin: od.horaFin };
       const result = addBloqueLocal(bloque, materiasTodas);
+      if (result.ok) setLocalActivos((p) => { const n = new Set(p); n.delete(materia.codigo); return n; });
+      if (!result.ok) setError(result.error);
+    }
+
+    if (ad?.type === "placed" && od?.type === "cell") {
+      const oldBloque = ad.bloque as Bloque;
+      const oldDuration = aMinutos(oldBloque.horaFin) - aMinutos(oldBloque.horaInicio);
+      const newBloque: Bloque = {
+        ...oldBloque,
+        dia: od.dia as DiaSemana,
+        horaInicio: od.horaInicio as string,
+        horaFin: fmt(aMinutos(od.horaInicio as string) + oldDuration),
+      };
+      const result = moveBloqueLocal(newBloque, materiasTodas);
       if (!result.ok) setError(result.error);
     }
 
     if (ad?.type === "placed" && od?.type === "pool") {
-      removeBloqueLocal((ad.materia as Materia).codigo);
+      const materia = ad.materia as Materia;
+      removeBloqueLocal(materia.codigo);
+      setLocalActivos((p) => new Set(p).add(materia.codigo));
     }
   }
 
-  function handleRemoveBloque(codigo: string) { removeBloqueLocal(codigo); }
+  function handleRemoveBloque(codigo: string) {
+    removeBloqueLocal(codigo);
+    setLocalActivos((p) => new Set(p).add(codigo));
+  }
 
   function handleExpandDown(codigo: string) {
     const r = expandBloqueDown(codigo, materiasTodas);

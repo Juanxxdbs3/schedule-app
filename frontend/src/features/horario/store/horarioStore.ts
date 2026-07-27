@@ -27,9 +27,11 @@ interface HorarioState {
   setHorario: (h: Horario) => void;
   fetchHorarios: (pensumId: string) => Promise<void>;
   initNuevoHorario: (pensumId: string, semestreLabel: string, maxCreditos: number, unidadHoraMinutos: number) => Horario;
+  initHorarioReal: (h: Horario) => void;
 
   addBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
   removeBloqueLocal: (materiaCodigo: string) => void;
+  moveBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
   expandBloqueDown: (materiaCodigo: string, materias: Materia[]) => AddBloqueResult;
   expandBloqueUp: (materiaCodigo: string, materias: Materia[]) => AddBloqueResult;
 
@@ -89,6 +91,11 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     return h;
   },
 
+  initHorarioReal: (h) => {
+    set({ horario: h, error: null });
+    get().storage.save(h);
+  },
+
   addBloqueLocal: (bloque, materias) => {
     const { horario } = get();
     if (!horario) return { ok: false, error: "No hay horario activo" };
@@ -114,6 +121,27 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
         ? { ...s.horario, bloques: s.horario.bloques.filter((b) => b.materiaCodigo !== materiaCodigo) }
         : null,
     }));
+  },
+
+  moveBloqueLocal: (bloque, materias) => {
+    const { horario } = get();
+    if (!horario) return { ok: false, error: "No hay horario activo" };
+
+    const otrosBloques = horario.bloques.filter((b) => b.materiaCodigo !== bloque.materiaCodigo);
+
+    if (conflictCheck.hayChoque(bloque, otrosBloques)) {
+      return { ok: false, error: "Hay un choque de horario con otro bloque" };
+    }
+
+    const nuevosBloques = [...otrosBloques, bloque];
+    if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
+      return { ok: false, error: "Se excedería el límite de créditos" };
+    }
+
+    set((s) => ({
+      horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null,
+    }));
+    return { ok: true };
   },
 
   expandBloqueDown: (materiaCodigo, materias) => {
@@ -225,7 +253,7 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
   },
 
   clear: () => {
-    set({ horario: null, error: null });
+    set({ horario: null, error: null, loading: false });
     get().storage.remove();
   },
 }));

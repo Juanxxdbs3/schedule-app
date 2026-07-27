@@ -41,6 +41,18 @@ export class PensumController {
     }
   };
 
+  updateMateriaEstadoHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id as string;
+      const codigo = req.params.codigo as string;
+      const { estado } = req.body;
+      await this.pensumService.updateMateriaEstado(id, codigo, estado);
+      res.json({ message: "Estado actualizado" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   deleteHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;

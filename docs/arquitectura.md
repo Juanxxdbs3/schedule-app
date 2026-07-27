@@ -87,7 +87,7 @@ store. El backend siempre revalida al guardar (nunca confíes solo en el cliente
 | POST | `/api/pensums` | Crea pensum (recibe el JSON de materias) |
 | GET | `/api/pensums` | Lista pensums del usuario |
 | GET | `/api/pensums/:id` | Detalle de un pensum |
-| PATCH | `/api/pensums/:id` | Actualiza estado de materias |
+| PATCH | `/api/pensums/:id/materias/:codigo/estado` | Actualiza el estado de UNA materia del pensum (body: `{ estado: "activo"|"matriculado"|"cursado"|"en_espera" }`) |
 | DELETE | `/api/pensums/:id` | Elimina un pensum |
 | POST | `/api/horarios` | Crea horario (pensumId, semestreLabel, maxCreditos, unidadHoraMinutos) |
 | GET | `/api/horarios?pensumId=&estado=` | Lista horarios (histórico = `estado=finalizado`) |

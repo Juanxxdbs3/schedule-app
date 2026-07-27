@@ -288,11 +288,15 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
       {modo === "edicion" ? (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-[1fr_300px] gap-4 items-start">
-            <Grid
-              bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
-              onRemoveBloque={handleRemoveBloque} onExpandBloqueDown={handleExpandDown} onExpandBloqueUp={handleExpandUp}
-              onDuplicateBloque={handleDuplicateBloque} onEditBloque={setEditBloque}
-            />
+            <div className="overflow-x-auto min-w-0">
+              <div className="min-w-[700px]">
+                <Grid
+                  bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
+                  onRemoveBloque={handleRemoveBloque} onExpandBloqueDown={handleExpandDown} onExpandBloqueUp={handleExpandUp}
+                  onDuplicateBloque={handleDuplicateBloque} onEditBloque={setEditBloque}
+                />
+              </div>
+            </div>
             <div className="bg-surface rounded-md border border-border p-3 sticky top-3">
               <h3 className="text-sm mb-2">Materias ({materiasEnPool.length})</h3>
               <div className="flex flex-col gap-1 mb-2">
@@ -327,11 +331,15 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
           {bloques.length === 0 ? (
             <div className="text-center p-8 text-muted">No hay materias en el horario</div>
           ) : (
-            <Grid
-              bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
-              onMarcarResultado={modo === "curso" ? handleMarcarResultado : undefined}
-              resultados={resultados}
-            />
+            <div className="overflow-x-auto min-w-0">
+              <div className="min-w-[700px]">
+                <Grid
+                  bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
+                  onMarcarResultado={modo === "curso" ? handleMarcarResultado : undefined}
+                  resultados={resultados}
+                />
+              </div>
+            </div>
           )}
         </div>
       )}

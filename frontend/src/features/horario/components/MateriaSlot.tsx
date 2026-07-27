@@ -15,6 +15,7 @@ interface MateriaSlotProps {
   onExpandUp?: () => void;
   onDuplicate?: () => void;
   onMarcar?: (aprobada: boolean) => void;
+  onEdit?: (bloque: Bloque) => void;
 }
 
 const COLOR_BY_ESTADO: Record<string, { border: string; bg: string; text: string }> = {
@@ -24,7 +25,7 @@ const COLOR_BY_ESTADO: Record<string, { border: string; bg: string; text: string
   en_espera: { border: "#2563eb", bg: "#dbeafe", text: "#1e40af" },
 };
 
-export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onDuplicate, onMarcar }: MateriaSlotProps) {
+export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onDuplicate, onMarcar, onEdit }: MateriaSlotProps) {
   const colors = COLOR_BY_ESTADO[materia.estado] ?? COLOR_BY_ESTADO.activo;
   const isEdicion = modo === "edicion";
 
@@ -33,6 +34,11 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
     data: { type: "placed", materia, bloque },
     disabled: !isEdicion,
   });
+
+  const displayName = bloque.nombrePersonalizado || materia.nombre;
+  const extraLines: string[] = [];
+  if (bloque.profesor) extraLines.push(bloque.profesor);
+  if (bloque.salon) extraLines.push(bloque.salon);
 
   function bgClass() {
     if (conflicto) return "bg-danger-bg";
@@ -91,7 +97,7 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
       }`}
       style={draggingStyle}
       {...(isEdicion ? { ...listeners, ...attributes } : {})}
-      title={materia.nombre}
+      title={displayName}
     >
       {/* Top expand handle */}
       {isEdicion && onExpandUp && (
@@ -104,9 +110,18 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
         </div>
       )}
 
-      <div className="flex justify-between items-start">
-        <div>
-          <div className="font-semibold leading-tight">{materia.nombre}</div>
+      {/* Clickable area for editing */}
+      <div
+        className="flex justify-between items-start flex-1 min-h-0"
+        onClick={isEdicion && onEdit ? () => onEdit(bloque) : undefined}
+      >
+        <div className="min-w-0">
+          <div className="font-semibold leading-tight truncate">{displayName}</div>
+          {extraLines.length > 0 && (
+            <div className="text-[10px] leading-tight opacity-80 truncate">
+              {extraLines.join(" · ")}
+            </div>
+          )}
           <div className="text-[10px] leading-tight opacity-80">
             {bloque.horaInicio}–{bloque.horaFin}
           </div>

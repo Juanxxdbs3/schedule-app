@@ -45,6 +45,7 @@ interface GridProps {
   onExpandBloqueDown?: (bloqueId: string) => void;
   onExpandBloqueUp?: (bloqueId: string) => void;
   onDuplicateBloque?: (bloque: Bloque) => void;
+  onEditBloque?: (bloque: Bloque) => void;
   onMarcarResultado?: (codigo: string, aprobada: boolean) => void;
   resultados?: Record<string, boolean>;
 }
@@ -55,7 +56,7 @@ const timeClasses = "p-1 font-normal text-xs text-muted text-center border-b bor
 export default function Grid({
   bloques, materias, unidadHoraMinutos: u, modo,
   onRemoveBloque, onExpandBloqueDown, onExpandBloqueUp, onDuplicateBloque,
-  onMarcarResultado, resultados,
+  onEditBloque, onMarcarResultado, resultados,
 }: GridProps) {
   const isEdicion = modo === "edicion";
   const filas = generarFilasHora(u);
@@ -163,7 +164,7 @@ export default function Grid({
       rowSpan: span,
       element: (
         <div className="h-full border-b border-border border-r border-border bg-surface relative">
-          {materia && (
+            {materia && (
             <MateriaSlot
               bloque={bloque} materia={materia} conflicto={conflicto} span={span} modo={modo}
               resultado={resultados?.[materia.codigo]}
@@ -171,6 +172,7 @@ export default function Grid({
               onExpandDown={onExpandBloqueDown ? () => onExpandBloqueDown(bloque.id) : undefined}
               onExpandUp={onExpandBloqueUp ? () => onExpandBloqueUp(bloque.id) : undefined}
               onDuplicate={onDuplicateBloque ? () => onDuplicateBloque(bloque) : undefined}
+              onEdit={onEditBloque ? () => onEditBloque(bloque) : undefined}
               onMarcar={onMarcarResultado ? (a) => onMarcarResultado(materia.codigo, a) : undefined}
             />
           )}

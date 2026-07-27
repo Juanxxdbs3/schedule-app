@@ -11,6 +11,7 @@ import { generarFilasHora } from "../utils/generarFilasHora.ts";
 import { filtrarMaterias } from "../../../shared/utils/filterMaterias.ts";
 import Grid from "./Grid.tsx";
 import ContadorCreditos from "./ContadorCreditos.tsx";
+import EditBloqueModal from "./EditBloqueModal.tsx";
 import DropZone from "./DropZone.tsx";
 import MateriaBlock from "../../pensum/components/MateriaBlock.tsx";
 
@@ -28,6 +29,7 @@ interface HorarioScreenProps {
 export default function HorarioScreen({ modo, horario, pensum, onModoChange, onGuardar, onEliminar, guardarLoading, eliminando }: HorarioScreenProps) {
   const addBloqueLocal = useHorarioStore((s) => s.addBloqueLocal);
   const removeBloqueLocal = useHorarioStore((s) => s.removeBloqueLocal);
+  const updateBloqueLocal = useHorarioStore((s) => s.updateBloqueLocal);
   const moveBloqueLocal = useHorarioStore((s) => s.moveBloqueLocal);
   const expandBloqueDown = useHorarioStore((s) => s.expandBloqueDown);
   const expandBloqueUp = useHorarioStore((s) => s.expandBloqueUp);
@@ -51,6 +53,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
   const [activeMateria, setActiveMateria] = useState<Materia | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resultados, setResultados] = useState<Record<string, boolean>>({});
+  const [editBloque, setEditBloque] = useState<Bloque | null>(null);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroSemestre, setFiltroSemestre] = useState<number | "">("");
   const [filtroCreditos, setFiltroCreditos] = useState<number | "">("");
@@ -132,6 +135,10 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     if (!bloque) return;
     removeBloqueLocal(bloqueId);
     setLocalActivos((p) => new Set(p).add(bloque.materiaCodigo));
+  }
+
+  function handleEditSave(bloqueId: string, data: { nombrePersonalizado: string; profesor: string; salon: string }) {
+    updateBloqueLocal(bloqueId, data);
   }
 
   function handleExpandDown(bloqueId: string) {
@@ -284,7 +291,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
             <Grid
               bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
               onRemoveBloque={handleRemoveBloque} onExpandBloqueDown={handleExpandDown} onExpandBloqueUp={handleExpandUp}
-              onDuplicateBloque={handleDuplicateBloque}
+              onDuplicateBloque={handleDuplicateBloque} onEditBloque={setEditBloque}
             />
             <div className="bg-surface rounded-md border border-border p-3 sticky top-3">
               <h3 className="text-sm mb-2">Materias ({materiasEnPool.length})</h3>
@@ -327,6 +334,16 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
             />
           )}
         </div>
+      )}
+
+      {editBloque && (
+        <EditBloqueModal
+          isOpen={true}
+          bloque={editBloque}
+          materiaNombre={materiasTodas.find((m) => m.codigo === editBloque.materiaCodigo)?.nombre ?? editBloque.materiaCodigo}
+          onClose={() => setEditBloque(null)}
+          onSave={handleEditSave}
+        />
       )}
     </div>
   );

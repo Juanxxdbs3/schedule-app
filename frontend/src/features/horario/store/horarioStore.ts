@@ -36,6 +36,7 @@ interface HorarioState {
 
   addBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
   removeBloqueLocal: (bloqueId: string) => void;
+  updateBloqueLocal: (bloqueId: string, updates: Partial<Pick<Bloque, 'nombrePersonalizado' | 'profesor' | 'salon'>>) => void;
   moveBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
   expandBloqueDown: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
   expandBloqueUp: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
@@ -126,6 +127,14 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     set((s) => ({
       horario: s.horario
         ? { ...s.horario, bloques: s.horario.bloques.filter((b) => b.id !== bloqueId) }
+        : null,
+    }));
+  },
+
+  updateBloqueLocal: (bloqueId, updates) => {
+    set((s) => ({
+      horario: s.horario
+        ? { ...s.horario, bloques: s.horario.bloques.map((b) => (b.id === bloqueId ? { ...b, ...updates } : b)) }
         : null,
     }));
   },

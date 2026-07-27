@@ -8,6 +8,8 @@ export interface Bloque {
   horaFin: string;
 }
 
+export type ModoHorario = "edicion" | "curso" | "finalizado";
+
 export interface Horario {
   id: string;
   userId: string;

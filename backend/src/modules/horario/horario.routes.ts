@@ -9,6 +9,7 @@ export function createHorarioRouter(horarioController: HorarioController): Route
   router.get("/", authGuard, horarioController.listHandler);
   router.get("/:id", authGuard, horarioController.getByIdHandler);
   router.patch("/:id/bloques", authGuard, horarioController.addBloqueHandler);
+  router.put("/:id/bloques", authGuard, horarioController.saveBloquesHandler);
   router.delete("/:id/bloques/:materiaCodigo", authGuard, horarioController.removeBloqueHandler);
   router.patch("/:id/resultados", authGuard, horarioController.marcarResultadoHandler);
   router.patch("/:id/finalizar", authGuard, horarioController.finalizarHandler);

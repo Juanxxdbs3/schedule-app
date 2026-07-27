@@ -5,8 +5,16 @@ interface MateriaBlockProps {
   materia: Materia;
 }
 
+const COLOR_BY_ESTADO: Record<string, { border: string; badgeBg: string; badgeText: string }> = {
+  activo: { border: "#d97706", badgeBg: "#fef3c7", badgeText: "#92400e" },
+  matriculado: { border: "#16a34a", badgeBg: "#dcfce7", badgeText: "#166534" },
+  en_espera: { border: "#2563eb", badgeBg: "#dbeafe", badgeText: "#1e40af" },
+  cursado: { border: "var(--color-muted-block)", badgeBg: "var(--color-muted-block)", badgeText: "var(--color-text-muted)" },
+};
+
 export default function MateriaBlock({ materia }: MateriaBlockProps) {
   const isCursado = materia.estado === "cursado";
+  const colors = COLOR_BY_ESTADO[materia.estado] ?? COLOR_BY_ESTADO.activo;
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `pool-${materia.codigo}`,
@@ -16,7 +24,7 @@ export default function MateriaBlock({ materia }: MateriaBlockProps) {
 
   const cardStyle: React.CSSProperties = {
     background: "var(--color-surface)",
-    border: `1px solid ${isCursado ? "var(--color-muted-block)" : "var(--color-border)"}`,
+    border: `1px solid ${colors.border}`,
     borderRadius: "var(--radius-md)",
     padding: "var(--spacing-3)",
     opacity: isDragging ? 0.3 : isCursado ? 0.6 : 1,
@@ -54,8 +62,8 @@ export default function MateriaBlock({ materia }: MateriaBlockProps) {
     fontSize: "var(--font-size-sm)",
     padding: "2px 8px",
     borderRadius: "var(--radius-sm)",
-    background: isCursado ? "var(--color-muted-block)" : "var(--color-surface-alt)",
-    color: isCursado ? "var(--color-text-muted)" : "var(--color-text)",
+    background: colors.badgeBg,
+    color: colors.badgeText,
   };
 
   const metaStyle: React.CSSProperties = {

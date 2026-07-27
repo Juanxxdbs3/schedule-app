@@ -142,6 +142,249 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "pensum",
+      "item": [
+        {
+          "name": "create pensum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nombre\": \"Ingeniería de Sistemas\",\r\n  \"materias\": [\r\n    {\r\n      \"codigo\": \"FB1103\",\r\n      \"nombre\": \"FUNDAMENTOS DE MATEMATICAS\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 1,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1102\",\r\n      \"nombre\": \"CÁLCULO DIFERENCIAL\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 1,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0411\",\r\n      \"nombre\": \"INTRODUCCION A LA INGENIERIA DE SISTEMAS\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 1,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0412\",\r\n      \"nombre\": \"ALGORITMOS Y PROGRAMACION\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 1,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FH0240\",\r\n      \"nombre\": \"COMUNICACION I\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 1,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0432\",\r\n      \"nombre\": \"CATEDRA INSTITUCIONAL\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 1,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0433\",\r\n      \"nombre\": \"INGLES I\",\r\n      \"creditos\": 1,\r\n      \"semestre\": 1,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1104\",\r\n      \"nombre\": \"CÁLCULO INTEGRAL\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 2,\r\n      \"requiere\": [\"FB1102\", \"FB1103\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1105\",\r\n      \"nombre\": \"ALGEBRA LINEAL\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 2,\r\n      \"requiere\": [\"FB1103\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1106\",\r\n      \"nombre\": \"FISICA MECANICA Y LABORATORIO\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 2,\r\n      \"requiere\": [\"FB1102\", \"FB1104\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0413\",\r\n      \"nombre\": \"PROGRAMACION BASICA\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 2,\r\n      \"requiere\": [\"FP0412\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FH0242\",\r\n      \"nombre\": \"COMUNICACION II\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 2,\r\n      \"requiere\": [\"FH0240\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1107\",\r\n      \"nombre\": \"QUIMICA BASICA Y LABORATORIO\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 2,\r\n      \"requiere\": [],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0434\",\r\n      \"nombre\": \"INGLES II\",\r\n      \"creditos\": 1,\r\n      \"semestre\": 2,\r\n      \"requiere\": [\"FC0433\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1108\",\r\n      \"nombre\": \"CÁLCULO VECTORIAL\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 3,\r\n      \"requiere\": [\"FB1104\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0414\",\r\n      \"nombre\": \"MATEMATICAS DISCRETAS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 3,\r\n      \"requiere\": [\"FP0412\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1109\",\r\n      \"nombre\": \"ELECTROMAGNETISMO Y LABORATORIO\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 3,\r\n      \"requiere\": [\"FB1106\", \"FB1104\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1014\",\r\n      \"nombre\": \"PROGRAMACION ORIENTADA A OBJETOS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 3,\r\n      \"requiere\": [\"FP0413\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0415\",\r\n      \"nombre\": \"TEORIA GENERAL DE SISTEMAS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 3,\r\n      \"requiere\": [\"FP0411\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1110\",\r\n      \"nombre\": \"PROBABILIDAD Y ESTADISTICA\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 3,\r\n      \"requiere\": [\"FB1104\", \"FB1105\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0435\",\r\n      \"nombre\": \"INGLES III\",\r\n      \"creditos\": 1,\r\n      \"semestre\": 3,\r\n      \"requiere\": [\"FC0434\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1111\",\r\n      \"nombre\": \"ECUACIONES DIFERENCIALES\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 4,\r\n      \"requiere\": [\"FB1108\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0416\",\r\n      \"nombre\": \"ELECTRONICA\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 4,\r\n      \"requiere\": [\"FB1109\", \"FB1106\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FB1112\",\r\n      \"nombre\": \"FISICA MODERNA Y LABORATORIO\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 4,\r\n      \"requiere\": [\"FB1106\", \"FB1109\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1015\",\r\n      \"nombre\": \"BASE DE DATOS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 4,\r\n      \"requiere\": [\"IA1014\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1016\",\r\n      \"nombre\": \"ESTRUCTURA DE DATOS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 4,\r\n      \"requiere\": [\"IA1014\", \"FP0414\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0436\",\r\n      \"nombre\": \"ADMINISTRACION\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 4,\r\n      \"requiere\": [\"FP0415\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0437\",\r\n      \"nombre\": \"INGLES IV\",\r\n      \"creditos\": 1,\r\n      \"semestre\": 4,\r\n      \"requiere\": [\"FC0435\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0417\",\r\n      \"nombre\": \"SISTEMAS DINAMICOS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 5,\r\n      \"requiere\": [\"FB1111\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1017\",\r\n      \"nombre\": \"SISTEMAS DIGITALES\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 5,\r\n      \"requiere\": [\"FP0416\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0418\",\r\n      \"nombre\": \"METODOLOGIA DE LA INVESTIGACION\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 5,\r\n      \"requiere\": [\"FH0242\", \"FC0432\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1018\",\r\n      \"nombre\": \"INGENIERIA DE SOFTWARE\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 5,\r\n      \"requiere\": [\"IA1015\", \"IA1016\", \"IA1014\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FP0419\",\r\n      \"nombre\": \"INVESTIGACION DE OPERACIONES\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 5,\r\n      \"requiere\": [\"FB1110\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0438\",\r\n      \"nombre\": \"CONTABILIDAD Y COSTOS\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 5,\r\n      \"requiere\": [\"FC0436\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1019\",\r\n      \"nombre\": \"SISTEMAS OPERATIVOS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 5,\r\n      \"requiere\": [\"IA1016\", \"FP0416\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1020\",\r\n      \"nombre\": \"ORGANIZACION DE COMPUTADORES\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 6,\r\n      \"requiere\": [\"FP0416\", \"IA1017\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1021\",\r\n      \"nombre\": \"COMUNICACION DE DATOS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 6,\r\n      \"requiere\": [\"IA1020\", \"IA1019\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1022\",\r\n      \"nombre\": \"TEORIA DE AUTÓMATAS Y LENGUAJES FORMALES\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 6,\r\n      \"requiere\": [\"FP0414\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1023\",\r\n      \"nombre\": \"INGENIERIA DE SERVICIOS DE INTERNET\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 6,\r\n      \"requiere\": [\"IA1018\", \"IA1015\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1024\",\r\n      \"nombre\": \"COMERCIO ELECTRONICO\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 6,\r\n      \"requiere\": [\"IA1023\", \"IA1015\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0439\",\r\n      \"nombre\": \"INGENIERIA ECONOMICA\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 6,\r\n      \"requiere\": [\"FC0438\", \"FC0436\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0440\",\r\n      \"nombre\": \"INGLES V\",\r\n      \"creditos\": 1,\r\n      \"semestre\": 6,\r\n      \"requiere\": [\"FC0437\"],\r\n      \"estado\": \"cursado\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1025\",\r\n      \"nombre\": \"SEGURIDAD INFORMATICA\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 7,\r\n      \"requiere\": [\"IA1019\", \"IA1020\", \"IA1021\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0441\",\r\n      \"nombre\": \"ETICA Y LEGISLACION INFORMÁTICA\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 7,\r\n      \"requiere\": [\"FC0432\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1026\",\r\n      \"nombre\": \"INTELIGENCIA ARTIFICIAL\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 7,\r\n      \"requiere\": [\"IA1016\", \"FB1110\", \"FP0415\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1027\",\r\n      \"nombre\": \"GESTION DE PROYECTOS INFORMATICOS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 7,\r\n      \"requiere\": [\"IA1018\", \"FC0436\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"EL1035\",\r\n      \"nombre\": \"INTERNET DE LAS COSAS\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 7,\r\n      \"requiere\": [\"IA1020\", \"IA1021\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1028\",\r\n      \"nombre\": \"ELECTIVA I\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 7,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0442\",\r\n      \"nombre\": \"INGLES VI\",\r\n      \"creditos\": 1,\r\n      \"semestre\": 7,\r\n      \"requiere\": [\"FC0440\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1029\",\r\n      \"nombre\": \"PROFUNDIZACION I\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 7,\r\n      \"requiere\": [\"IA1018\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1030\",\r\n      \"nombre\": \"AUDITORIA DE SISTEMAS\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 8,\r\n      \"requiere\": [\"IA1025\", \"IA1018\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1031\",\r\n      \"nombre\": \"TRABAJO DE GRADO I\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 8,\r\n      \"requiere\": [\"FP0418\", \"IA1018\", \"IA1027\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1032\",\r\n      \"nombre\": \"SIMULACION DIGITAL\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 8,\r\n      \"requiere\": [\"FP0417\", \"FP0419\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0443\",\r\n      \"nombre\": \"SEMINARIO TALLER CREACION DE EMPRESAS\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 8,\r\n      \"requiere\": [\"FC0438\", \"FC0439\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"EL1036\",\r\n      \"nombre\": \"BIG DATA\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 8,\r\n      \"requiere\": [\"IA1026\", \"IA1015\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1033\",\r\n      \"nombre\": \"ELECTIVA II\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 8,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"CFP2231\",\r\n      \"nombre\": \"FUNDAMENTOS DE ECOLOGIA Y MEDIO AMBIENTE\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 8,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1034\",\r\n      \"nombre\": \"PROFUNDIZACION II\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 8,\r\n      \"requiere\": [\"IA1029\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"CURLIB01\",\r\n      \"nombre\": \"CURSO LIBRE I\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 8,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0444\",\r\n      \"nombre\": \"EXPRESION GRAFICA DIGITAL\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 9,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1035\",\r\n      \"nombre\": \"TRABAJO DE GRADO II\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 9,\r\n      \"requiere\": [\"IA1031\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"FC0445\",\r\n      \"nombre\": \"CONSTITUCION Y ETICA\",\r\n      \"creditos\": 1,\r\n      \"semestre\": 9,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1036\",\r\n      \"nombre\": \"SISTEMAS DE INFORMACION GERENCIAL\",\r\n      \"creditos\": 3,\r\n      \"semestre\": 9,\r\n      \"requiere\": [\"IA1015\", \"IA1018\", \"IA1027\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1037\",\r\n      \"nombre\": \"ELECTIVA III\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 9,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1038\",\r\n      \"nombre\": \"PROFUNDIZACION III\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 9,\r\n      \"requiere\": [\"IA1034\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"CURLIB02\",\r\n      \"nombre\": \"CURSO LIBRE II\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 9,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1039\",\r\n      \"nombre\": \"PRACTICA EMPRESARIAL\",\r\n      \"creditos\": 6,\r\n      \"semestre\": 10,\r\n      \"requiere\": [\"IA1035\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1040\",\r\n      \"nombre\": \"ELECTIVA IV\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 10,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"IA1041\",\r\n      \"nombre\": \"PROFUNDIZACION IV\",\r\n      \"creditos\": 4,\r\n      \"semestre\": 10,\r\n      \"requiere\": [\"IA1038\"],\r\n      \"estado\": \"activo\"\r\n    },\r\n    {\r\n      \"codigo\": \"CLS0014\",\r\n      \"nombre\": \"APLICACION DE M\",\r\n      \"creditos\": 2,\r\n      \"semestre\": 10,\r\n      \"requiere\": [],\r\n      \"estado\": \"activo\"\r\n    }\r\n  ]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/pensums",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "pensums"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get pensums",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/pensums",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "pensums"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete pensum",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/pensums/6a6688a600a55ee27230b08e",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "pensums",
+                "6a6688a600a55ee27230b08e"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "horarios",
+      "item": [
+        {
+          "name": "crear horario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"pensumId\": \"6a668be23e8cf14bcbe1efb0\",\r\n  \"semestreLabel\": \"2027-1\",\r\n  \"maxCreditos\": 20,\r\n  \"unidadHoraMinutos\": 50\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/horarios",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "horarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "agregar materia",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"materiaCodigo\": \"FC0443\",\r\n  \"dia\": \"lunes\",\r\n  \"horaInicio\": \"07:00\",\r\n  \"horaFin\": \"09:30\"\r\n}"
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/horarios/:id/bloques",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "horarios",
+                ":id",
+                "bloques"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6a669521000c3fa22ecd6ab6"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "marcar horario como finalizado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/horarios/:id/finalizar",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "horarios",
+                ":id",
+                "finalizar"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6a668c493e8cf14bcbe1efb3"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "marcar una materia",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"materiaCodigo\": \"FC0443\",\r\n  \"aprobada\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/horarios/:id/resultados",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "horarios",
+                ":id",
+                "resultados"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6a669521000c3fa22ecd6ab6"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

@@ -18,8 +18,13 @@ interface HorarioState {
   setHorario: (h: Horario) => void;
   fetchHorarios: (pensumId: string) => Promise<void>;
   createHorario: (pensumId: string, semestreLabel: string, maxCreditos: number, unidadHoraMinutos: number) => Promise<Horario>;
-  addBloque: (bloque: Bloque, materias: Materia[]) => Promise<AddBloqueResult>;
-  removeBloque: (materiaCodigo: string) => Promise<void>;
+
+  addBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
+  removeBloqueLocal: (materiaCodigo: string) => void;
+  expandBloqueLocal: (materiaCodigo: string, unidades: number, materias: Materia[]) => AddBloqueResult;
+
+  saveBloques: () => Promise<void>;
+  fetchById: (id: string) => Promise<void>;
   marcarResultado: (materiaCodigo: string, aprobada: boolean) => Promise<void>;
   finalizar: () => Promise<void>;
   clear: () => void;
@@ -70,15 +75,54 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     }
   },
 
-  addBloque: async (bloque, materias) => {
+  addBloqueLocal: (bloque, materias) => {
     const { horario } = get();
     if (!horario) return { ok: false, error: "No hay horario activo" };
-
-    const nuevosBloques = [...horario.bloques, bloque];
 
     if (conflictCheck.hayChoque(bloque, horario.bloques)) {
       return { ok: false, error: "La materia se superpone con un bloque existente" };
     }
+
+    const nuevosBloques = [...horario.bloques, bloque];
+    if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
+      return { ok: false, error: "Se excedería el límite de créditos" };
+    }
+
+    set((s) => ({
+      horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null,
+    }));
+    return { ok: true };
+  },
+
+  removeBloqueLocal: (materiaCodigo) => {
+    set((s) => ({
+      horario: s.horario
+        ? { ...s.horario, bloques: s.horario.bloques.filter((b) => b.materiaCodigo !== materiaCodigo) }
+        : null,
+    }));
+  },
+
+  expandBloqueLocal: (materiaCodigo, unidades, materias) => {
+    const { horario } = get();
+    if (!horario) return { ok: false, error: "No hay horario activo" };
+
+    const idx = horario.bloques.findIndex((b) => b.materiaCodigo === materiaCodigo);
+    if (idx === -1) return { ok: false, error: "Bloque no encontrado" };
+
+    const original = horario.bloques[idx];
+    const aMinutos = (h: string) => { const [h_, m_] = h.split(":").map(Number); return h_ * 60 + m_; };
+    const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+
+    const finActual = aMinutos(original.horaFin);
+    const nuevoFin = finActual + unidades * horario.unidadHoraMinutos;
+    const finMax = aMinutos(original.horaInicio) + 5 * horario.unidadHoraMinutos;
+
+    if (nuevoFin > finMax) {
+      return { ok: false, error: "Máximo 5 unidades de hora por materia" };
+    }
+
+    const expandido: Bloque = { ...original, horaFin: fmt(nuevoFin) };
+    const nuevosBloques = horario.bloques.map((b) => (b.materiaCodigo === materiaCodigo ? expandido : b));
 
     if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
       return { ok: false, error: "Se excedería el límite de créditos" };
@@ -87,33 +131,32 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     set((s) => ({
       horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null,
     }));
+    return { ok: true };
+  },
 
+  saveBloques: async () => {
+    const { horario } = get();
+    if (!horario) return;
+    set({ loading: true, error: null });
     try {
-      await HorarioService.addBloque(horario.id, bloque);
-      return { ok: true };
-    } catch {
-      set((s) => ({
-        horario: s.horario ? { ...s.horario, bloques: horario.bloques } : null,
-      }));
-      return { ok: false, error: "Error al guardar en el servidor" };
+      await HorarioService.saveBloques(horario.id, horario.bloques);
+      set({ loading: false });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al guardar horario";
+      set({ error: msg, loading: false });
+      throw e;
     }
   },
 
-  removeBloque: async (materiaCodigo) => {
-    const { horario } = get();
-    if (!horario) return;
-
-    const nuevosBloques = horario.bloques.filter((b) => b.materiaCodigo !== materiaCodigo);
-    set((s) => ({
-      horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null,
-    }));
-
+  fetchById: async (id) => {
+    set({ loading: true, error: null });
     try {
-      await HorarioService.removeBloque(horario.id, materiaCodigo);
-    } catch {
-      set((s) => ({
-        horario: s.horario ? { ...s.horario, bloques: horario.bloques } : null,
-      }));
+      const res = await HorarioService.getById(id);
+      get().storage.save(res.horario);
+      set({ horario: res.horario, loading: false });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al cargar horario";
+      set({ error: msg, loading: false });
     }
   },
 

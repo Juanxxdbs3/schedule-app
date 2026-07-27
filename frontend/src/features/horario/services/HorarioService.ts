@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch, apiDelete } from "../../../shared/api/api.ts";
+import { apiGet, apiPost, apiPut, apiPatch, apiDelete } from "../../../shared/api/api.ts";
 import type { Horario, Bloque } from "../types.ts";
 
 interface HorarioCreateResponse {
@@ -26,6 +26,9 @@ export const HorarioService = {
   },
 
   getById: (id: string) => apiGet<HorarioGetResponse>(`/horarios/${id}`),
+
+  saveBloques: (horarioId: string, bloques: Bloque[]) =>
+    apiPut<void>(`/horarios/${horarioId}/bloques`, { bloques }),
 
   addBloque: (horarioId: string, bloque: Bloque) =>
     apiPatch<void>(`/horarios/${horarioId}/bloques`, bloque),

@@ -58,6 +58,18 @@ export class HorarioController {
     }
   };
 
+  saveBloquesHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id as string;
+      const { bloques } = req.body;
+
+      await this.horarioService.saveBloques(id, bloques);
+      res.json({ message: "Bloques guardados" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   removeBloqueHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;

@@ -343,7 +343,7 @@
       "creditos": 3,
       "semestre": 7,
       "requiere": ["IA1019", "IA1020", "IA1021"],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "FC0441",
@@ -351,7 +351,7 @@
       "creditos": 2,
       "semestre": 7,
       "requiere": ["FC0432"],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "IA1026",
@@ -367,7 +367,7 @@
       "creditos": 3,
       "semestre": 7,
       "requiere": ["IA1018", "FC0436"],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "EL1035",
@@ -375,7 +375,7 @@
       "creditos": 3,
       "semestre": 7,
       "requiere": ["IA1020", "IA1021"],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "IA1028",
@@ -527,7 +527,7 @@
       "creditos": 2,
       "semestre": 9,
       "requiere": [],
-      "estado": "activo"
+      "estado": "cursado"
     },
     {
       "codigo": "IA1039",

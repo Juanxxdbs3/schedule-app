@@ -129,6 +129,12 @@ export class HorarioRepositoryMongo implements IHorarioRepository {
     });
   }
 
+  async replaceBloques(horarioId: string, bloques: Bloque[]): Promise<void> {
+    await HorarioModel.findByIdAndUpdate(horarioId, {
+      $set: { bloques },
+    });
+  }
+
   async finalizar(horarioId: string, finalizadoAt: Date): Promise<void> {
     await HorarioModel.findByIdAndUpdate(horarioId, {
       $set: { estado: "finalizado", finalizadoAt },

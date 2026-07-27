@@ -77,6 +77,36 @@ export class HorarioService {
     await this.horarioRepo.addBloque(horarioId, bloque);
   }
 
+  async saveBloques(horarioId: string, bloques: Bloque[]): Promise<void> {
+    const horario = await this.getById(horarioId);
+    const pensum = await this.pensumRepo.findById(horario.pensumId);
+    if (!pensum) {
+      throw new NotFoundError("Pensum not found for this horario");
+    }
+
+    // Validate credit limit for the full set of bloques
+    if (!this.creditLimitStrategy.validar(bloques, pensum.materias, horario.maxCreditos)) {
+      throw new ValidationError("El límite de créditos se excedería con estos bloques");
+    }
+
+    // Validate that no bloques conflict with each other
+    const conflicted = bloques.some((bloque, index) => {
+      const otros = bloques.filter((_, i) => i !== index);
+      return this.conflictStrategy.hayChoque(bloque, otros);
+    });
+    if (conflicted) {
+      throw new ValidationError("Uno o más bloques se superponen entre sí");
+    }
+
+    await this.horarioRepo.replaceBloques(horarioId, bloques);
+
+    // Update estado of all referenced materias to "matriculado"
+    const codigosEnBloques = new Set(bloques.map((b) => b.materiaCodigo));
+    for (const codigo of codigosEnBloques) {
+      await this.pensumRepo.updateMateriaEstado(horario.pensumId, codigo, "matriculado");
+    }
+  }
+
   async removeBloque(horarioId: string, materiaCodigo: string): Promise<void> {
     await this.getById(horarioId);
     await this.horarioRepo.removeBloque(horarioId, materiaCodigo);

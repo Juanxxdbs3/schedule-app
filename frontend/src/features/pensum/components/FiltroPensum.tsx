@@ -1,18 +1,10 @@
 import { useState } from "react";
 import type { Materia } from "../types.ts";
+import { filtrarMaterias } from "../../../shared/utils/filterMaterias.ts";
 
 interface FiltroPensumProps {
   materias: Materia[];
   onFilter: (filtradas: Materia[]) => void;
-}
-
-function filtrar(materias: Materia[], nombre: string, semestre: number | "", creditosMax: number | ""): Materia[] {
-  return materias.filter((m) => {
-    if (nombre && !m.nombre.toLowerCase().includes(nombre.toLowerCase())) return false;
-    if (semestre !== "" && m.semestre !== semestre) return false;
-    if (creditosMax !== "" && m.creditos > creditosMax) return false;
-    return true;
-  });
 }
 
 export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) {
@@ -23,19 +15,19 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
   function handleNombre(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value;
     setNombre(v);
-    onFilter(filtrar(materias, v, semestre, creditosMax));
+    onFilter(filtrarMaterias(materias, v, semestre, creditosMax));
   }
 
   function handleSemestre(e: React.ChangeEvent<HTMLSelectElement>) {
     const v = e.target.value ? Number(e.target.value) : "";
     setSemestre(v);
-    onFilter(filtrar(materias, nombre, v, creditosMax));
+    onFilter(filtrarMaterias(materias, nombre, v, creditosMax));
   }
 
   function handleCreditos(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value ? Number(e.target.value) : "";
     setCreditosMax(v);
-    onFilter(filtrar(materias, nombre, semestre, v));
+    onFilter(filtrarMaterias(materias, nombre, semestre, v));
   }
 
   const semestreOptions = Array.from({ length: 10 }, (_, i) => i + 1);

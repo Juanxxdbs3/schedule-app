@@ -9,6 +9,15 @@ import type { IHorarioStorageRepository } from "../repositories/IHorarioStorageR
 
 type AddBloqueResult = { ok: true } | { ok: false; error: string };
 
+function aMinutos(h: string): number {
+  const [hh, mm] = h.split(":").map(Number);
+  return hh * 60 + mm;
+}
+
+function fmt(m: number): string {
+  return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+}
+
 interface HorarioState {
   horario: Horario | null;
   loading: boolean;
@@ -17,12 +26,14 @@ interface HorarioState {
 
   setHorario: (h: Horario) => void;
   fetchHorarios: (pensumId: string) => Promise<void>;
-  createHorario: (pensumId: string, semestreLabel: string, maxCreditos: number, unidadHoraMinutos: number) => Promise<Horario>;
+  initNuevoHorario: (pensumId: string, semestreLabel: string, maxCreditos: number, unidadHoraMinutos: number) => Horario;
 
   addBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
   removeBloqueLocal: (materiaCodigo: string) => void;
-  expandBloqueLocal: (materiaCodigo: string, unidades: number, materias: Materia[]) => AddBloqueResult;
+  expandBloqueDown: (materiaCodigo: string, materias: Materia[]) => AddBloqueResult;
+  expandBloqueUp: (materiaCodigo: string, materias: Materia[]) => AddBloqueResult;
 
+  saveNuevoHorario: () => Promise<Horario>;
   saveBloques: () => Promise<void>;
   fetchById: (id: string) => Promise<void>;
   marcarResultado: (materiaCodigo: string, aprobada: boolean) => Promise<void>;
@@ -47,8 +58,8 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
   fetchHorarios: async (pensumId) => {
     set({ loading: true, error: null });
     try {
-      const res = await HorarioService.list({ pensumId, estado: "en_progreso" });
-      const h = res.horarios[0] ?? null;
+      const res = await HorarioService.list({ pensumId });
+      const h = res.horarios.find((x) => x.estado === "en_progreso") ?? res.horarios[0] ?? null;
       if (h) get().storage.save(h);
       set({ horario: h, loading: false });
     } catch {
@@ -61,18 +72,21 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     }
   },
 
-  createHorario: async (pensumId, semestreLabel, maxCreditos, unidadHoraMinutos) => {
-    set({ loading: true, error: null });
-    try {
-      const res = await HorarioService.create(pensumId, semestreLabel, maxCreditos, unidadHoraMinutos);
-      get().storage.save(res.horario);
-      set({ horario: res.horario, loading: false });
-      return res.horario;
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Error al crear horario";
-      set({ error: msg, loading: false });
-      throw e;
-    }
+  initNuevoHorario: (pensumId, semestreLabel, maxCreditos, unidadHoraMinutos) => {
+    const h: Horario = {
+      id: "nuevo",
+      userId: "",
+      pensumId,
+      semestreLabel,
+      maxCreditos,
+      unidadHoraMinutos,
+      estado: "en_progreso",
+      bloques: [],
+      createdAt: new Date().toISOString(),
+      finalizadoAt: null,
+    };
+    set({ horario: h, error: null });
+    return h;
   },
 
   addBloqueLocal: (bloque, materias) => {
@@ -102,7 +116,7 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     }));
   },
 
-  expandBloqueLocal: (materiaCodigo, unidades, materias) => {
+  expandBloqueDown: (materiaCodigo, materias) => {
     const { horario } = get();
     if (!horario) return { ok: false, error: "No hay horario activo" };
 
@@ -110,17 +124,10 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     if (idx === -1) return { ok: false, error: "Bloque no encontrado" };
 
     const original = horario.bloques[idx];
-    const aMinutos = (h: string) => { const [h_, m_] = h.split(":").map(Number); return h_ * 60 + m_; };
-    const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    const span = Math.round((aMinutos(original.horaFin) - aMinutos(original.horaInicio)) / horario.unidadHoraMinutos);
+    if (span >= 5) return { ok: false, error: "Máximo 5 unidades de hora por materia" };
 
-    const finActual = aMinutos(original.horaFin);
-    const nuevoFin = finActual + unidades * horario.unidadHoraMinutos;
-    const finMax = aMinutos(original.horaInicio) + 5 * horario.unidadHoraMinutos;
-
-    if (nuevoFin > finMax) {
-      return { ok: false, error: "Máximo 5 unidades de hora por materia" };
-    }
-
+    const nuevoFin = aMinutos(original.horaFin) + horario.unidadHoraMinutos;
     const expandido: Bloque = { ...original, horaFin: fmt(nuevoFin) };
     const nuevosBloques = horario.bloques.map((b) => (b.materiaCodigo === materiaCodigo ? expandido : b));
 
@@ -128,15 +135,57 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
       return { ok: false, error: "Se excedería el límite de créditos" };
     }
 
-    set((s) => ({
-      horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null,
-    }));
+    set((s) => ({ horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null }));
     return { ok: true };
+  },
+
+  expandBloqueUp: (materiaCodigo, materias) => {
+    const { horario } = get();
+    if (!horario) return { ok: false, error: "No hay horario activo" };
+
+    const idx = horario.bloques.findIndex((b) => b.materiaCodigo === materiaCodigo);
+    if (idx === -1) return { ok: false, error: "Bloque no encontrado" };
+
+    const original = horario.bloques[idx];
+    const span = Math.round((aMinutos(original.horaFin) - aMinutos(original.horaInicio)) / horario.unidadHoraMinutos);
+    if (span >= 5) return { ok: false, error: "Máximo 5 unidades de hora por materia" };
+
+    const nuevoInicio = aMinutos(original.horaInicio) - horario.unidadHoraMinutos;
+    const expandido: Bloque = { ...original, horaInicio: fmt(nuevoInicio) };
+    const nuevosBloques = horario.bloques.map((b) => (b.materiaCodigo === materiaCodigo ? expandido : b));
+
+    if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
+      return { ok: false, error: "Se excedería el límite de créditos" };
+    }
+
+    set((s) => ({ horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null }));
+    return { ok: true };
+  },
+
+  saveNuevoHorario: async () => {
+    const { horario } = get();
+    if (!horario || horario.id !== "nuevo") throw new Error("No hay horario nuevo que guardar");
+    set({ loading: true, error: null });
+
+    try {
+      const creado = await HorarioService.create(
+        horario.pensumId, horario.semestreLabel,
+        horario.maxCreditos, horario.unidadHoraMinutos,
+      );
+      await HorarioService.saveBloques(creado.horario.id, horario.bloques);
+      get().storage.save(creado.horario);
+      set({ horario: creado.horario, loading: false });
+      return creado.horario;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al guardar horario";
+      set({ error: msg, loading: false });
+      throw e;
+    }
   },
 
   saveBloques: async () => {
     const { horario } = get();
-    if (!horario) return;
+    if (!horario || horario.id === "nuevo") return;
     set({ loading: true, error: null });
     try {
       await HorarioService.saveBloques(horario.id, horario.bloques);

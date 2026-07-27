@@ -1,8 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
-import type { Bloque, DiaSemana } from "../types.ts";
+import type { Bloque, DiaSemana, ModoHorario } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 import MateriaSlot from "./MateriaSlot.tsx";
-import type { ModoHorario } from "../types.ts";
 
 const DIAS: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 
@@ -21,90 +20,43 @@ function fmt(m: number): string {
   return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 }
 
-function generarSlots(unidadMinutos: number): { horaInicio: string; horaFin: string }[] {
-  const slots: { horaInicio: string; horaFin: string }[] = [];
-  let minutoActual = 7 * 60;
-  const fin = 22 * 60;
-
-  while (minutoActual + unidadMinutos <= fin) {
-    slots.push({
-      horaInicio: fmt(minutoActual),
-      horaFin: fmt(minutoActual + unidadMinutos),
-    });
-    minutoActual += unidadMinutos;
-  }
-  return slots;
+function getSpan(bloque: Bloque, u: number): number {
+  return Math.round((aMinutos(bloque.horaFin) - aMinutos(bloque.horaInicio)) / u);
 }
 
-function getSpan(bloque: Bloque, unidadMinutos: number): number {
-  return Math.round((aMinutos(bloque.horaFin) - aMinutos(bloque.horaInicio)) / unidadMinutos);
+function generarSlots(u: number, desde: number, hasta: number): { horaInicio: string; horaFin: string }[] {
+  const s: { horaInicio: string; horaFin: string }[] = [];
+  let m = desde;
+  while (m + u <= hasta) { s.push({ horaInicio: fmt(m), horaFin: fmt(m + u) }); m += u; }
+  return s;
 }
 
-type CellInfo = { type: "start"; bloque: Bloque; span: number } | { type: "span" } | { type: "empty" };
-
-function buildCellMap(bloques: Bloque[], unidadMinutos: number, slots: { horaInicio: string }[]): Map<string, CellInfo> {
-  const map = new Map<string, CellInfo>();
-  const startKeys = new Map<string, Bloque>();
-
-  for (const b of bloques) {
-    const key = `${b.dia}-${b.horaInicio}`;
-    startKeys.set(key, b);
-  }
-
-  const spanned = new Set<string>();
-  for (const b of bloques) {
-    const span = getSpan(b, unidadMinutos);
-    if (span > 1) {
-      const ini = aMinutos(b.horaInicio);
-      for (let i = 1; i < span; i++) {
-        const m = ini + i * unidadMinutos;
-        spanned.add(`${b.dia}-${fmt(m)}`);
-      }
-    }
-  }
-
-  for (const slot of slots) {
-    for (const dia of DIAS) {
-      const key = `${dia}-${slot.horaInicio}`;
-      if (startKeys.has(key)) {
-        const bloque = startKeys.get(key)!;
-        map.set(key, { type: "start", bloque, span: getSpan(bloque, unidadMinutos) });
-      } else if (spanned.has(key)) {
-        map.set(key, { type: "span" });
-      } else {
-        map.set(key, { type: "empty" });
-      }
-    }
-  }
-  return map;
+function calcularUltimoSlot(bloques: Bloque[], u: number): number {
+  let ultimo = 7 * 60;
+  for (const b of bloques) { const fin = aMinutos(b.horaFin); if (fin > ultimo) ultimo = fin; }
+  return Math.min(ultimo + u, 22 * 60);
 }
 
-interface DroppableCellProps {
-  dia: DiaSemana;
-  horaInicio: string;
-  horaFin: string;
-  isOver: boolean;
-}
-
-function DroppableCell({ dia, horaInicio, horaFin, isOver }: DroppableCellProps) {
-  const { setNodeRef } = useDroppable({
+function DroppableCell({ dia, horaInicio, horaFin }: { dia: DiaSemana; horaInicio: string; horaFin: string }) {
+  const { setNodeRef, isOver } = useDroppable({
     id: `cell-${dia}-${horaInicio}`,
     data: { type: "cell", dia, horaInicio, horaFin },
   });
 
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        border: "1px solid var(--color-border)",
-        borderTop: "none",
-        borderLeft: "none",
-        minHeight: 52,
-        background: isOver ? "var(--color-primary-muted, #dbeafe)" : "transparent",
-        transition: "background 0.15s",
-      }}
-    />
+    <div ref={setNodeRef} style={{
+      height: "100%", background: isOver ? "var(--color-primary-muted, #dbeafe)" : "transparent",
+      transition: "background 0.15s",
+    }} />
   );
+}
+
+interface GridItem {
+  key: string;
+  row: number;
+  col: number;
+  rowSpan: number;
+  element: React.ReactNode;
 }
 
 interface GridProps {
@@ -113,159 +65,125 @@ interface GridProps {
   unidadHoraMinutos: number;
   modo: ModoHorario;
   onRemoveBloque?: (codigo: string) => void;
-  onExpandBloque?: (codigo: string, unidades: number) => void;
+  onExpandBloqueDown?: (codigo: string) => void;
+  onExpandBloqueUp?: (codigo: string) => void;
   onMarcarResultado?: (codigo: string, aprobada: boolean) => void;
   resultados?: Record<string, boolean>;
 }
 
-export default function Grid({ bloques, materias, unidadHoraMinutos, modo, onRemoveBloque, onExpandBloque, onMarcarResultado, resultados }: GridProps) {
-  const slots = generarSlots(unidadHoraMinutos);
+const headStyle: React.CSSProperties = {
+  padding: "var(--spacing-2)", fontWeight: 600, textAlign: "center",
+  borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)",
+  background: "var(--color-surface)",
+};
+
+const timeStyle: React.CSSProperties = {
+  padding: "var(--spacing-1)", fontWeight: 400, fontSize: "var(--font-size-xs)",
+  color: "var(--color-text-muted)", textAlign: "center",
+  borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)",
+  background: "var(--color-surface)",
+};
+
+export default function Grid({
+  bloques, materias, unidadHoraMinutos: u, modo,
+  onRemoveBloque, onExpandBloqueDown, onExpandBloqueUp,
+  onMarcarResultado, resultados,
+}: GridProps) {
+  const isEdicion = modo === "edicion";
+  const desde = 7 * 60;
+  const hasta = isEdicion ? 22 * 60 : calcularUltimoSlot(bloques, u);
+  const slots = generarSlots(u, desde, hasta);
+
   const materiaMap = new Map(materias.map((m) => [m.codigo, m]));
-  const cellMap = buildCellMap(bloques, unidadHoraMinutos, slots);
+  const startBloques = new Map<string, Bloque>();
+  const spannedCells = new Set<string>();
+
+  for (const b of bloques) {
+    startBloques.set(`${b.dia}-${b.horaInicio}`, b);
+    const span = getSpan(b, u);
+    if (span > 1) {
+      const ini = aMinutos(b.horaInicio);
+      for (let i = 1; i < span; i++) spannedCells.add(`${b.dia}-${fmt(ini + i * u)}`);
+    }
+  }
 
   function tieneChoque(bloque: Bloque): boolean {
     return bloques.some(
-      (b) =>
-        b.materiaCodigo !== bloque.materiaCodigo &&
-        b.dia === bloque.dia &&
-        aMinutos(b.horaInicio) < aMinutos(bloque.horaFin) &&
-        aMinutos(b.horaFin) > aMinutos(bloque.horaInicio),
+      (b) => b.materiaCodigo !== bloque.materiaCodigo && b.dia === bloque.dia &&
+        aMinutos(b.horaInicio) < aMinutos(bloque.horaFin) && aMinutos(b.horaFin) > aMinutos(bloque.horaInicio),
     );
   }
 
-  const containerStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: `60px repeat(${DIAS.length}, 1fr)`,
-    borderTop: "1px solid var(--color-border)",
-    borderLeft: "1px solid var(--color-border)",
-    borderRadius: "var(--radius-md)",
-    overflow: "hidden",
-    fontSize: "var(--font-size-sm)",
-  };
+  const items: GridItem[] = [];
 
-  const headerCellStyle: React.CSSProperties = {
-    padding: "var(--spacing-2)",
-    fontWeight: 600,
-    textAlign: "center",
-    borderBottom: "1px solid var(--color-border)",
-    borderRight: "1px solid var(--color-border)",
-    background: "var(--color-surface)",
-  };
+  items.push({ key: "hdr-time", row: 1, col: 1, rowSpan: 1, element: <div style={headStyle}>Hora</div> });
+  DIAS.forEach((dia, i) => {
+    items.push({ key: `hdr-${dia}`, row: 1, col: i + 2, rowSpan: 1, element: <div style={headStyle}>{DIAS_LABEL[dia]}</div> });
+  });
 
-  const timeCellStyle: React.CSSProperties = {
-    ...headerCellStyle,
-    fontWeight: 400,
-    fontSize: "var(--font-size-xs)",
-    color: "var(--color-text-muted)",
-    whiteSpace: "nowrap",
-  };
+  slots.forEach((slot, si) => {
+    const row = si + 2;
+    items.push({ key: `t-${slot.horaInicio}`, row, col: 1, rowSpan: 1, element: <div style={timeStyle}>{slot.horaInicio}</div> });
 
-  return (
-    <div style={containerStyle}>
-      <div style={headerCellStyle}>Hora</div>
-      {DIAS.map((dia) => (
-        <div key={dia} style={headerCellStyle}>{DIAS_LABEL[dia]}</div>
-      ))}
+    DIAS.forEach((dia, di) => {
+      const col = di + 2;
+      const key = `${dia}-${slot.horaInicio}`;
 
-      {slots.map((slot) => (
-        <Row
-          key={slot.horaInicio}
-          slot={slot}
-          dias={DIAS}
-          cellMap={cellMap}
-          materiaMap={materiaMap}
-          tieneChoque={tieneChoque}
-          modo={modo}
-          onRemoveBloque={onRemoveBloque}
-          onExpandBloque={onExpandBloque}
-          onMarcarResultado={onMarcarResultado}
-          resultados={resultados}
-          timeCellStyle={timeCellStyle}
-        />
-      ))}
-    </div>
-  );
-}
+      if (spannedCells.has(key)) return;
 
-interface RowProps {
-  slot: { horaInicio: string; horaFin: string };
-  dias: DiaSemana[];
-  cellMap: Map<string, CellInfo>;
-  materiaMap: Map<string, Materia>;
-  tieneChoque: (b: Bloque) => boolean;
-  modo: ModoHorario;
-  onRemoveBloque?: (codigo: string) => void;
-  onExpandBloque?: (codigo: string, unidades: number) => void;
-  onMarcarResultado?: (codigo: string, aprobada: boolean) => void;
-  resultados?: Record<string, boolean>;
-  timeCellStyle: React.CSSProperties;
-}
+      const bloque = startBloques.get(key);
+      if (bloque) {
+        const span = getSpan(bloque, u);
+        const materia = materiaMap.get(bloque.materiaCodigo);
+        const conflicto = tieneChoque(bloque);
 
-function Row({ slot, dias, cellMap, materiaMap, tieneChoque, modo, onRemoveBloque, onExpandBloque, onMarcarResultado, resultados, timeCellStyle }: RowProps) {
-  return (
-    <>
-      <div style={timeCellStyle}>{slot.horaInicio}</div>
-      {dias.map((dia) => {
-        const key = `${dia}-${slot.horaInicio}`;
-        const cell = cellMap.get(key);
-
-        if (!cell || cell.type === "empty") {
-          return (
-            <DroppableCell
-              key={key}
-              dia={dia}
-              horaInicio={slot.horaInicio}
-              horaFin={slot.horaFin}
-              isOver={false}
-            />
-          );
-        }
-
-        if (cell.type === "span") {
-          return <div key={key} style={{ border: "none", borderRight: "1px solid var(--color-border)", minHeight: 52, background: "var(--color-surface-alt, #f8fafc)" }} />;
-        }
-
-        if (cell.type === "start") {
-          const materia = materiaMap.get(cell.bloque.materiaCodigo);
-          const conflicto = tieneChoque(cell.bloque);
-          const span = cell.span;
-
-          const slotStyle: React.CSSProperties = {
-            border: "1px solid var(--color-border)",
-            borderTop: "none",
-            borderLeft: "none",
-            minHeight: 52,
-            background: "var(--color-surface)",
-            position: "relative",
-            ...(span > 1
-              ? {
-                  display: "flex",
-                  alignItems: "stretch",
-                }
-              : {}),
-          };
-
-          return (
-            <div key={key} style={slotStyle}>
+        items.push({
+          key: `b-${key}`,
+          row, col, rowSpan: span,
+          element: (
+            <div style={{ height: "100%", borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)", background: "var(--color-surface)", position: "relative" }}>
               {materia && (
                 <MateriaSlot
-                  bloque={cell.bloque}
-                  materia={materia}
-                  conflicto={conflicto}
-                  span={span}
-                  modo={modo}
+                  bloque={bloque} materia={materia} conflicto={conflicto} span={span} modo={modo}
                   resultado={resultados?.[materia.codigo]}
                   onRemove={onRemoveBloque ? () => onRemoveBloque(materia.codigo) : undefined}
-                  onExpand={onExpandBloque ? (u) => onExpandBloque(materia.codigo, u) : undefined}
+                  onExpandDown={onExpandBloqueDown ? () => onExpandBloqueDown(materia.codigo) : undefined}
+                  onExpandUp={onExpandBloqueUp ? () => onExpandBloqueUp(materia.codigo) : undefined}
                   onMarcar={onMarcarResultado ? (a) => onMarcarResultado(materia.codigo, a) : undefined}
                 />
               )}
             </div>
-          );
-        }
+          ),
+        });
+      } else {
+        items.push({
+          key: `c-${key}`, row, col, rowSpan: 1,
+          element: (
+            <div style={{ height: "100%", borderBottom: "1px solid var(--color-border)", borderRight: "1px solid var(--color-border)" }}>
+              {isEdicion && <DroppableCell dia={dia} horaInicio={slot.horaInicio} horaFin={slot.horaFin} />}
+            </div>
+          ),
+        });
+      }
+    });
+  });
 
-        return null;
-      })}
-    </>
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: `60px repeat(${DIAS.length}, 1fr)`,
+      gridAutoRows: 52,
+      borderTop: "1px solid var(--color-border)",
+      borderLeft: "1px solid var(--color-border)",
+      borderRadius: "var(--radius-md)",
+      overflow: "hidden",
+      fontSize: "var(--font-size-sm)",
+    }}>
+      {items.map((it) => (
+        <div key={it.key} style={{ gridRow: `${it.row} / span ${it.rowSpan}`, gridColumn: it.col }}>
+          {it.element}
+        </div>
+      ))}
+    </div>
   );
 }

@@ -195,16 +195,16 @@ fases — cada una depende de la anterior.
 
 ## Fase 6 — Frontend: horario y drag-and-drop (agente: frontend)
 
-- [ ] Instalar y configurar `@dnd-kit/core`
-- [ ] Crear `features/horario/store/horarioStore.ts` (Zustand)
-- [ ] Crear `features/horario/strategies/` (mismas reglas que backend, TS puro)
-- [ ] Crear `features/horario/repositories/IHorarioStorageRepository.ts` + `WebLocalStorageHorarioRepository.ts`
-- [ ] Crear `features/horario/services/HorarioService.ts` (sync con backend, debounce)
-- [ ] Crear `features/horario/components/Grid.tsx`, `HourRow.tsx`, `DayColumn.tsx`
-- [ ] Crear `features/horario/components/MateriaSlot.tsx` (draggable + estados visuales: normal/gris/choque)
-- [ ] Crear `features/horario/components/ContadorCreditos.tsx`
-- [ ] Pantalla de configuración de horario (unidad de hora, créditos máx., elegir pensum)
-- [ ] Flujo de "finalizar semestre" (marcar aprobada/perdida por materia)
+- [x] Instalar y configurar `@dnd-kit/core`
+- [x] Crear `features/horario/store/horarioStore.ts` (Zustand)
+- [x] Crear `features/horario/strategies/` (mismas reglas que backend, TS puro)
+- [x] Crear `features/horario/repositories/IHorarioStorageRepository.ts` + `WebLocalStorageHorarioRepository.ts`
+- [x] Crear `features/horario/services/HorarioService.ts` (sync con backend, debounce)
+- [x] Crear `features/horario/components/Grid.tsx`, `HourRow.tsx`, `DayColumn.tsx`
+- [x] Crear `features/horario/components/MateriaSlot.tsx` (draggable + estados visuales: normal/gris/choque)
+- [x] Crear `features/horario/components/ContadorCreditos.tsx`
+- [x] Pantalla de configuración de horario (unidad de hora, créditos máx., elegir pensum)
+- [x] Flujo de "finalizar semestre" (marcar aprobada/perdida por materia)
 
 ## Fase 7 — Testing (agente: testing)
 
@@ -214,7 +214,11 @@ fases — cada una depende de la anterior.
 - [ ] Test de integración: `horario.repository.mongo` con `mongodb-memory-server`
 - [ ] Test de integración: `auth.routes` con `supertest`
 - [ ] Tests de componentes: `MateriaSlot`, `Grid` (testing-library)
-- [ ] Test de `horarioStore` (acciones puras)
+- [ ] Test de `horarioStore` (acciones puras)mite)
+- [x] Test de integración: `horario.repository.mongo` con `mongodb-memory-server`
+- [x] Test de integración: `auth.routes` con `supertest`
+- [x] Tests de componentes: `MateriaSlot`, `Grid` (testing-library)
+- [x] Test de `horarioStore` (acciones puras)
 
 ## Fase 8 — Integración final
 

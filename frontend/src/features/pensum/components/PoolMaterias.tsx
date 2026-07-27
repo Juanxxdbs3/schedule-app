@@ -5,20 +5,23 @@ interface PoolMateriasProps {
   materias: Materia[];
 }
 
-export default function PoolMaterias({ materias }: PoolMateriasProps) {
-  const disponibles = materias.filter((m) => m.estado !== "cursado");
+const ORDER: Record<string, number> = {
+  matriculado: 0,
+  activo: 1,
+  en_espera: 2,
+  cursado: 3,
+};
 
-  if (disponibles.length === 0) {
+export default function PoolMaterias({ materias }: PoolMateriasProps) {
+  const ordenadas = [...materias].sort((a, b) => (ORDER[a.estado] ?? 99) - (ORDER[b.estado] ?? 99));
+
+  if (ordenadas.length === 0) {
     return (
-      <div
-        style={{
-          textAlign: "center",
-          padding: "var(--spacing-4)",
-          color: "var(--color-text-muted)",
-          border: "2px dashed var(--color-border)",
-          borderRadius: "var(--radius-md)",
-        }}
-      >
+      <div style={{
+        textAlign: "center", padding: "var(--spacing-4)",
+        color: "var(--color-text-muted)", border: "2px dashed var(--color-border)",
+        borderRadius: "var(--radius-md)",
+      }}>
         No hay materias disponibles
       </div>
     );
@@ -32,18 +35,11 @@ export default function PoolMaterias({ materias }: PoolMateriasProps) {
 
   return (
     <div>
-      <p
-        style={{
-          fontSize: "var(--font-size-sm)",
-          color: "var(--color-text-muted)",
-          marginBottom: "var(--spacing-3)",
-        }}
-      >
-        {disponibles.length} materia{disponibles.length !== 1 ? "s" : ""} disponible
-        {disponibles.length !== 1 ? "s" : ""}
+      <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", marginBottom: "var(--spacing-3)" }}>
+        {ordenadas.length} materia{ordenadas.length !== 1 ? "s" : ""} disponible{ordenadas.length !== 1 ? "s" : ""}
       </p>
       <div style={gridStyle}>
-        {disponibles.map((m) => (
+        {ordenadas.map((m) => (
           <MateriaBlock key={m.codigo} materia={m} />
         ))}
       </div>

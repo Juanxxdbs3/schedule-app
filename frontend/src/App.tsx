@@ -7,6 +7,8 @@ import type { Pensum } from "./features/pensum/types.ts";
 import type { Materia } from "./features/pensum/types.ts";
 import { PensumService } from "./features/pensum/services/PensumService.ts";
 import { useHorarioStore } from "./features/horario/store/horarioStore.ts";
+import { HorarioService } from "./features/horario/services/HorarioService.ts";
+import type { Horario } from "./features/horario/types.ts";
 import CargarPensum from "./features/pensum/components/CargarPensum.tsx";
 import FiltroPensum from "./features/pensum/components/FiltroPensum.tsx";
 import PoolMaterias from "./features/pensum/components/PoolMaterias.tsx";
@@ -19,58 +21,46 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function PensumDashboard() {
-  const { user, logout } = useAuth();
+function DashboardPage() {
   const navigate = useNavigate();
   const [pensum, setPensum] = useState<Pensum | null>(null);
+  const [pensums, setPensums] = useState<Pensum[]>([]);
+  const [horarios, setHorarios] = useState<Horario[]>([]);
   const [filtradas, setFiltradas] = useState<Materia[]>([]);
   const [syncDone, setSyncDone] = useState(false);
-  const fetchHorarios = useHorarioStore((s) => s.fetchHorarios);
-  const createHorario = useHorarioStore((s) => s.createHorario);
-  const storeHorario = useHorarioStore((s) => s.horario);
-  const creatingHorario = useHorarioStore((s) => s.loading);
-  const [showConfig, setShowConfig] = useState(false);
+  const [showCrear, setShowCrear] = useState(false);
+  const [crearParams, setCrearParams] = useState({ pensumId: "", semestreLabel: "2026-2", maxCreditos: 18, unidadHoraMinutos: 50 });
+  const creating = useHorarioStore((s) => s.loading);
+  const error = useHorarioStore((s) => s.error);
 
   useEffect(() => {
-    PensumService.list()
-      .then((res) => {
-        if (res.pensums.length > 0) {
-          const p = res.pensums[0];
-          setPensum(p);
-          PensumService.storage.save(p);
-          return p.id;
-        } else {
-          PensumService.storage.remove();
-          return null;
-        }
-      })
-      .catch(() => {
-        const local = PensumService.storage.get();
-        if (local) setPensum(local);
-        return local?.id ?? null;
-      })
-      .then((pensumId) => {
-        if (pensumId) return fetchHorarios(pensumId);
-      })
-      .finally(() => setSyncDone(true));
+    Promise.all([
+      PensumService.list().catch(() => ({ pensums: [] as Pensum[] })),
+      HorarioService.list().catch(() => ({ horarios: [] as Horario[] })),
+    ]).then(([pRes, hRes]) => {
+      setPensums(pRes.pensums);
+      setHorarios(hRes.horarios);
+      if (pRes.pensums.length > 0) {
+        const p = pRes.pensums[0];
+        setPensum(p);
+        PensumService.storage.save(p);
+        setCrearParams((prev) => ({ ...prev, pensumId: p.id }));
+      } else {
+        PensumService.storage.remove();
+      }
+    }).catch(() => {
+      const local = PensumService.storage.get();
+      if (local) setPensum(local);
+    }).finally(() => setSyncDone(true));
   }, []);
 
   useEffect(() => {
-    if (pensum) {
-      const visibles = pensum.materias.filter((m) => m.estado !== "cursado");
-      setFiltradas(visibles);
-    }
+    if (pensum) setFiltradas(pensum.materias.filter((m) => m.estado !== "cursado"));
   }, [pensum]);
-
-  useEffect(() => {
-    if (storeHorario && storeHorario.estado === "en_progreso") {
-      navigate(`/horario/${storeHorario.id}`);
-    }
-  }, [storeHorario]);
 
   function handlePensumLoaded(p: Pensum) {
     setPensum(p);
-    fetchHorarios(p.id);
+    setPensums((prev) => { const exists = prev.find((x) => x.id === p.id); return exists ? prev.map((x) => x.id === p.id ? p : x) : [...prev, p]; });
   }
 
   function handleCargarNuevo() {
@@ -80,132 +70,152 @@ function PensumDashboard() {
     useHorarioStore.getState().clear();
   }
 
-  async function handleCrearHorario(params: { semestreLabel: string; maxCreditos: number; unidadHoraMinutos: number }) {
-    if (!pensum) return;
-    try {
-      await createHorario(pensum.id, params.semestreLabel, params.maxCreditos, params.unidadHoraMinutos);
-      setShowConfig(false);
-    } catch {}
+  function handleCrearHorario() {
+    if (!crearParams.pensumId) return;
+    navigate("/horario/nuevo", { state: crearParams });
   }
 
-  if (!syncDone) {
-    return <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>Cargando...</div>;
-  }
+  if (!syncDone) return <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>Cargando...</div>;
 
-  if (!pensum) {
-    return (
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "2rem 1rem" }}>
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-4)" }}>
-          <h1>Horario App</h1>
-          <div>
-            <span style={{ marginRight: "1rem", color: "var(--color-text-muted)" }}>{user?.username}</span>
-            <button type="button" onClick={logout} style={{
-              padding: "0.4rem 1rem", background: "var(--color-primary)", color: "#fff",
-              border: "none", borderRadius: "var(--radius-md)", cursor: "pointer",
-            }}>Cerrar sesión</button>
-          </div>
-        </header>
-        <main>
-          <CargarPensum onPensumLoaded={handlePensumLoaded} />
-        </main>
-      </div>
-    );
-  }
-
-  const materiasDisponibles = pensum.materias.filter((m) => m.estado !== "cursado");
+  const pensumActual = pensum;
+  const materiasDisponibles = pensumActual
+    ? pensumActual.materias.filter((m) => m.estado !== "cursado")
+    : [];
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1rem" }}>
-      <header style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        marginBottom: "var(--spacing-4)", flexWrap: "wrap", gap: "var(--spacing-2)",
-      }}>
-        <div>
-          <h1 style={{ margin: 0 }}>Horario App</h1>
-          <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", margin: 0 }}>{pensum.nombre}</p>
+    <div style={{ maxWidth: 1060, margin: "0 auto", padding: "2rem 1rem" }}>
+      {/* Pensums section */}
+      <section style={{ marginBottom: "var(--spacing-6)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-3)" }}>
+          <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>Pensums</h2>
+          {pensums.length > 0 && (
+            <button type="button" onClick={() => setShowCrear(!showCrear)} style={{
+              padding: "0.4rem 1rem", background: "var(--color-primary)", color: "#fff",
+              border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", fontWeight: 600, fontSize: "var(--font-size-sm)",
+            }}>
+              {showCrear ? "Cancelar" : "Crear horario"}
+            </button>
+          )}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-3)" }}>
-          <span style={{ color: "var(--color-text-muted)", fontSize: "var(--font-size-sm)" }}>{user?.username}</span>
-          <button type="button" onClick={() => setShowConfig(true)} style={{
-            padding: "0.4rem 1rem", background: "var(--color-primary)", color: "#fff",
-            border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", fontSize: "var(--font-size-sm)", fontWeight: 600,
-          }}>
-            Crear horario
-          </button>
-          <button type="button" onClick={handleCargarNuevo} style={{
-            padding: "0.4rem 0.8rem", background: "transparent", color: "var(--color-text-muted)",
-            border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", cursor: "pointer", fontSize: "var(--font-size-sm)",
-          }}>
-            Cargar nuevo pensum
-          </button>
-          <button type="button" onClick={logout} style={{
-            padding: "0.4rem 1rem", background: "var(--color-primary)", color: "#fff",
-            border: "none", borderRadius: "var(--radius-md)", cursor: "pointer",
-          }}>Cerrar sesión</button>
-        </div>
-      </header>
 
-      {showConfig ? (
-        <div style={{ maxWidth: 480, margin: "0 auto" }}>
-          <h2 style={{ marginBottom: "var(--spacing-4)" }}>Configurar horario</h2>
-          <ConfigForm onSubmit={handleCrearHorario} loading={creatingHorario} onCancel={() => setShowConfig(false)} />
-        </div>
-      ) : (
-        <main>
+        {pensums.length === 0 ? (
+          <CargarPensum onPensumLoaded={handlePensumLoaded} />
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)" }}>
+            {pensums.map((p) => (
+              <div key={p.id} onClick={() => setPensum(p)} style={{
+                padding: "var(--spacing-3)", borderRadius: "var(--radius-md)", cursor: "pointer",
+                border: `1px solid ${pensumActual?.id === p.id ? "var(--color-primary)" : "var(--color-border)"}`,
+                background: pensumActual?.id === p.id ? "var(--color-primary-muted, #dbeafe)" : "var(--color-surface)",
+                transition: "all 0.15s",
+              }}>
+                <div style={{ fontWeight: 600, fontSize: "var(--font-size-sm)" }}>{p.nombre}</div>
+                <div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
+                  {p.materias.length} materias
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Crear horario form */}
+        {showCrear && pensums.length > 0 && (
+          <div style={{ marginTop: "var(--spacing-4)", padding: "var(--spacing-4)", background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)" }}>
+            <h3 style={{ fontSize: "var(--font-size-sm)", marginBottom: "var(--spacing-3)" }}>Configurar nuevo horario</h3>
+            {error && <div style={{ padding: "var(--spacing-2)", background: "#fef2f2", border: "1px solid #ef4444", borderRadius: "var(--radius-sm)", marginBottom: "var(--spacing-2)", fontSize: "var(--font-size-xs)", color: "#ef4444" }}>{error}</div>}
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-3)" }}>
+              <div>
+                <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Pensum</label>
+                <select value={crearParams.pensumId} onChange={(e) => setCrearParams((p) => ({ ...p, pensumId: e.target.value }))} style={{
+                  width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
+                }}>
+                  {pensums.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--spacing-3)" }}>
+                <div>
+                  <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Semestre</label>
+                  <input type="text" value={crearParams.semestreLabel} onChange={(e) => setCrearParams((p) => ({ ...p, semestreLabel: e.target.value }))} style={{
+                    width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
+                    borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
+                  }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Créd. máx</label>
+                  <input type="number" min={1} value={crearParams.maxCreditos} onChange={(e) => setCrearParams((p) => ({ ...p, maxCreditos: Number(e.target.value) }))} style={{
+                    width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
+                    borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
+                  }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)", fontWeight: 500 }}>Unidad (min)</label>
+                  <input type="number" min={10} max={120} step={5} value={crearParams.unidadHoraMinutos} onChange={(e) => setCrearParams((p) => ({ ...p, unidadHoraMinutos: Number(e.target.value) }))} style={{
+                    width: "100%", padding: "var(--spacing-2)", border: "1px solid var(--color-border)",
+                    borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
+                  }} />
+                </div>
+              </div>
+              <button type="button" onClick={handleCrearHorario} disabled={creating} style={{
+                padding: "var(--spacing-2) var(--spacing-4)", background: creating ? "var(--color-muted-block)" : "var(--color-primary)",
+                color: "#fff", border: "none", borderRadius: "var(--radius-md)", cursor: creating ? "not-allowed" : "pointer", fontWeight: 600,
+              }}>
+                {creating ? "Preparando..." : "Ir al horario"}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Pensum detail */}
+      {pensumActual && (
+        <section style={{ marginBottom: "var(--spacing-6)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-3)" }}>
+            <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>{pensumActual.nombre}</h2>
+            <button type="button" onClick={handleCargarNuevo} style={{
+              padding: "0.3rem 0.8rem", background: "transparent", color: "var(--color-text-muted)",
+              border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", cursor: "pointer", fontSize: "var(--font-size-xs)",
+            }}>Cargar nuevo pensum</button>
+          </div>
           <FiltroPensum materias={materiasDisponibles} onFilter={setFiltradas} />
           <PoolMaterias materias={filtradas} />
-        </main>
+        </section>
       )}
+
+      {/* Horarios section */}
+      <section>
+        <h2 style={{ margin: 0, marginBottom: "var(--spacing-3)", fontSize: "var(--font-size-lg)" }}>Mis horarios</h2>
+        {horarios.length === 0 ? (
+          <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", textAlign: "center", padding: "var(--spacing-4)" }}>
+            No hay horarios aún. Carga un pensum y crea tu primer horario.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)" }}>
+            {horarios.map((h) => (
+              <div key={h.id} onClick={() => navigate(`/horario/${h.id}`)} style={{
+                padding: "var(--spacing-3)", borderRadius: "var(--radius-md)", cursor: "pointer",
+                border: "1px solid var(--color-border)", background: "var(--color-surface)", transition: "all 0.15s",
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+              }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "var(--font-size-sm)" }}>{h.semestreLabel}</div>
+                  <div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
+                    {h.bloques.length} bloque{h.bloques.length !== 1 ? "s" : ""} · {h.estado === "finalizado" ? "Finalizado" : "En progreso"}
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: "var(--font-size-xs)", padding: "2px 8px", borderRadius: "var(--radius-sm)",
+                  background: h.estado === "finalizado" ? "#f3f4f6" : "#dcfce7",
+                  color: h.estado === "finalizado" ? "#6b7280" : "#166534", fontWeight: 600,
+                }}>
+                  {h.estado === "finalizado" ? "Finalizado" : "Activo"}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
-  );
-}
-
-function ConfigForm({ onSubmit, loading, onCancel }: {
-  onSubmit: (p: { semestreLabel: string; maxCreditos: number; unidadHoraMinutos: number }) => void;
-  loading: boolean;
-  onCancel: () => void;
-}) {
-  const [semestreLabel, setSemestreLabel] = useState("2026-2");
-  const [maxCreditos, setMaxCreditos] = useState(18);
-  const [unidadHoraMinutos, setUnidadHoraMinutos] = useState(50);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    onSubmit({ semestreLabel: semestreLabel.trim(), maxCreditos, unidadHoraMinutos });
-  }
-
-  const fieldStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: "var(--spacing-1)" };
-  const labelStyle: React.CSSProperties = { fontSize: "var(--font-size-sm)", color: "var(--color-text-muted)", fontWeight: 500 };
-  const inputStyle: React.CSSProperties = {
-    padding: "var(--spacing-2) var(--spacing-3)", border: "1px solid var(--color-border)",
-    borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-text)",
-  };
-
-  return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-4)" }}>
-      <div style={fieldStyle}>
-        <label htmlFor="sl" style={labelStyle}>Etiqueta del semestre</label>
-        <input id="sl" type="text" value={semestreLabel} onChange={(e) => setSemestreLabel(e.target.value)} style={inputStyle} required />
-      </div>
-      <div style={fieldStyle}>
-        <label htmlFor="mc" style={labelStyle}>Créditos máximos</label>
-        <input id="mc" type="number" min={1} value={maxCreditos} onChange={(e) => setMaxCreditos(Number(e.target.value))} style={inputStyle} required />
-      </div>
-      <div style={fieldStyle}>
-        <label htmlFor="uh" style={labelStyle}>Unidad de hora (minutos)</label>
-        <input id="uh" type="number" min={10} max={120} step={5} value={unidadHoraMinutos} onChange={(e) => setUnidadHoraMinutos(Number(e.target.value))} style={inputStyle} required />
-      </div>
-      <div style={{ display: "flex", gap: "var(--spacing-3)" }}>
-        <button type="button" onClick={onCancel} style={{
-          flex: 1, padding: "var(--spacing-3)", background: "transparent", color: "var(--color-text-muted)",
-          border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", cursor: "pointer",
-        }}>Cancelar</button>
-        <button type="submit" disabled={loading} style={{
-          flex: 1, padding: "var(--spacing-3)", background: loading ? "var(--color-muted-block)" : "var(--color-primary)",
-          color: "#fff", border: "none", borderRadius: "var(--radius-md)", cursor: loading ? "not-allowed" : "pointer", fontWeight: 600,
-        }}>{loading ? "Creando..." : "Crear horario"}</button>
-      </div>
-    </form>
   );
 }
 
@@ -214,23 +224,10 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
-      <Route
-        path="/horario/:id"
-        element={
-          <ProtectedRoute>
-            <HorarioPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <PensumDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/horario/nuevo" element={<ProtectedRoute><HorarioPage /></ProtectedRoute>} />
+      <Route path="/horario/:id" element={<ProtectedRoute><HorarioPage /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }

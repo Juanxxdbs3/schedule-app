@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./features/auth/hooks/useAuth.tsx";
 import LoginForm from "./features/auth/components/LoginForm.tsx";
@@ -26,24 +26,48 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function PensumDashboard() {
   const { user, logout } = useAuth();
-  const [pensum, setPensum] = useState<Pensum | null>(() => PensumService.storage.get());
+  const [pensum, setPensum] = useState<Pensum | null>(null);
   const [filtradas, setFiltradas] = useState<Materia[]>([]);
+  const [syncDone, setSyncDone] = useState(false);
 
-  const materiasDisponibles = useMemo(
-    () => (pensum ? pensum.materias.filter((m) => m.estado !== "cursado") : []),
-    [pensum],
-  );
-
-  const handlePensumLoaded = useCallback((p: Pensum) => {
-    setPensum(p);
-    setFiltradas(p.materias.filter((m) => m.estado !== "cursado"));
+  useEffect(() => {
+    PensumService.list()
+      .then((res) => {
+        if (res.pensums.length > 0) {
+          const p = res.pensums[0];
+          setPensum(p);
+          PensumService.storage.save(p);
+        } else {
+          PensumService.storage.remove();
+        }
+      })
+      .catch(() => {
+        const local = PensumService.storage.get();
+        if (local) setPensum(local);
+      })
+      .finally(() => setSyncDone(true));
   }, []);
 
-  const handleCargarNuevo = useCallback(() => {
+  useEffect(() => {
+    if (pensum) {
+      const visibles = pensum.materias.filter((m) => m.estado !== "cursado");
+      setFiltradas(visibles);
+    }
+  }, [pensum]);
+
+  function handlePensumLoaded(p: Pensum) {
+    setPensum(p);
+  }
+
+  function handleCargarNuevo() {
     PensumService.storage.remove();
     setPensum(null);
     setFiltradas([]);
-  }, []);
+  }
+
+  if (!syncDone) {
+    return <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>Cargando...</div>;
+  }
 
   if (!pensum) {
     return (
@@ -84,7 +108,7 @@ function PensumDashboard() {
     );
   }
 
-  const materiasMostrar = filtradas.length > 0 ? filtradas : materiasDisponibles;
+  const materiasDisponibles = pensum.materias.filter((m) => m.estado !== "cursado");
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1rem" }}>
@@ -142,7 +166,7 @@ function PensumDashboard() {
 
       <main>
         <FiltroPensum materias={materiasDisponibles} onFilter={setFiltradas} />
-        <PoolMaterias materias={materiasMostrar} />
+        <PoolMaterias materias={filtradas} />
       </main>
     </div>
   );

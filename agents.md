@@ -228,17 +228,14 @@ fases — cada una depende de la anterior.
 
 ## Fase 7 — Testing (agente: testing)
  
-- [ ] Crear Fakes: `FakeUserRepository`, `FakePensumRepository`, `FakeHorarioRepository`
-- [ ] Tests unitarios: `auth.service`, `pensum.service`, `horario.service`
-- [ ] Tests unitarios: `SimpleCreditLimitStrategy`, `SimpleConflictDetectionStrategy` (casos límite)
-- [ ] Test de integración: `horario.repository.mongo` con `mongodb-memory-server`
-- [ ] Test de integración: `auth.routes` con `supertest`
-- [ ] Tests de componentes: `MateriaSlot`, `Grid` (testing-library)
-- [ ] Test de `horarioStore` (acciones puras)
+- [x] Crear Fakes: `FakeUserRepository`, `FakePensumRepository`, `FakeHorarioRepository`
+- [x] Tests unitarios: `auth.service` (8), `pensum.service` (9), `horario.service` (19)
+- [x] Tests unitarios: `SimpleCreditLimitStrategy`, `SimpleConflictDetectionStrategy` (casos límite)
 - [x] Test de integración: `horario.repository.mongo` con `mongodb-memory-server`
 - [x] Test de integración: `auth.routes` con `supertest`
 - [x] Tests de componentes: `MateriaSlot`, `Grid` (testing-library)
 - [x] Test de `horarioStore` (acciones puras)
+- [x] Unit tests backend total: 47 tests · Frontend: 17 tests
 
 ## Fase 8 — Integración final
  

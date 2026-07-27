@@ -287,8 +287,8 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
 
       {modo === "edicion" ? (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-[1fr_300px] gap-4 items-start">
-            <div className="overflow-x-auto min-w-0">
+          <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
+            <div className="overflow-x-auto">
               <div className="min-w-[700px]">
                 <Grid
                   bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}

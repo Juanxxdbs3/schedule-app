@@ -49,7 +49,7 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 999 : 1,
     position: "relative",
-    height: isEdicion ? "100%" : "auto",
+    height: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",

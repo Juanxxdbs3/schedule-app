@@ -54,9 +54,16 @@ export default function HorarioPage() {
       const toActivar = initialBloques
         .filter((b) => !currentBloques.some((cb) => cb.materiaCodigo === b.materiaCodigo))
         .map((b) => b.materiaCodigo);
-      for (const codigo of toActivar) {
-        await marcarResultado(codigo, false);
+      if (toActivar.length > 0 && pensum) {
+        for (const codigo of toActivar) {
+          try {
+            await PensumService.updateMateriaEstado(pensum.id, codigo, "activo");
+          } catch { /* individual fail should not block the rest */ }
+        }
       }
+
+      const { pensum: p } = await PensumService.getById(pensum!.id);
+      setPensum(p);
 
       setModo("curso");
     } catch {}
@@ -76,6 +83,13 @@ export default function HorarioPage() {
 
   function handleEditar() { setModo("edicion"); }
 
+  function handleModoChange(nuevoModo: ModoHorario) {
+    if (nuevoModo === "finalizado") {
+      useHorarioStore.getState().finalizar().catch(() => {});
+    }
+    setModo(nuevoModo);
+  }
+
   if (loading || !ready || !storeHorario || !pensum) {
     return <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>{loading ? "Cargando..." : "Horario no encontrado"}</div>;
   }
@@ -83,7 +97,7 @@ export default function HorarioPage() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem 1rem" }}>
       <main>
-        <HorarioScreen modo={modo} horario={storeHorario} pensum={pensum} onModoChange={setModo} />
+        <HorarioScreen modo={modo} horario={storeHorario} pensum={pensum} onModoChange={handleModoChange} />
       </main>
 
       {modo === "edicion" && (

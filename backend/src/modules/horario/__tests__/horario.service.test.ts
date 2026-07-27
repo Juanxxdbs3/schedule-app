@@ -15,7 +15,7 @@ function makeMateria(codigo: string, creditos = 3): Materia {
 }
 
 function makeBloque(materiaCodigo: string, dia: DiaSemana = "lunes", horaInicio = "07:00", horaFin = "08:40"): Bloque {
-  return { id: "", materiaCodigo, dia, horaInicio, horaFin };
+  return { materiaCodigo, dia, horaInicio, horaFin };
 }
 
 function makePensum(materias: Materia[]): Pensum {
@@ -139,7 +139,7 @@ describe("HorarioService", () => {
       await service.addBloque(horario.id, makeBloque("M1"), USER_ID);
 
       const withBloque = await horarioRepo.findById(horario.id);
-      const bloqueId = withBloque!.bloques[0].id;
+      const bloqueId = withBloque!.bloques[0].id!;
 
       await service.removeBloque(horario.id, bloqueId, USER_ID);
 

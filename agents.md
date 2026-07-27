@@ -239,6 +239,6 @@ fases — cada una depende de la anterior.
 
 ## Fase 8 — Integración final
  
-- [ ] Probar flujo completo: registro → login → cargar pensum → crear horario → arrastrar materias → finalizar semestre
-- [ ] Verificar CORS y cookies en flujo real navegador↔backend
-- [ ] Escribir `README.md` con instrucciones de levantamiento local
+- [ ] Probar flujo completo: registro → login → cargar pensum → crear horario → arrastrar materias → finalizar semestre (requiere test manual en navegador)
+- [ ] Verificar CORS y cookies en flujo real navegador↔backend (requiere test manual)
+- [x] Escribir `README.md` con instrucciones de levantamiento local

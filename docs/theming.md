@@ -11,17 +11,18 @@ la variable. Esto permite cambiar el tema completo sin tocar componentes.
 
 ```css
 :root {
-  /* Superficie y texto */
-  --color-bg: #f8fafc;
+  /* Superficie y texto — paleta "Dashboard Light / Acentos Morados" */
+  --color-bg: #f8f9fa;
   --color-surface: #ffffff;
-  --color-surface-alt: #f1f5f9;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-border: #e2e8f0;
+  --color-surface-alt: #f1eefc;
+  --color-text: #2b2b36;
+  --color-text-muted: #8f92a1;
+  --color-border: #e4e4e4;
 
   /* Marca */
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
+  --color-primary: #6c5dd3;
+  --color-primary-hover: #5b4dc0;
+  --color-secondary: #ffa2c0;
 
   /* Estados semánticos (materias / bloques) */
   --color-success: #16a34a;      /* materia aprobada */
@@ -49,28 +50,30 @@ la variable. Esto permite cambiar el tema completo sin tocar componentes.
   --font-size-lg: 1.25rem;
 
   /* Variantes suaves de los estados (para fondos, sin saturar) */
-  --color-primary-muted: #dbeafe;
+  --color-primary-muted: #ede9fe;
   --color-success-bg: #dcfce7;
   --color-danger-bg: #fef2f2;
 }
 
 .dark {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-surface-alt: #334155;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: #334155;
+  /* Paleta "Mindful — Dark Mode", misma familia de morados */
+  --color-bg: #1e1b38;
+  --color-surface: #2a2746;
+  --color-surface-alt: #362f5c;
+  --color-text: #ffffff;
+  --color-text-muted: #a19db5;
+  --color-border: #3d3768;
 
-  --color-primary: #3b82f6;
-  --color-primary-hover: #60a5fa;
+  --color-primary: #8c84e2;
+  --color-primary-hover: #a79cf0;
+  --color-secondary: #ff8c6b;
 
   --color-success: #22c55e;
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-muted-block: #475569;
 
-  --color-primary-muted: #1e3a5f;
+  --color-primary-muted: #362f5c;
   --color-success-bg: #14532d;
   --color-danger-bg: #450a0a;
 }
@@ -97,6 +100,7 @@ export default {
         border: 'var(--color-border)',
         primary: 'var(--color-primary)',
         'primary-hover': 'var(--color-primary-hover)',
+        secondary: 'var(--color-secondary)',
         success: 'var(--color-success)',
         danger: 'var(--color-danger)',
         warning: 'var(--color-warning)',

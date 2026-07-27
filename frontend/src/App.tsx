@@ -13,6 +13,7 @@ import CargarPensum from "./features/pensum/components/CargarPensum.tsx";
 import FiltroPensum from "./features/pensum/components/FiltroPensum.tsx";
 import PoolMaterias from "./features/pensum/components/PoolMaterias.tsx";
 import HorarioPage from "./features/horario/components/HorarioPage.tsx";
+import ConfigurarHorario from "./features/horario/components/ConfigurarHorario.tsx";
 
 import NavBar from "./shared/components/NavBar.tsx";
 
@@ -32,7 +33,6 @@ function DashboardPage() {
   const [syncDone, setSyncDone] = useState(false);
   const [showCrear, setShowCrear] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
-  const [crearParams, setCrearParams] = useState({ pensumId: "", semestreLabel: "2026-2", maxCreditos: 18, unidadHoraMinutos: 50 });
   const [crearError, setCrearError] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
 
@@ -47,7 +47,6 @@ function DashboardPage() {
         const p = pRes.pensums[0];
         setPensum(p);
         PensumService.storage.save(p);
-        setCrearParams((prev) => ({ ...prev, pensumId: p.id }));
       } else {
         PensumService.storage.remove();
       }
@@ -75,16 +74,16 @@ function DashboardPage() {
     useHorarioStore.getState().clear();
   }
 
-  async function handleCrearHorario() {
-    if (!crearParams.pensumId) return;
+  async function handleCrearHorario(params: { pensumId: string; semestreLabel: string; maxCreditos: number; unidadHoraMinutos: number }) {
     setCrearError(null);
     setCreando(true);
     try {
       const { horario } = await HorarioService.create(
-        crearParams.pensumId, crearParams.semestreLabel,
-        crearParams.maxCreditos, crearParams.unidadHoraMinutos,
+        params.pensumId, params.semestreLabel,
+        params.maxCreditos, params.unidadHoraMinutos,
       );
       useHorarioStore.getState().initHorarioReal(horario);
+      setShowCrear(false);
       navigate(`/horario/${horario.id}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Error al crear horario";
@@ -169,40 +168,15 @@ function DashboardPage() {
               </div>
             )}
 
-            {/* Crear horario form */}
-            {showCrear && pensums.length > 0 && (
-              <div className="mt-4 p-4 bg-surface border border-border rounded-md">
-                <h3 className="text-sm mb-3">Configurar nuevo horario</h3>
-                {crearError && <div className="p-2 bg-danger-bg border border-danger rounded-sm mb-2 text-xs text-danger">{crearError}</div>}
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <label className="text-xs text-muted font-medium">Pensum</label>
-                    <select value={crearParams.pensumId} onChange={(e) => setCrearParams((p) => ({ ...p, pensumId: e.target.value }))} className="w-full p-2 border border-border rounded-md bg-surface text-text">
-                      {pensums.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-xs text-muted font-medium">Semestre</label>
-                      <input type="text" value={crearParams.semestreLabel} onChange={(e) => setCrearParams((p) => ({ ...p, semestreLabel: e.target.value }))} className="w-full p-2 border border-border rounded-md bg-surface text-text" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted font-medium">Créd. máx</label>
-                      <input type="number" min={1} value={crearParams.maxCreditos} onChange={(e) => setCrearParams((p) => ({ ...p, maxCreditos: Number(e.target.value) }))} className="w-full p-2 border border-border rounded-md bg-surface text-text" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted font-medium">Unidad (min)</label>
-                      <input type="number" min={10} max={120} step={5} value={crearParams.unidadHoraMinutos} onChange={(e) => setCrearParams((p) => ({ ...p, unidadHoraMinutos: Number(e.target.value) }))} className="w-full p-2 border border-border rounded-md bg-surface text-text" />
-                    </div>
-                  </div>
-                  <button type="button" onClick={handleCrearHorario} disabled={creando} className={`p-2 px-4 text-white border-none rounded-md font-semibold ${
-                    creando ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
-                  }`}>
-                    {creando ? "Preparando..." : "Ir al horario"}
-                  </button>
-                </div>
-              </div>
-            )}
+            <ConfigurarHorario
+              isOpen={showCrear}
+              onClose={() => setShowCrear(false)}
+              pensums={pensums}
+              pensumIdInicial={pensums[0]?.id}
+              onSubmit={handleCrearHorario}
+              loading={creando}
+              error={crearError}
+            />
           </section>
         </div>
       </div>

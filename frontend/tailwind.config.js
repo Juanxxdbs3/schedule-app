@@ -12,6 +12,7 @@ export default {
         primary: 'var(--color-primary)',
         'primary-hover': 'var(--color-primary-hover)',
         'primary-muted': 'var(--color-primary-muted)',
+        secondary: 'var(--color-secondary)',
         success: 'var(--color-success)',
         'success-bg': 'var(--color-success-bg)',
         danger: 'var(--color-danger)',

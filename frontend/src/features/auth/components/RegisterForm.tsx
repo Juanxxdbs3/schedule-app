@@ -47,93 +47,95 @@ export default function RegisterForm() {
   const displayError = validationError || error;
 
   return (
-    <div className="max-w-sm mx-auto p-8">
-      <h1>Crear cuenta</h1>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-sm border border-border rounded-lg p-5 bg-surface">
+        <h1 className="mt-0">Crear cuenta</h1>
 
-      {displayError && (
-        <div className="text-danger mb-4">
-          {displayError}
+        {displayError && (
+          <div className="text-danger mb-4">
+            {displayError}
+            <button
+              type="button"
+              onClick={() => { clearError(); setValidationError(null); }}
+              className="ml-2 bg-none border-none cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="username" className="block mb-1 text-sm text-muted font-medium">
+              Nombre de usuario
+            </label>
+            <input
+              id="username"
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-2 border border-border rounded-md bg-surface text-text"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="email" className="block mb-1 text-sm text-muted font-medium">
+              Correo electrónico
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-2 border border-border rounded-md bg-surface text-text"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="password" className="block mb-1 text-sm text-muted font-medium">
+              Contraseña
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border border-border rounded-md bg-surface text-text"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="confirm-password" className="block mb-1 text-sm text-muted font-medium">
+              Confirmar contraseña
+            </label>
+            <input
+              id="confirm-password"
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-2 border border-border rounded-md bg-surface text-text"
+            />
+          </div>
+
           <button
-            type="button"
-            onClick={() => { clearError(); setValidationError(null); }}
-            className="ml-2 bg-none border-none cursor-pointer"
+            type="submit"
+            disabled={submitting}
+            className={`w-full p-2 text-white border-none rounded-md font-medium ${
+              submitting ? "cursor-not-allowed bg-muted-block" : "cursor-pointer bg-primary"
+            }`}
           >
-            ✕
+            {submitting ? "Creando cuenta..." : "Crear cuenta"}
           </button>
-        </div>
-      )}
+        </form>
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="username" className="block mb-1">
-            Nombre de usuario
-          </label>
-          <input
-            id="username"
-            type="text"
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2 box-border"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="email" className="block mb-1">
-            Correo electrónico
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 box-border"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="password" className="block mb-1">
-            Contraseña
-          </label>
-          <input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 box-border"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="confirm-password" className="block mb-1">
-            Confirmar contraseña
-          </label>
-          <input
-            id="confirm-password"
-            type="password"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-2 box-border"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className={`w-full p-2 text-white border-none rounded-md ${
-            submitting ? "cursor-not-allowed" : "cursor-pointer"
-          } bg-primary`}
-        >
-          {submitting ? "Creando cuenta..." : "Crear cuenta"}
-        </button>
-      </form>
-
-      <p className="mt-4 text-center">
-        ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-      </p>
+        <p className="mt-4 text-center text-sm">
+          ¿Ya tienes cuenta? <Link to="/login" className="text-primary no-underline">Inicia sesión</Link>
+        </p>
+      </div>
     </div>
   );
 }

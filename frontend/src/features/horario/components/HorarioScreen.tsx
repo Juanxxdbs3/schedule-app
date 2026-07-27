@@ -18,9 +18,13 @@ interface HorarioScreenProps {
   horario: Horario;
   pensum: Pensum;
   onModoChange: (modo: ModoHorario) => void;
+  onGuardar?: () => void;
+  onEliminar?: () => void;
+  guardarLoading?: boolean;
+  eliminando?: boolean;
 }
 
-export default function HorarioScreen({ modo, horario, pensum, onModoChange }: HorarioScreenProps) {
+export default function HorarioScreen({ modo, horario, pensum, onModoChange, onGuardar, onEliminar, guardarLoading, eliminando }: HorarioScreenProps) {
   const addBloqueLocal = useHorarioStore((s) => s.addBloqueLocal);
   const removeBloqueLocal = useHorarioStore((s) => s.removeBloqueLocal);
   const moveBloqueLocal = useHorarioStore((s) => s.moveBloqueLocal);
@@ -169,6 +173,20 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange }: H
               todasResultadas ? "bg-primary cursor-pointer opacity-100" : "bg-muted-block cursor-not-allowed opacity-60"
             }`}
           >Finalizar semestre</button>
+        )}
+        {modo === "edicion" && onGuardar && onEliminar && (
+          <div className="flex gap-2">
+            <button type="button" onClick={onEliminar} disabled={guardarLoading || eliminando} className={`px-3 py-1 text-sm bg-transparent border border-solid rounded-md font-medium ${
+              guardarLoading || eliminando ? "border-danger text-danger opacity-60 cursor-not-allowed" : "border-danger text-danger cursor-pointer"
+            }`}>
+              {eliminando ? "Eliminando..." : "Eliminar"}
+            </button>
+            <button type="button" onClick={onGuardar} disabled={guardarLoading} className={`px-3 py-1 text-sm text-white border-none rounded-md font-medium ${
+              guardarLoading ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
+            }`}>
+              {guardarLoading ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
         )}
       </div>
 

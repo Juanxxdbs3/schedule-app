@@ -242,3 +242,15 @@ fases — cada una depende de la anterior.
 - [ ] Probar flujo completo: registro → login → cargar pensum → crear horario → arrastrar materias → finalizar semestre (requiere test manual en navegador)
 - [ ] Verificar CORS y cookies en flujo real navegador↔backend (requiere test manual)
 - [x] Escribir `README.md` con instrucciones de levantamiento local
+- [x] `Horario.resultados` persistido en Mongo + frontend (3 vías: aprobada/perdida/deshacer)
+- [x] Reversa en cascada de prerrequisitos (1 nivel) al salir de cursado
+- [x] Validación: no quitar/eliminar materia cursada sin deshacer antes
+- [x] Validación: finalizar requiere todas las materias marcadas
+- [x] Grid dinámico: 7 días en edición, solo días con materias en vista
+- [x] Domingo colapsable/expandible (localStorage)
+- [x] Scroll horizontal real con minmax(110px, 1fr)
+- [x] Producción monoproceso: Express sirve API + frontend estático
+- [x] Script `npm start` + frontend/.env.production
+- [x] Cookie JWT con `secure: true` en producción
+- [x] CORS desactivado en producción (same-origin)
+- [x] Backend tests: 53 · Frontend tests: 17 · Total: 70

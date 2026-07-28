@@ -1,0 +1,541 @@
+{
+  "nombre": "Ingeniería de Sistemas",
+  "materias": [
+    {
+      "codigo": "FB1103",
+      "nombre": "FUNDAMENTOS DE MATEMATICAS",
+      "creditos": 2,
+      "semestre": 1,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1102",
+      "nombre": "CÁLCULO DIFERENCIAL",
+      "creditos": 3,
+      "semestre": 1,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0411",
+      "nombre": "INTRODUCCION A LA INGENIERIA DE SISTEMAS",
+      "creditos": 2,
+      "semestre": 1,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0412",
+      "nombre": "ALGORITMOS Y PROGRAMACION",
+      "creditos": 3,
+      "semestre": 1,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FH0240",
+      "nombre": "COMUNICACION I",
+      "creditos": 2,
+      "semestre": 1,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0432",
+      "nombre": "CATEDRA INSTITUCIONAL",
+      "creditos": 2,
+      "semestre": 1,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0433",
+      "nombre": "INGLES I",
+      "creditos": 1,
+      "semestre": 1,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1104",
+      "nombre": "CÁLCULO INTEGRAL",
+      "creditos": 3,
+      "semestre": 2,
+      "requiere": ["FB1102", "FB1103"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1105",
+      "nombre": "ALGEBRA LINEAL",
+      "creditos": 3,
+      "semestre": 2,
+      "requiere": ["FB1103"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1106",
+      "nombre": "FISICA MECANICA Y LABORATORIO",
+      "creditos": 4,
+      "semestre": 2,
+      "requiere": ["FB1102", "FB1104"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0413",
+      "nombre": "PROGRAMACION BASICA",
+      "creditos": 3,
+      "semestre": 2,
+      "requiere": ["FP0412"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FH0242",
+      "nombre": "COMUNICACION II",
+      "creditos": 2,
+      "semestre": 2,
+      "requiere": ["FH0240"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1107",
+      "nombre": "QUIMICA BASICA Y LABORATORIO",
+      "creditos": 3,
+      "semestre": 2,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0434",
+      "nombre": "INGLES II",
+      "creditos": 1,
+      "semestre": 2,
+      "requiere": ["FC0433"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1108",
+      "nombre": "CÁLCULO VECTORIAL",
+      "creditos": 3,
+      "semestre": 3,
+      "requiere": ["FB1104"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0414",
+      "nombre": "MATEMATICAS DISCRETAS",
+      "creditos": 3,
+      "semestre": 3,
+      "requiere": ["FP0412"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1109",
+      "nombre": "ELECTROMAGNETISMO Y LABORATORIO",
+      "creditos": 3,
+      "semestre": 3,
+      "requiere": ["FB1106", "FB1104"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1014",
+      "nombre": "PROGRAMACION ORIENTADA A OBJETOS",
+      "creditos": 3,
+      "semestre": 3,
+      "requiere": ["FP0413"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0415",
+      "nombre": "TEORIA GENERAL DE SISTEMAS",
+      "creditos": 3,
+      "semestre": 3,
+      "requiere": ["FP0411"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1110",
+      "nombre": "PROBABILIDAD Y ESTADISTICA",
+      "creditos": 2,
+      "semestre": 3,
+      "requiere": ["FB1104", "FB1105"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0435",
+      "nombre": "INGLES III",
+      "creditos": 1,
+      "semestre": 3,
+      "requiere": ["FC0434"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1111",
+      "nombre": "ECUACIONES DIFERENCIALES",
+      "creditos": 4,
+      "semestre": 4,
+      "requiere": ["FB1108"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0416",
+      "nombre": "ELECTRONICA",
+      "creditos": 3,
+      "semestre": 4,
+      "requiere": ["FB1109", "FB1106"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FB1112",
+      "nombre": "FISICA MODERNA Y LABORATORIO",
+      "creditos": 3,
+      "semestre": 4,
+      "requiere": ["FB1106", "FB1109"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1015",
+      "nombre": "BASE DE DATOS",
+      "creditos": 3,
+      "semestre": 4,
+      "requiere": ["IA1014"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1016",
+      "nombre": "ESTRUCTURA DE DATOS",
+      "creditos": 3,
+      "semestre": 4,
+      "requiere": ["IA1014", "FP0414"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0436",
+      "nombre": "ADMINISTRACION",
+      "creditos": 2,
+      "semestre": 4,
+      "requiere": ["FP0415"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0437",
+      "nombre": "INGLES IV",
+      "creditos": 1,
+      "semestre": 4,
+      "requiere": ["FC0435"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0417",
+      "nombre": "SISTEMAS DINAMICOS",
+      "creditos": 3,
+      "semestre": 5,
+      "requiere": ["FB1111"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1017",
+      "nombre": "SISTEMAS DIGITALES",
+      "creditos": 3,
+      "semestre": 5,
+      "requiere": ["FP0416"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0418",
+      "nombre": "METODOLOGIA DE LA INVESTIGACION",
+      "creditos": 2,
+      "semestre": 5,
+      "requiere": ["FH0242", "FC0432"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1018",
+      "nombre": "INGENIERIA DE SOFTWARE",
+      "creditos": 3,
+      "semestre": 5,
+      "requiere": ["IA1015", "IA1016", "IA1014"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FP0419",
+      "nombre": "INVESTIGACION DE OPERACIONES",
+      "creditos": 2,
+      "semestre": 5,
+      "requiere": ["FB1110"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0438",
+      "nombre": "CONTABILIDAD Y COSTOS",
+      "creditos": 2,
+      "semestre": 5,
+      "requiere": ["FC0436"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1019",
+      "nombre": "SISTEMAS OPERATIVOS",
+      "creditos": 3,
+      "semestre": 5,
+      "requiere": ["IA1016", "FP0416"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1020",
+      "nombre": "ORGANIZACION DE COMPUTADORES",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["FP0416", "IA1017"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1021",
+      "nombre": "COMUNICACION DE DATOS",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["IA1020", "IA1019"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1022",
+      "nombre": "TEORIA DE AUTÓMATAS Y LENGUAJES FORMALES",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["FP0414"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1023",
+      "nombre": "INGENIERIA DE SERVICIOS DE INTERNET",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["IA1018", "IA1015"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1024",
+      "nombre": "COMERCIO ELECTRONICO",
+      "creditos": 3,
+      "semestre": 6,
+      "requiere": ["IA1023", "IA1015"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0439",
+      "nombre": "INGENIERIA ECONOMICA",
+      "creditos": 2,
+      "semestre": 6,
+      "requiere": ["FC0438", "FC0436"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0440",
+      "nombre": "INGLES V",
+      "creditos": 1,
+      "semestre": 6,
+      "requiere": ["FC0437"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1025",
+      "nombre": "SEGURIDAD INFORMATICA",
+      "creditos": 3,
+      "semestre": 7,
+      "requiere": ["IA1019", "IA1020", "IA1021"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0441",
+      "nombre": "ETICA Y LEGISLACION INFORMÁTICA",
+      "creditos": 2,
+      "semestre": 7,
+      "requiere": ["FC0432"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1026",
+      "nombre": "INTELIGENCIA ARTIFICIAL",
+      "creditos": 3,
+      "semestre": 7,
+      "requiere": ["IA1016", "FB1110", "FP0415"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1027",
+      "nombre": "GESTION DE PROYECTOS INFORMATICOS",
+      "creditos": 3,
+      "semestre": 7,
+      "requiere": ["IA1018", "FC0436"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1028",
+      "nombre": "ELECTIVA I",
+      "creditos": 4,
+      "semestre": 7,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0442",
+      "nombre": "INGLES VI",
+      "creditos": 1,
+      "semestre": 7,
+      "requiere": ["FC0440"],
+      "estado": "en_espera"
+    },
+    {
+      "codigo": "IA1029",
+      "nombre": "PROFUNDIZACION I",
+      "creditos": 4,
+      "semestre": 7,
+      "requiere": ["IA1018"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1030",
+      "nombre": "AUDITORIA DE SISTEMAS",
+      "creditos": 2,
+      "semestre": 8,
+      "requiere": ["IA1025", "IA1018"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1031",
+      "nombre": "TRABAJO DE GRADO I",
+      "creditos": 2,
+      "semestre": 8,
+      "requiere": ["FP0418", "IA1018", "IA1027"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1032",
+      "nombre": "SIMULACION DIGITAL",
+      "creditos": 3,
+      "semestre": 8,
+      "requiere": ["FP0417", "FP0419"],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0443",
+      "nombre": "SEMINARIO TALLER CREACION DE EMPRESAS",
+      "creditos": 2,
+      "semestre": 8,
+      "requiere": ["FC0438", "FC0439"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1033",
+      "nombre": "ELECTIVA II",
+      "creditos": 4,
+      "semestre": 8,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "CFP2231",
+      "nombre": "FUNDAMENTOS DE ECOLOGIA Y MEDIO AMBIENTE",
+      "creditos": 2,
+      "semestre": 8,
+      "requiere": [],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1034",
+      "nombre": "PROFUNDIZACION II",
+      "creditos": 4,
+      "semestre": 8,
+      "requiere": ["IA1029"],
+      "estado": "en_espera"
+    },
+    {
+      "codigo": "CURLIB01",
+      "nombre": "CURSO LIBRE I",
+      "creditos": 2,
+      "semestre": 8,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "FC0444",
+      "nombre": "EXPRESION GRAFICA DIGITAL",
+      "creditos": 2,
+      "semestre": 9,
+      "requiere": [],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1035",
+      "nombre": "TRABAJO DE GRADO II",
+      "creditos": 3,
+      "semestre": 9,
+      "requiere": ["IA1031"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "FC0445",
+      "nombre": "CONSTITUCION Y ETICA",
+      "creditos": 1,
+      "semestre": 9,
+      "requiere": [],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1036",
+      "nombre": "SISTEMAS DE INFORMACION GERENCIAL",
+      "creditos": 3,
+      "semestre": 9,
+      "requiere": ["IA1015", "IA1018", "IA1027"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1037",
+      "nombre": "ELECTIVA III",
+      "creditos": 4,
+      "semestre": 9,
+      "requiere": [],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1038",
+      "nombre": "PROFUNDIZACION III",
+      "creditos": 4,
+      "semestre": 9,
+      "requiere": ["IA1034"],
+      "estado": "en_espera"
+    },
+    {
+      "codigo": "CURLIB02",
+      "nombre": "CURSO LIBRE II",
+      "creditos": 2,
+      "semestre": 9,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1039",
+      "nombre": "PRACTICA EMPRESARIAL",
+      "creditos": 6,
+      "semestre": 10,
+      "requiere": ["IA1035"],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1040",
+      "nombre": "ELECTIVA IV",
+      "creditos": 4,
+      "semestre": 10,
+      "requiere": [],
+      "estado": "activo"
+    },
+    {
+      "codigo": "IA1041",
+      "nombre": "PROFUNDIZACION IV",
+      "creditos": 4,
+      "semestre": 10,
+      "requiere": ["IA1038"],
+      "estado": "en_espera"
+    }
+  ]
+}

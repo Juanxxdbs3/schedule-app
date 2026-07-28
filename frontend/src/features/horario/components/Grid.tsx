@@ -199,7 +199,7 @@ export default function Grid({
     <div
       className="grid border-t border-border border-l border-border rounded-md overflow-hidden text-sm"
       style={{
-        gridTemplateColumns: `60px repeat(${diasEfectivos.length}, minmax(110px, 1fr))`,
+        gridTemplateColumns: `60px repeat(${diasEfectivos.length}, minmax(140px, 1fr))`,
         gridAutoRows: 52,
       }}
     >

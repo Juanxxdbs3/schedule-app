@@ -41,6 +41,12 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
   if (bloque.profesor) extraLines.push(bloque.profesor);
   if (bloque.salon) extraLines.push(bloque.salon);
 
+  const tooltipParts = [displayName];
+  if (bloque.profesor) tooltipParts.push(bloque.profesor);
+  if (bloque.salon) tooltipParts.push(bloque.salon);
+  tooltipParts.push(`${bloque.horaInicio}–${bloque.horaFin}`);
+  const tooltipText = tooltipParts.join(" · ");
+
   function bgClass() {
     if (conflicto) return "bg-danger-bg";
     if (resultado === 'aprobada') return "bg-[#f5f3ff]";
@@ -98,7 +104,7 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
       }`}
       style={draggingStyle}
       {...(isEdicion && !isCursado ? { ...listeners, ...attributes } : {})}
-      title={displayName}
+      title={tooltipText}
     >
       {isEdicion && onExpandUp && (
         <div
@@ -115,15 +121,19 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
         onClick={isEdicion && onEdit ? () => onEdit(bloque) : undefined}
       >
         <div className="min-w-0">
-          <div className="font-semibold leading-tight truncate">{displayName}</div>
-          {extraLines.length > 0 && (
-            <div className="text-[10px] leading-tight opacity-80 truncate">
-              {extraLines.join(" · ")}
+          <div className={`font-semibold leading-tight ${span >= 2 ? "line-clamp-2" : "truncate"}`}>{displayName}</div>
+          {extraLines.length > 0 && span >= 2 && (
+            <div className="text-[10px] leading-tight opacity-80">
+              {extraLines.map((line, i) => (
+                <div key={i} className="truncate">{line}</div>
+              ))}
             </div>
           )}
-          <div className="text-[10px] leading-tight opacity-80">
-            {bloque.horaInicio}–{bloque.horaFin}
-          </div>
+          {span >= 2 && (
+            <div className="text-[10px] leading-tight opacity-80">
+              {bloque.horaInicio}–{bloque.horaFin}
+            </div>
+          )}
         </div>
         {isEdicion && (
           <div className="flex gap-0.5 items-start flex-shrink-0 ml-0.5">

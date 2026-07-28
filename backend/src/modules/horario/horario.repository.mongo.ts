@@ -22,6 +22,7 @@ interface IHorarioDocument extends Document {
   unidadHoraMinutos: number;
   estado: string;
   bloques: IBloqueSubDoc[];
+  resultados: Map<string, string>;
   createdAt: Date;
   finalizadoAt: Date | null;
 }
@@ -58,6 +59,7 @@ const horarioSchema = new Schema<IHorarioDocument>(
       default: "en_progreso",
     },
     bloques: { type: [bloqueSubSchema], default: [] },
+    resultados: { type: Map, of: String, default: {} },
     finalizadoAt: { type: Date, default: null },
   },
   { timestamps: true },
@@ -91,6 +93,7 @@ function toHorario(doc: IHorarioDocument): Horario {
       if (b.salon) bloque.salon = b.salon;
       return bloque;
     }),
+    resultados: Object.fromEntries(doc.resultados ?? []) as Record<string, 'aprobada' | 'perdida'>,
     createdAt: doc.createdAt,
     finalizadoAt: doc.finalizadoAt,
   };
@@ -125,6 +128,7 @@ export class HorarioRepositoryMongo implements IHorarioRepository {
       unidadHoraMinutos: data.unidadHoraMinutos,
       estado: "en_progreso",
       bloques: [],
+      resultados: {},
       finalizadoAt: null,
     });
     return toHorario(doc);
@@ -146,6 +150,22 @@ export class HorarioRepositoryMongo implements IHorarioRepository {
     await HorarioModel.findByIdAndUpdate(horarioId, {
       $set: { bloques },
     });
+  }
+
+  async setResultado(
+    horarioId: string,
+    materiaCodigo: string,
+    resultado: 'aprobada' | 'perdida' | null,
+  ): Promise<void> {
+    if (resultado) {
+      await HorarioModel.findByIdAndUpdate(horarioId, {
+        $set: { [`resultados.${materiaCodigo}`]: resultado },
+      });
+    } else {
+      await HorarioModel.findByIdAndUpdate(horarioId, {
+        $unset: { [`resultados.${materiaCodigo}`]: "" },
+      });
+    }
   }
 
   async finalizar(horarioId: string, finalizadoAt: Date): Promise<void> {

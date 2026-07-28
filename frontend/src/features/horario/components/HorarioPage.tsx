@@ -47,6 +47,9 @@ export default function HorarioPage() {
   }
 
   function handleEliminarClick() {
+    if (algunaCursada) {
+      return;
+    }
     setShowDeleteConfirm(true);
   }
 
@@ -75,6 +78,11 @@ export default function HorarioPage() {
     setModo(nuevoModo);
   }
 
+  const algunaCursada = storeHorario?.bloques.some((b) => {
+    const m = pensum?.materias.find((m) => m.codigo === b.materiaCodigo);
+    return m?.estado === "cursado";
+  }) ?? false;
+
   if (loading || !ready || !storeHorario || !pensum) {
     return <div className="text-center p-8 text-muted">{loading ? "Cargando..." : "Horario no encontrado"}</div>;
   }
@@ -91,22 +99,26 @@ export default function HorarioPage() {
           onEliminar={modo === "edicion" ? handleEliminarClick : undefined}
           guardarLoading={loading}
           eliminando={deleting}
+          eliminarDisabled={algunaCursada}
         />
       </main>
 
       <Modal isOpen={showDeleteConfirm} onClose={cancelDelete} title="Eliminar horario">
         <p className="text-sm text-muted mb-4">
           ¿Estás seguro de que deseas eliminar este horario permanentemente? Esta acción no se puede deshacer.
-          {storeHorario.estado === "en_progreso" && (
+          {storeHorario.estado === "en_progreso" && !algunaCursada && (
             <> Las materias que contiene volverán a estar disponibles.</>
+          )}
+          {algunaCursada && (
+            <span className="text-danger block mt-2">No se puede eliminar porque hay materias cursadas. Deshaz sus resultados primero.</span>
           )}
         </p>
         <div className="flex gap-3">
           <button type="button" onClick={cancelDelete} className="flex-1 px-4 py-2 bg-transparent text-text border border-border rounded-md cursor-pointer text-md font-semibold">
             Cancelar
           </button>
-          <button type="button" onClick={confirmDelete} disabled={deleting} className={`flex-1 px-4 py-2 text-white border-none rounded-md cursor-pointer text-md font-semibold ${
-            deleting ? "bg-muted-block cursor-not-allowed" : "bg-danger cursor-pointer"
+          <button type="button" onClick={confirmDelete} disabled={deleting || algunaCursada} className={`flex-1 px-4 py-2 text-white border-none rounded-md cursor-pointer text-md font-semibold ${
+            deleting || algunaCursada ? "bg-muted-block cursor-not-allowed" : "bg-danger cursor-pointer"
           }`}>
             {deleting ? "Eliminando..." : "Eliminar"}
           </button>

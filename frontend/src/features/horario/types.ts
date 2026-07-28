@@ -23,6 +23,7 @@ export interface Horario {
   unidadHoraMinutos: number;
   estado: EstadoHorario;
   bloques: Bloque[];
+  resultados: Record<string, 'aprobada' | 'perdida'>;
   createdAt: string;
   finalizadoAt: string | null;
 }

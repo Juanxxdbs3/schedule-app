@@ -4,11 +4,6 @@ import { ICreditLimitStrategy } from "./strategies/ICreditLimitStrategy.js";
 import { IConflictDetectionStrategy } from "./strategies/IConflictDetectionStrategy.js";
 import { NotFoundError, ValidationError } from "../../shared/errors/AppError.js";
 
-interface ResultadoMateria {
-  materiaCodigo: string;
-  aprobada: boolean;
-}
-
 export class HorarioService {
   constructor(
     private horarioRepo: IHorarioRepository,
@@ -104,6 +99,16 @@ export class HorarioService {
     const agregados = [...codigosNuevos].filter((c) => !codigosViejos.has(c));
     const quitados = [...codigosViejos].filter((c) => !codigosNuevos.has(c));
 
+    // Validar que ningún quitado esté en estado 'cursado'
+    for (const codigo of quitados) {
+      const materia = pensum.materias.find((m) => m.codigo === codigo);
+      if (materia?.estado === "cursado") {
+        throw new ValidationError(
+          `No puedes quitar '${codigo}' porque ya está cursada. Deshaz su resultado primero.`,
+        );
+      }
+    }
+
     await this.horarioRepo.replaceBloques(horarioId, bloques);
 
     for (const codigo of agregados) {
@@ -118,40 +123,105 @@ export class HorarioService {
     const horario = await this.getById(horarioId, userId);
     const bloque = horario.bloques.find((b) => b.id === bloqueId);
     if (!bloque) throw new NotFoundError("Bloque not found");
+
+    const pensum = await this.pensumRepo.findById(horario.pensumId);
+    const materia = pensum?.materias.find((m) => m.codigo === bloque.materiaCodigo);
+    if (materia?.estado === "cursado") {
+      throw new ValidationError(
+        `No puedes quitar '${bloque.materiaCodigo}' porque ya está cursada. Deshaz su resultado primero.`,
+      );
+    }
+
     await this.horarioRepo.removeBloqueById(horarioId, bloqueId);
     await this.pensumRepo.updateMateriaEstado(horario.pensumId, bloque.materiaCodigo, "activo");
   }
 
-  async marcarResultado(horarioId: string, materiaCodigo: string, aprobada: boolean, userId: string): Promise<void> {
+  async marcarResultado(
+    horarioId: string,
+    materiaCodigo: string,
+    resultado: 'aprobada' | 'perdida' | null,
+    userId: string,
+  ): Promise<void> {
     const horario = await this.getById(horarioId, userId);
-    const nuevoEstado: EstadoMateria = aprobada ? "cursado" : "activo";
-    await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, nuevoEstado);
+    const pensum = await this.pensumRepo.findById(horario.pensumId);
+    if (!pensum) throw new NotFoundError("Pensum not found for this horario");
 
-    // Si la materia fue aprobada, desbloquear materias en_espera cuyos prerrequisitos ya se cumplen
-    if (aprobada) {
-      const pensum = await this.pensumRepo.findById(horario.pensumId);
-      if (pensum) {
-        const codigosCursados = new Set(
-          pensum.materias.filter((m) => m.estado === "cursado").map((m) => m.codigo),
-        );
-        const toUnlock = pensum.materias.filter(
-          (m) => m.estado === "en_espera" && m.requiere.length > 0 && m.requiere.every((r) => codigosCursados.has(r)),
-        );
-        for (const m of toUnlock) {
-          await this.pensumRepo.updateMateriaEstado(horario.pensumId, m.codigo, "activo");
-        }
+    const materiaActual = pensum.materias.find((m) => m.codigo === materiaCodigo);
+    const estabaCursado = materiaActual?.estado === "cursado";
+
+    if (resultado === 'aprobada') {
+      await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, "cursado");
+      await this.horarioRepo.setResultado(horarioId, materiaCodigo, 'aprobada');
+
+      // Desbloquear materias en_espera cuyos prerrequisitos ya se cumplen
+      const codigosCursados = new Set(
+        pensum.materias
+          .filter((m) => m.codigo === materiaCodigo || m.estado === "cursado")
+          .map((m) => m.codigo),
+      );
+      const toUnlock = pensum.materias.filter(
+        (m) => m.estado === "en_espera" && m.requiere.length > 0 && m.requiere.every((r) => codigosCursados.has(r)),
+      );
+      for (const m of toUnlock) {
+        await this.pensumRepo.updateMateriaEstado(horario.pensumId, m.codigo, "activo");
+      }
+    } else if (resultado === 'perdida') {
+      await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, "activo");
+      await this.horarioRepo.setResultado(horarioId, materiaCodigo, 'perdida');
+
+      if (estabaCursado) {
+        await this._reversaCascada(horario.pensumId, materiaCodigo);
+      }
+    } else {
+      // null = deshacer
+      await this.pensumRepo.updateMateriaEstado(horario.pensumId, materiaCodigo, "matriculado");
+      await this.horarioRepo.setResultado(horarioId, materiaCodigo, null);
+
+      if (estabaCursado) {
+        await this._reversaCascada(horario.pensumId, materiaCodigo);
       }
     }
   }
 
+  private async _reversaCascada(pensumId: string, codigoMateria: string): Promise<void> {
+    const pensum = await this.pensumRepo.findById(pensumId);
+    if (!pensum) return;
+
+    const dependientes = pensum.materias.filter(
+      (m) => m.requiere.includes(codigoMateria) && m.estado === "activo",
+    );
+    for (const m of dependientes) {
+      await this.pensumRepo.updateMateriaEstado(pensumId, m.codigo, "en_espera");
+    }
+  }
+
   async finalizar(horarioId: string, userId: string): Promise<void> {
-    await this.getById(horarioId, userId);
+    const horario = await this.getById(horarioId, userId);
+
+    const codigosUnicos = [...new Set(horario.bloques.map((b) => b.materiaCodigo))];
+    const pendientes = codigosUnicos.filter((c) => !horario.resultados[c]);
+    if (pendientes.length > 0) {
+      throw new ValidationError(
+        `Todas las materias deben tener un resultado antes de finalizar. Pendientes: ${pendientes.join(", ")}`,
+      );
+    }
+
     await this.horarioRepo.finalizar(horarioId, new Date());
   }
 
   async delete(horarioId: string, userId: string): Promise<void> {
     const horario = await this.getById(horarioId, userId);
+
     if (horario.estado === "en_progreso") {
+      const pensum = await this.pensumRepo.findById(horario.pensumId);
+      for (const bloque of horario.bloques) {
+        const materia = pensum?.materias.find((m) => m.codigo === bloque.materiaCodigo);
+        if (materia?.estado === "cursado") {
+          throw new ValidationError(
+            `No puedes eliminar este horario porque '${bloque.materiaCodigo}' ya está cursada. Deshaz su resultado primero.`,
+          );
+        }
+      }
       for (const bloque of horario.bloques) {
         await this.pensumRepo.updateMateriaEstado(horario.pensumId, bloque.materiaCodigo, "activo");
       }

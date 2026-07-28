@@ -47,6 +47,7 @@ export interface Horario {
   unidadHoraMinutos: number;
   estado: EstadoHorario;
   bloques: Bloque[];
+  resultados: Record<string, 'aprobada' | 'perdida'>;
   createdAt: Date;
   finalizadoAt: Date | null;
 }

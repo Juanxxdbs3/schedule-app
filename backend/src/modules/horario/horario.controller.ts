@@ -90,9 +90,9 @@ export class HorarioController {
     try {
       const userId = (req as any).userId;
       const id = req.params.id as string;
-      const { materiaCodigo, aprobada } = req.body;
+      const { materiaCodigo, resultado } = req.body;
 
-      await this.horarioService.marcarResultado(id, materiaCodigo, aprobada, userId);
+      await this.horarioService.marcarResultado(id, materiaCodigo, resultado, userId);
       res.json({ message: "Resultado registrado" });
     } catch (error) {
       next(error);

@@ -1,7 +1,9 @@
 import "dotenv/config";
+import path from "path";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { fileURLToPath } from "url";
 
 import { env } from "./config/env.js";
 import { UserRepositoryMongo } from "./modules/auth/auth.repository.mongo.js";
@@ -19,6 +21,9 @@ import { SimpleConflictDetectionStrategy } from "./modules/horario/strategies/im
 import { HorarioService } from "./modules/horario/horario.service.js";
 import { HorarioController } from "./modules/horario/horario.controller.js";
 import { createHorarioRouter } from "./modules/horario/horario.routes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // --- Wiring (DI manual) ---
 const userRepo = new UserRepositoryMongo();
@@ -41,17 +46,29 @@ const horarioRouter = createHorarioRouter(horarioController);
 // --- Express app ---
 const app = express();
 
-app.use(cors({
-  origin: env.CORS_ORIGIN,
-  credentials: true,
-}));
+if (process.env.NODE_ENV !== "production") {
+  app.use(cors({
+    origin: env.CORS_ORIGIN,
+    credentials: true,
+  }));
+}
 app.use(express.json());
 app.use(cookieParser());
 
-// --- Routes ---
+// --- API Routes ---
 app.use("/api/auth", authRouter);
 app.use("/api/pensums", pensumRouter);
 app.use("/api/horarios", horarioRouter);
+
+// --- Production: serve frontend build ---
+if (process.env.NODE_ENV === "production") {
+  const frontendDist = path.resolve(__dirname, "../../frontend/dist");
+  app.use(express.static(frontendDist));
+
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+}
 
 // --- Error handler (must be last) ---
 app.use(errorHandler);

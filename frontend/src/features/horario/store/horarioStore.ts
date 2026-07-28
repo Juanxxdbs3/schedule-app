@@ -44,7 +44,7 @@ interface HorarioState {
   saveNuevoHorario: () => Promise<Horario>;
   saveBloques: () => Promise<void>;
   fetchById: (id: string) => Promise<void>;
-  marcarResultado: (materiaCodigo: string, aprobada: boolean) => Promise<void>;
+  marcarResultado: (materiaCodigo: string, resultado: 'aprobada' | 'perdida' | null) => Promise<void>;
   finalizar: () => Promise<void>;
   clear: () => void;
 }
@@ -90,6 +90,7 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
       unidadHoraMinutos,
       estado: "en_progreso",
       bloques: [],
+      resultados: {},
       createdAt: new Date().toISOString(),
       finalizadoAt: null,
     };
@@ -253,10 +254,13 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     }
   },
 
-  marcarResultado: async (materiaCodigo, aprobada) => {
+  marcarResultado: async (materiaCodigo, resultado) => {
     const { horario } = get();
     if (!horario) return;
-    await HorarioService.marcarResultado(horario.id, materiaCodigo, aprobada);
+    await HorarioService.marcarResultado(horario.id, materiaCodigo, resultado);
+    const updated = await HorarioService.getById(horario.id);
+    get().storage.save(updated.horario);
+    set({ horario: updated.horario });
   },
 
   finalizar: async () => {

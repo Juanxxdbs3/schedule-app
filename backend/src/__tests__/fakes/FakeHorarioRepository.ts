@@ -75,6 +75,7 @@ export class FakeHorarioRepository implements IHorarioRepository {
       unidadHoraMinutos: data.unidadHoraMinutos,
       estado: "en_progreso" as EstadoHorario,
       bloques: [],
+      resultados: {},
       createdAt: now,
       finalizadoAt: null,
     };
@@ -115,6 +116,23 @@ export class FakeHorarioRepository implements IHorarioRepository {
 
     const bloquesWithIds = this.ensureBloqueIds(bloques);
     this.horarios.set(horarioId, { ...h, bloques: bloquesWithIds });
+  }
+
+  async setResultado(
+    horarioId: string,
+    materiaCodigo: string,
+    resultado: 'aprobada' | 'perdida' | null,
+  ): Promise<void> {
+    const h = this.horarios.get(horarioId);
+    if (!h) return;
+
+    const newResultados = { ...h.resultados };
+    if (resultado) {
+      newResultados[materiaCodigo] = resultado;
+    } else {
+      delete newResultados[materiaCodigo];
+    }
+    this.horarios.set(horarioId, { ...h, resultados: newResultados });
   }
 
   async finalizar(

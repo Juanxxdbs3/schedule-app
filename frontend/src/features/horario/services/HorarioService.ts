@@ -36,8 +36,8 @@ export const HorarioService = {
   removeBloque: (horarioId: string, bloqueId: string) =>
     apiDelete<void>(`/horarios/${horarioId}/bloques/${bloqueId}`),
 
-  marcarResultado: (horarioId: string, materiaCodigo: string, aprobada: boolean) =>
-    apiPatch<void>(`/horarios/${horarioId}/resultados`, { materiaCodigo, aprobada }),
+  marcarResultado: (horarioId: string, materiaCodigo: string, resultado: 'aprobada' | 'perdida' | null) =>
+    apiPatch<void>(`/horarios/${horarioId}/resultados`, { materiaCodigo, resultado }),
 
   finalizar: (horarioId: string) =>
     apiPatch<void>(`/horarios/${horarioId}/finalizar`),

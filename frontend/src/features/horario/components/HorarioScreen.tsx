@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { CheckCircle2, XCircle } from "lucide-react";
@@ -15,6 +15,9 @@ import EditBloqueModal from "./EditBloqueModal.tsx";
 import DropZone from "./DropZone.tsx";
 import MateriaBlock from "../../pensum/components/MateriaBlock.tsx";
 
+const DIAS_COMPLETO: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+const DOMINGO_STORAGE_KEY = "horario-app:domingo-visible";
+
 interface HorarioScreenProps {
   modo: ModoHorario;
   horario: Horario;
@@ -24,9 +27,10 @@ interface HorarioScreenProps {
   onEliminar?: () => void;
   guardarLoading?: boolean;
   eliminando?: boolean;
+  eliminarDisabled?: boolean;
 }
 
-export default function HorarioScreen({ modo, horario, pensum, onModoChange, onGuardar, onEliminar, guardarLoading, eliminando }: HorarioScreenProps) {
+export default function HorarioScreen({ modo, horario, pensum, onModoChange, onGuardar, onEliminar, guardarLoading, eliminando, eliminarDisabled }: HorarioScreenProps) {
   const addBloqueLocal = useHorarioStore((s) => s.addBloqueLocal);
   const removeBloqueLocal = useHorarioStore((s) => s.removeBloqueLocal);
   const updateBloqueLocal = useHorarioStore((s) => s.updateBloqueLocal);
@@ -52,19 +56,39 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
 
   const [activeMateria, setActiveMateria] = useState<Materia | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [resultados, setResultados] = useState<Record<string, boolean>>({});
   const [editBloque, setEditBloque] = useState<Bloque | null>(null);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroSemestre, setFiltroSemestre] = useState<number | "">("");
   const [filtroCreditos, setFiltroCreditos] = useState<number | "">("");
   const [localActivos, setLocalActivos] = useState<Set<string>>(new Set());
+  const [domingoVisible, setDomingoVisible] = useState(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem(DOMINGO_STORAGE_KEY) : null;
+    return stored !== "false";
+  });
+
+  useEffect(() => {
+    localStorage.setItem(DOMINGO_STORAGE_KEY, String(domingoVisible));
+  }, [domingoVisible]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const bloques = storeHorario?.bloques ?? [];
+  const resultados = storeHorario?.resultados ?? {};
   const materiasTodas = pensum.materias;
-  const todasResultadas = bloques.every((b) => resultados[b.materiaCodigo] !== undefined);
+  const todasResultadas = bloques.length > 0 && [...new Set(bloques.map((b) => b.materiaCodigo))].every((c) => resultados[c]);
   const codigosEnHorario = new Set(bloques.map((b) => b.materiaCodigo));
+
+  const esEdicion = modo === "edicion";
+  const diasVisibles = useMemo(() => {
+    if (esEdicion) return DIAS_COMPLETO;
+    const conMaterias = new Set(bloques.map((b) => b.dia));
+    return DIAS_COMPLETO.filter((d) => conMaterias.has(d));
+  }, [esEdicion, bloques]);
+
+  const minWidthGrid = useMemo(() => {
+    const count = domingoVisible ? diasVisibles.length : diasVisibles.filter((d) => d !== "domingo").length;
+    return Math.max(600, 60 + count * 110);
+  }, [diasVisibles, domingoVisible]);
 
   const materiasEnPool = useMemo(() => {
     const disponibles = materiasTodas
@@ -125,6 +149,11 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
 
     if (ad?.type === "placed" && od?.type === "pool") {
       const bloque = ad.bloque as Bloque;
+      const materia = materiasTodas.find((m) => m.codigo === bloque.materiaCodigo);
+      if (materia?.estado === "cursado") {
+        setError(`No puedes quitar '${bloque.materiaCodigo}' porque ya está cursada. Deshaz su resultado primero.`);
+        return;
+      }
       removeBloqueLocal(bloque.id);
       setLocalActivos((p) => new Set(p).add(bloque.materiaCodigo));
     }
@@ -133,6 +162,11 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
   function handleRemoveBloque(bloqueId: string) {
     const bloque = bloques.find((b) => b.id === bloqueId);
     if (!bloque) return;
+    const materia = materiasTodas.find((m) => m.codigo === bloque.materiaCodigo);
+    if (materia?.estado === "cursado") {
+      setError(`No puedes quitar '${bloque.materiaCodigo}' porque ya está cursada. Deshaz su resultado primero.`);
+      return;
+    }
     removeBloqueLocal(bloqueId);
     setLocalActivos((p) => new Set(p).add(bloque.materiaCodigo));
   }
@@ -188,10 +222,8 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     const diaActual = bloque.dia;
     const endM = aMinutos(bloque.horaFin);
     const startIdx = filas.findIndex((f) => aMinutos(f) >= endM);
-    const dias: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes"];
-    const idxHoy = dias.indexOf(diaActual);
+    const idxHoy = DIAS_COMPLETO.indexOf(diaActual);
 
-    // 1) Mismo día: slots después del bloque actual
     if (startIdx >= 0) {
       for (let si = startIdx; si < filas.length; si++) {
         const c = colocarEn(diaActual, filas[si]);
@@ -199,17 +231,15 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
       }
     }
 
-    // 2) Otros días: slot correspondiente + siguientes
-    for (let d = 1; d < dias.length; d++) {
-      const dia = dias[(idxHoy + d) % dias.length];
+    for (let d = 1; d < DIAS_COMPLETO.length; d++) {
+      const dia = DIAS_COMPLETO[(idxHoy + d) % DIAS_COMPLETO.length];
       for (let si = Math.max(0, startIdx); si < filas.length; si++) {
         const c = colocarEn(dia, filas[si]);
         if (c) return;
       }
     }
 
-    // 3) First-fit: cualquier celda libre
-    for (const dia of dias) {
+    for (const dia of DIAS_COMPLETO) {
       for (const inicio of filas) {
         const c = colocarEn(dia, inicio);
         if (c) return;
@@ -219,10 +249,8 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     setError("No hay espacio disponible para duplicar esta materia");
   }
 
-  async function handleMarcarResultado(codigo: string, aprobada: boolean) {
-    setResultados((prev) => ({ ...prev, [codigo]: aprobada }));
-    try { await marcarResultado(codigo, aprobada); } catch {
-      setResultados((prev) => { const n = { ...prev }; delete n[codigo]; return n; });
+  async function handleMarcarResultado(codigo: string, resultado: 'aprobada' | 'perdida' | null) {
+    try { await marcarResultado(codigo, resultado); } catch {
       setError(`Error al marcar ${codigo}`);
     }
   }
@@ -231,6 +259,29 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     { Icon: CheckCircle2, label: "Aprobada", color: "text-success" },
     { Icon: XCircle, label: "Perdida", color: "text-danger" },
   ];
+
+  function renderGrid(conBotones?: boolean) {
+    return (
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: `${minWidthGrid}px` }}>
+          <Grid
+            bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
+            dias={diasVisibles} domingoVisible={domingoVisible}
+            onToggleDomingo={() => setDomingoVisible((p) => !p)}
+            resultados={resultados}
+            {...(conBotones ? {
+              onRemoveBloque: handleRemoveBloque,
+              onExpandBloqueDown: handleExpandDown,
+              onExpandBloqueUp: handleExpandUp,
+              onDuplicateBloque: handleDuplicateBloque,
+              onEditBloque: setEditBloque,
+            } : {})}
+            onMarcarResultado={modo === "curso" ? handleMarcarResultado : undefined}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -265,8 +316,8 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
         )}
         {modo === "edicion" && onGuardar && onEliminar && (
           <div className="flex gap-2">
-            <button type="button" onClick={onEliminar} disabled={guardarLoading || eliminando} className={`px-3 py-1 text-sm bg-transparent border border-solid rounded-md font-medium ${
-              guardarLoading || eliminando ? "border-danger text-danger opacity-60 cursor-not-allowed" : "border-danger text-danger cursor-pointer"
+            <button type="button" onClick={onEliminar} disabled={guardarLoading || eliminando || eliminarDisabled} className={`px-3 py-1 text-sm bg-transparent border border-solid rounded-md font-medium ${
+              guardarLoading || eliminando || eliminarDisabled ? "border-danger text-danger opacity-60 cursor-not-allowed" : "border-danger text-danger cursor-pointer"
             }`}>
               {eliminando ? "Eliminando..." : "Eliminar"}
             </button>
@@ -288,15 +339,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
       {modo === "edicion" ? (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
-            <div className="overflow-x-auto">
-              <div className="min-w-[700px]">
-                <Grid
-                  bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
-                  onRemoveBloque={handleRemoveBloque} onExpandBloqueDown={handleExpandDown} onExpandBloqueUp={handleExpandUp}
-                  onDuplicateBloque={handleDuplicateBloque} onEditBloque={setEditBloque}
-                />
-              </div>
-            </div>
+            {renderGrid(true)}
             <div className="bg-surface rounded-md border border-border p-3 sticky top-3">
               <h3 className="text-sm mb-2">Materias ({materiasEnPool.length})</h3>
               <div className="flex flex-col gap-1 mb-2">
@@ -331,15 +374,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
           {bloques.length === 0 ? (
             <div className="text-center p-8 text-muted">No hay materias en el horario</div>
           ) : (
-            <div className="overflow-x-auto min-w-0">
-              <div className="min-w-[700px]">
-                <Grid
-                  bloques={bloques} materias={materiasTodas} unidadHoraMinutos={horario.unidadHoraMinutos} modo={modo}
-                  onMarcarResultado={modo === "curso" ? handleMarcarResultado : undefined}
-                  resultados={resultados}
-                />
-              </div>
-            </div>
+            renderGrid()
           )}
         </div>
       )}

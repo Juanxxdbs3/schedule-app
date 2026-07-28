@@ -29,16 +29,36 @@ campos, no cambies nombres de claves):
 ```
 
 Reglas:
-1. Usa el PDF para el código, nombre y créditos exactos (evita inventar códigos, solo házlo cuando el código no se te dé explícitamente y escribe uno coherente a los demás y a la materia. No inventes códigos, pero más importante es que no dejes códigos vacios).
-2. Usa el flujograma para determinar `semestre` (la columna donde está el bloque)
-   y `requiere` (sigue las líneas que entran a cada bloque).
-3. Si una materia no tiene ninguna línea de entrada, `requiere` debe ser un array vacío `[]`.
-4. Si no estás seguro de un prerrequisito porque la línea es ambigua en la imagen,
-   inclúyelo de todas formas con tu mejor estimación, pero al final del JSON
-   agrega (fuera del bloque de código) una lista breve de qué materias
-   conviene que yo revise manualmente.
-5. No agregues comentarios dentro del JSON — debe ser JSON válido y parseable.
-6. Devuelve el JSON completo, con TODAS las materias del pensum, no solo un ejemplo.
+1. Usa el PDF/imagen para el código, nombre y créditos exactos. Si una
+   materia SÍ tiene código oficial legible, úsalo tal cual. Si NO tiene
+   código oficial legible (o el archivo no lo incluye), genera uno tú mismo,
+   coherente con el resto (mismo patrón de prefijo/longitud que los códigos
+   oficiales que sí existan, o si ninguno tiene código oficial, inventa un
+   prefijo corto basado en el área temática — ej. "PSI" para psicología
+   general, "ELE" para electivas). Nunca dejes un código vacío o nulo.
+2. Usa el flujograma para determinar `semestre` (la columna donde está el
+   bloque) y `requiere` (sigue las líneas que entran a cada bloque).
+3. Si una materia no tiene ninguna línea de entrada, `requiere` debe ser un
+   array vacío `[]`.
+4. Modo por defecto (estricto): si la calidad/resolución de la imagen no te
+   permite determinar con certeza las líneas de prerrequisito o el color de
+   "cursada" para una parte del pensum, detente y pide un archivo mejor antes
+   de generar el JSON — no inventes esa información.
+5. Modo borrador (solo si el usuario lo pide explícitamente, ej. "genéralo
+   como borrador" o "trátalo como archivo de prueba"): en vez de detenerte,
+   genera el JSON completo igualmente. Para cualquier prerrequisito que no
+   puedas determinar con certeza, usa `requiere: []`. Para el estado, si no
+   puedes distinguir el color de "cursada" con confianza, usa `estado: "activo"`
+   para todas (nunca `"cursado"` como default, ya que asumir una materia como
+   ya aprobada sin certeza es más riesgoso que asumirla disponible). Al final
+   del JSON, agrega una nota breve indicando qué códigos son provisionales
+   (inventados) y qué prerrequisitos/estados quedaron en su valor por defecto
+   por falta de certeza — así el estudiante sabe exactamente qué revisar
+   manualmente más adelante, sin que eso bloquee tener un archivo de prueba
+   funcional ya mismo.
+6. No agregues comentarios dentro del JSON — debe ser JSON válido y parseable.
+7. Devuelve el JSON completo, con TODAS las materias del pensum, no solo un
+   ejemplo.
 
 ---
 

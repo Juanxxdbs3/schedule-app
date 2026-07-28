@@ -161,35 +161,86 @@ describe("HorarioService", () => {
       pensumRepo.setPensum(makePensum([makeMateria("M1")]));
       const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
 
-      await service.marcarResultado(horario.id, "M1", true, USER_ID);
+      await service.marcarResultado(horario.id, "M1", "aprobada", USER_ID);
 
       expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "M1", estado: "cursado" });
+      const updated = await horarioRepo.findById(horario.id);
+      expect(updated!.resultados["M1"]).toBe("aprobada");
     });
 
     it("marca materia como activa cuando pierde", async () => {
       pensumRepo.setPensum(makePensum([makeMateria("M1")]));
       const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
 
-      await service.marcarResultado(horario.id, "M1", false, USER_ID);
+      await service.marcarResultado(horario.id, "M1", "perdida", USER_ID);
 
       expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "M1", estado: "activo" });
+      const updated = await horarioRepo.findById(horario.id);
+      expect(updated!.resultados["M1"]).toBe("perdida");
+    });
+
+    it("deshace resultado: null quita key de resultados y pone materia en matriculado", async () => {
+      pensumRepo.setPensum(makePensum([makeMateria("M1")]));
+      const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
+      await service.marcarResultado(horario.id, "M1", "aprobada", USER_ID);
+
+      await service.marcarResultado(horario.id, "M1", null, USER_ID);
+
+      expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "M1", estado: "matriculado" });
+      const updated = await horarioRepo.findById(horario.id);
+      expect(updated!.resultados["M1"]).toBeUndefined();
     });
 
     it("desbloquea materias en_espera cuyos prerrequisitos se cumplen al aprobar", async () => {
       const prerreq = makeMateria("PRE", 3);
       const bloqueada: Materia = { codigo: "BLOQ", nombre: "Bloqueada", creditos: 3, semestre: 2, requiere: ["PRE"], estado: "en_espera" };
-      // PRE ya está cursada
-      const materias = [prerreq, bloqueada].map((m) =>
-        m.codigo === "PRE" ? { ...m, estado: "cursado" as const } : m,
-      );
+      const materias = [prerreq, bloqueada];
       pensumRepo.setPensum(makePensum(materias));
       const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
 
-      // Al aprobar cualquier materia, se revisan los prerrequisitos
-      await service.marcarResultado(horario.id, "PRE", true, USER_ID);
+      await service.marcarResultado(horario.id, "PRE", "aprobada", USER_ID);
 
-      // PRE ya estaba cursada, pero la verificación de unlock corre y debería activar BLOQ
+      expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "PRE", estado: "cursado" });
       expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "BLOQ", estado: "activo" });
+    });
+
+    it("reversa en cascada: al deshacer una cursada, dependientes vuelven a en_espera", async () => {
+      const A = makeMateria("A", 3);
+      const B: Materia = { codigo: "B", nombre: "B", creditos: 3, semestre: 2, requiere: ["A"], estado: "activo" };
+      pensumRepo.setPensum(makePensum([A, B]));
+      const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
+
+      // Aprobamos A → B debería pasar a activo (ya está activo, pero no hay matricula que bloquee)
+      await service.marcarResultado(horario.id, "A", "aprobada", USER_ID);
+      expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "A", estado: "cursado" });
+
+      // Forzar B a activo (simula que se desbloqueó)
+      const p = await pensumRepo.findById(PENSUM_ID);
+      if (p) {
+        await pensumRepo.updateMateriaEstado(PENSUM_ID, "B", "activo");
+      }
+
+      // Deshacemos A
+      await service.marcarResultado(horario.id, "A", null, USER_ID);
+
+      expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "B", estado: "en_espera" });
+    });
+
+    it("reversa en cascada: al marcar perdida una cursada, dependientes vuelven a en_espera", async () => {
+      const A = makeMateria("A", 3);
+      const B: Materia = { codigo: "B", nombre: "B", creditos: 3, semestre: 2, requiere: ["A"], estado: "activo" };
+      pensumRepo.setPensum(makePensum([A, B]));
+      const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
+
+      await service.marcarResultado(horario.id, "A", "aprobada", USER_ID);
+      const p = await pensumRepo.findById(PENSUM_ID);
+      if (p) {
+        await pensumRepo.updateMateriaEstado(PENSUM_ID, "B", "activo");
+      }
+
+      await service.marcarResultado(horario.id, "A", "perdida", USER_ID);
+
+      expect(pensumRepo.updateCalls).toContainEqual({ pensumId: PENSUM_ID, codigo: "B", estado: "en_espera" });
     });
   });
 
@@ -197,6 +248,7 @@ describe("HorarioService", () => {
     it("marca el horario como finalizado", async () => {
       pensumRepo.setPensum(makePensum([makeMateria("M1")]));
       const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
+      await service.marcarResultado(horario.id, "M1", "aprobada", USER_ID);
 
       await service.finalizar(horario.id, USER_ID);
 
@@ -208,21 +260,49 @@ describe("HorarioService", () => {
     it("lanza NotFoundError si el horario no existe", async () => {
       await expect(service.finalizar("no-existe", USER_ID)).rejects.toThrow(NotFoundError);
     });
-  });
 
-  describe("delete", () => {
-    it("elimina horario en_progreso y revierte materias a activo", async () => {
+    it("rechaza si no todas las materias tienen resultado", async () => {
       pensumRepo.setPensum(makePensum([makeMateria("M1"), makeMateria("M2")]));
       const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
       await service.addBloque(horario.id, makeBloque("M1", "lunes", "07:00", "08:40"), USER_ID);
       await service.addBloque(horario.id, makeBloque("M2", "martes", "07:00", "08:40"), USER_ID);
+      await service.marcarResultado(horario.id, "M1", "aprobada", USER_ID);
 
-      await service.delete(horario.id, USER_ID);
+      await expect(service.finalizar(horario.id, USER_ID)).rejects.toThrow(ValidationError);
+    });
+  });
 
-      const deleted = await horarioRepo.findById(horario.id);
-      expect(deleted).toBeNull();
-      // Cada bloque debe haber revertido su materia a activo: M1 y M2
-      expect(pensumRepo.updateCalls.filter((c) => c.estado === "activo").length).toBe(2);
+  describe("validar cursado en saveBloques", () => {
+    it("rechaza saveBloques si un quitado está en cursado", async () => {
+      pensumRepo.setPensum(makePensum([makeMateria("M1", 3)]));
+      const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
+      await service.addBloque(horario.id, makeBloque("M1", "lunes", "07:00", "08:40"), USER_ID);
+      await service.marcarResultado(horario.id, "M1", "aprobada", USER_ID);
+
+      await expect(service.saveBloques(horario.id, [], USER_ID)).rejects.toThrow(ValidationError);
+    });
+  });
+
+  describe("validar cursado en removeBloque", () => {
+    it("rechaza removeBloque si la materia está cursada", async () => {
+      pensumRepo.setPensum(makePensum([makeMateria("M1", 3)]));
+      const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
+      await service.addBloque(horario.id, makeBloque("M1", "lunes", "07:00", "08:40"), USER_ID);
+      await service.marcarResultado(horario.id, "M1", "aprobada", USER_ID);
+
+      const bloqueId = (await horarioRepo.findById(horario.id))!.bloques[0].id!;
+      await expect(service.removeBloque(horario.id, bloqueId, USER_ID)).rejects.toThrow(ValidationError);
+    });
+  });
+
+  describe("validar cursado en delete", () => {
+    it("rechaza delete si un bloque está cursado", async () => {
+      pensumRepo.setPensum(makePensum([makeMateria("M1", 3)]));
+      const horario = await service.create(USER_ID, PENSUM_ID, "2026-1", 18, 50);
+      await service.addBloque(horario.id, makeBloque("M1", "lunes", "07:00", "08:40"), USER_ID);
+      await service.marcarResultado(horario.id, "M1", "aprobada", USER_ID);
+
+      await expect(service.delete(horario.id, USER_ID)).rejects.toThrow(ValidationError);
     });
 
     it("elimina horario finalizado sin revertir materias", async () => {

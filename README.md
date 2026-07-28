@@ -31,7 +31,7 @@ horario-app/
   docs/             Architecture, data model, pensum format
 ```
 
-## Quick start
+## Quick start (development)
 
 ### Prerequisites
 
@@ -55,18 +55,57 @@ mongod --dbpath /path/to/data
 npm run dev
 ```
 
+Open `http://localhost:5173` in a browser.
+
 ### Commands
 
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start both backend + frontend in dev mode |
-| `npm run build` | Build both projects |
+| `npm run build` | Build both projects for production |
+| `npm start` | Run production server (after build) |
 | `npm test` | Run all tests (backend + frontend) |
 | `npm run lint` | Run linter (if configured) |
 
+## Production deployment
+
+The project is designed to run as a **single service** in production — Express
+serves both the API and the compiled frontend assets.
+
+```bash
+# 1. Build both projects
+npm run build
+
+# 2. Set NODE_ENV=production in backend/.env
+#    (Backend will serve frontend/dist/ as static files)
+
+# 3. Start the production server
+NODE_ENV=production node backend/dist/server.js
+```
+
+The server listens on the port defined by the `PORT` env var (default 4000).
+Open `http://localhost:4000` — the app and API share the same origin, so no
+CORS issues.
+
+### Environment variables (backend/.env)
+
+| Variable       | Required | Default                  | Description                         |
+|----------------|----------|--------------------------|-------------------------------------|
+| `MONGO_URI`    | Yes      | —                        | MongoDB connection string           |
+| `JWT_SECRET`   | Yes      | —                        | Secret for signing JWTs             |
+| `PORT`         | No       | `4000`                   | HTTP port (Render injects this)     |
+| `CORS_ORIGIN`  | No       | `http://localhost:5173`  | Allowed CORS origin (dev only)      |
+| `NODE_ENV`     | No       | —                        | Set to `production` for deployment  |
+
+### Cookie security
+
+In production (`NODE_ENV=production`), the JWT cookie is set with `secure: true`
+(requires HTTPS). Render serves all traffic over HTTPS, so this is both safe and
+necessary.
+
 ## Full flow walkthrough
 
-1. Open `http://localhost:5173` in a browser.
+1. Open `http://localhost:5173` (dev) or your deployed URL (prod).
 2. Register a new user (username, email, password).
 3. Upload a pensum JSON file (format: `docs/formato-pensum.json`).
 4. Go to the pensum page, click "Crear horario", set max credits and slot
@@ -105,7 +144,7 @@ npm run dev
 # All tests
 npm test
 
-# Backend only (47 tests)
+# Backend only (53 tests)
 cd backend && npx vitest run
 
 # Frontend only (17 tests)
@@ -118,9 +157,9 @@ cd frontend && npx vitest run
 |-------|-------|
 | Backend unit: auth.service | 8 |
 | Backend unit: pensum.service | 9 |
-| Backend unit: horario.service | 19 |
+| Backend unit: horario.service | 25 |
 | Backend unit: saveBloques | 7 |
 | Backend unit: strategies | 4 |
 | Frontend unit: strategies | 9 |
 | Frontend unit: generarFilasHora | 8 |
-| **Total** | **64** |
+| **Total** | **70** |

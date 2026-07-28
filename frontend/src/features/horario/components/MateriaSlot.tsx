@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { CheckCircle2, XCircle, Copy } from "lucide-react";
+import { CheckCircle2, XCircle, Copy, Undo2 } from "lucide-react";
 import type { Bloque, ModoHorario } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 
@@ -9,12 +9,12 @@ interface MateriaSlotProps {
   conflicto: boolean;
   span: number;
   modo: ModoHorario;
-  resultado?: boolean;
+  resultado?: 'aprobada' | 'perdida';
   onRemove?: () => void;
   onExpandDown?: () => void;
   onExpandUp?: () => void;
   onDuplicate?: () => void;
-  onMarcar?: (aprobada: boolean) => void;
+  onMarcar?: (resultado: 'aprobada' | 'perdida' | null) => void;
   onEdit?: (bloque: Bloque) => void;
 }
 
@@ -28,11 +28,12 @@ const COLOR_BY_ESTADO: Record<string, { border: string; bg: string; text: string
 export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onDuplicate, onMarcar, onEdit }: MateriaSlotProps) {
   const colors = COLOR_BY_ESTADO[materia.estado] ?? COLOR_BY_ESTADO.activo;
   const isEdicion = modo === "edicion";
+  const isCursado = materia.estado === "cursado";
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `placed-${bloque.id}`,
     data: { type: "placed", materia, bloque },
-    disabled: !isEdicion,
+    disabled: !isEdicion || isCursado,
   });
 
   const displayName = bloque.nombrePersonalizado || materia.nombre;
@@ -42,15 +43,15 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
 
   function bgClass() {
     if (conflicto) return "bg-danger-bg";
-    if (resultado === true) return "bg-[#f5f3ff]";
-    if (resultado === false) return "bg-[#fff7ed]";
+    if (resultado === 'aprobada') return "bg-[#f5f3ff]";
+    if (resultado === 'perdida') return "bg-[#fff7ed]";
     return "";
   }
 
   function borderColor() {
     if (conflicto) return "border-danger";
-    if (resultado === true) return "border-[#7c3aed]";
-    if (resultado === false) return "border-[#ea580c]";
+    if (resultado === 'aprobada') return "border-[#7c3aed]";
+    if (resultado === 'perdida') return "border-[#ea580c]";
     return `border-[${colors.border}]`;
   }
 
@@ -84,7 +85,7 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
 
   const draggingStyle: React.CSSProperties = {
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-    touchAction: isEdicion ? "none" : "auto",
+    touchAction: isEdicion && !isCursado ? "none" : "auto",
   };
 
   return (
@@ -92,14 +93,13 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
       ref={setNodeRef}
       className={`rounded-sm text-[11px] overflow-visible select-none relative h-full flex flex-col justify-between box-border ${
         isEdicion ? "p-0.5" : "px-1.5 py-1"
-      } ${isEdicion ? "cursor-grab" : "cursor-default"} ${bgClass()} border border-solid ${borderColor()} ${textColor()} ${
+      } ${isEdicion && !isCursado ? "cursor-grab" : "cursor-default"} ${bgClass()} border border-solid ${borderColor()} ${textColor()} ${
         isDragging ? "opacity-50 z-[999]" : "opacity-100 z-[1]"
       }`}
       style={draggingStyle}
-      {...(isEdicion ? { ...listeners, ...attributes } : {})}
+      {...(isEdicion && !isCursado ? { ...listeners, ...attributes } : {})}
       title={displayName}
     >
-      {/* Top expand handle */}
       {isEdicion && onExpandUp && (
         <div
           className="absolute left-0 right-0 top-[-6px] h-3 z-10 select-none"
@@ -110,7 +110,6 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
         </div>
       )}
 
-      {/* Clickable area for editing */}
       <div
         className="flex justify-between items-start flex-1 min-h-0"
         onClick={isEdicion && onEdit ? () => onEdit(bloque) : undefined}
@@ -137,19 +136,22 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
               </button>
             )}
             {onRemove && (
-              <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                className="w-4 h-4 p-0 border-none rounded-full cursor-pointer text-[10px] text-center leading-4 flex-shrink-0"
-                style={{ background: "rgba(0,0,0,0.1)", color: "#666" }}
-                title="Quitar del horario">✕</button>
+              <button type="button"
+                onClick={(e) => { if (!isCursado) { e.stopPropagation(); onRemove(); } }}
+                disabled={isCursado}
+                className={`w-4 h-4 p-0 border-none rounded-full text-[10px] text-center leading-4 flex-shrink-0 flex items-center justify-center ${
+                  isCursado ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
+                }`}
+                style={{ background: isCursado ? "transparent" : "rgba(0,0,0,0.1)", color: isCursado ? "#999" : "#666" }}
+                title={isCursado ? "Debes deshacer el resultado antes de quitar" : "Quitar del horario"}>✕</button>
             )}
           </div>
         )}
       </div>
 
-      {/* Result */}
-      {modo === "curso" && resultado !== undefined && (
+      {modo === "curso" && resultado && (
         <div className="text-center leading-none mt-0.5">
-          {resultado ? (
+          {resultado === 'aprobada' ? (
             <CheckCircle2 className="w-3.5 h-3.5 text-success inline" />
           ) : (
             <XCircle className="w-3.5 h-3.5 text-danger inline" />
@@ -157,27 +159,35 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
         </div>
       )}
 
-      {/* Icon buttons */}
       {modo === "curso" && onMarcar && (
-        <div className="flex gap-1 justify-center mt-0.5">
-          <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar(true); }}
-            className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
-              resultado === true ? "bg-[#f5f3ff] border border-solid border-[#7c3aed] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
-            }`}
-            title="Aprobada">
-            <CheckCircle2 className="w-3.5 h-3.5" style={{ color: resultado === true ? "#7c3aed" : "inherit" }} />
-          </button>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar(false); }}
-            className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
-              resultado === false ? "bg-[#fff7ed] border border-solid border-[#ea580c] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
-            }`}
-            title="Perdida">
-            <XCircle className="w-3.5 h-3.5" style={{ color: resultado === false ? "#ea580c" : "inherit" }} />
-          </button>
+        <div className="flex gap-1 justify-center mt-0.5 items-center">
+          {resultado ? (
+            <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar(null); }}
+              className="px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] bg-transparent border border-solid border-transparent opacity-60 hover:opacity-100"
+              title="Deshacer">
+              <Undo2 className="w-3 h-3" />
+            </button>
+          ) : (
+            <>
+              <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar('aprobada'); }}
+                className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
+                  resultado === 'aprobada' ? "bg-[#f5f3ff] border border-solid border-[#7c3aed] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
+                }`}
+                title="Aprobada">
+                <CheckCircle2 className="w-3.5 h-3.5" style={{ color: resultado === 'aprobada' ? "#7c3aed" : "inherit" }} />
+              </button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar('perdida'); }}
+                className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
+                  resultado === 'perdida' ? "bg-[#fff7ed] border border-solid border-[#ea580c] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
+                }`}
+                title="Perdida">
+                <XCircle className="w-3.5 h-3.5" style={{ color: resultado === 'perdida' ? "#ea580c" : "inherit" }} />
+              </button>
+            </>
+          )}
         </div>
       )}
 
-      {/* Bottom expand handle */}
       {isEdicion && onExpandDown && span < 5 && (
         <div
           className="absolute left-0 right-0 bottom-[-6px] h-3 z-10 select-none"

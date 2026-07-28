@@ -47,6 +47,9 @@ class FakeHorarioRepository implements IHorarioRepository {
   async removeBloqueById(): Promise<void> {
     throw new Error("No utilizado en saveBloques");
   }
+  async setResultado(): Promise<void> {
+    throw new Error("No utilizado en saveBloques");
+  }
   async finalizar(): Promise<void> {
     throw new Error("No utilizado en saveBloques");
   }
@@ -153,6 +156,7 @@ function makeHorario(bloques: Bloque[]): Horario {
     unidadHoraMinutos: 60,
     estado: "en_progreso",
     bloques,
+    resultados: {},
     createdAt: new Date("2025-01-01"),
     finalizadoAt: null,
   };

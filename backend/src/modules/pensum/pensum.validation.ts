@@ -11,7 +11,7 @@ export const materiaSchema = z.object({
 
 export const createPensumSchema = z.object({
   nombre: z.string().min(1),
-  materias: z.array(materiaSchema).min(1),
+  materias: z.array(materiaSchema).default([]),
 });
 
 export const addMateriaSchema = materiaSchema.partial({ estado: true });

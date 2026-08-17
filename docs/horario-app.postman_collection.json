@@ -238,6 +238,89 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "cambiar estado materia",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"estado\": \"activo\"\r\n}"
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/pensums/:id/materias/:codigo/estado",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "pensums",
+                ":id",
+                "materias",
+                ":codigo",
+                "estado"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6a66c62cb784e9cc23b844b3"
+                },
+                {
+                  "key": "codigo",
+                  "value": "IA1037"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "agregar materia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"codigo\": \"MATE123\",\r\n  \"nombre\": \"Cálculo Infinito\",\r\n  \"creditos\": 4,\r\n  \"semestre\": 8,\r\n  \"requiere\": [\"FP0417\"],\r\n  \"estado\": \"en_espera\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/pensums/:id/materias",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "pensums",
+                ":id",
+                "materias"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6a6855ec0a85fd91774ef05b"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -257,7 +340,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"pensumId\": \"6a668be23e8cf14bcbe1efb0\",\r\n  \"semestreLabel\": \"2027-1\",\r\n  \"maxCreditos\": 20,\r\n  \"unidadHoraMinutos\": 50\r\n}",
+              "raw": "{\r\n  \"pensumId\": \"6a66c62cb784e9cc23b844b3\",\r\n  \"semestreLabel\": \"2026-1\",\r\n  \"maxCreditos\": 18,\r\n  \"unidadHoraMinutos\": 50\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -290,7 +373,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"materiaCodigo\": \"FC0443\",\r\n  \"dia\": \"lunes\",\r\n  \"horaInicio\": \"07:00\",\r\n  \"horaFin\": \"09:30\"\r\n}"
+              "raw": "{\r\n    \"materiaCodigo\": \"IA1026\",\r\n  \"dia\": \"martes\",\r\n  \"horaInicio\": \"07:00\",\r\n  \"horaFin\": \"08:40\"\r\n}\r\n"
             },
             "url": {
               "raw": "{{backend_url}}/api/horarios/:id/bloques",
@@ -306,7 +389,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "6a669521000c3fa22ecd6ab6"
+                  "value": "6a66c9a41a7bddf8b8a56356"
                 }
               ]
             }
@@ -378,6 +461,71 @@
                 {
                   "key": "id",
                   "value": "6a669521000c3fa22ecd6ab6"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "matricular",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"bloques\": [\r\n    {\"materiaCodigo\": \"IA1029\", \"dia\": \"lunes\", \"horaInicio\": \"07:00\", \"horaFin\": \"08:40\"},\r\n    {\"materiaCodigo\": \"IA1035\", \"dia\": \"martes\", \"horaInicio\": \"07:00\", \"horaFin\": \"08:40\"}\r\n  ]\r\n}"
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/horarios/:id/bloques",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "horarios",
+                ":id",
+                "bloques"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6a66d989ac457912d3a0dc46"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "borrar horario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{backend_url}}/api/horarios/:id",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "api",
+                "horarios",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6a66c9a41a7bddf8b8a56356"
                 }
               ]
             }

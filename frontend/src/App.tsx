@@ -11,6 +11,7 @@ import { HorarioService } from "./features/horario/services/HorarioService.ts";
 import type { Horario } from "./features/horario/types.ts";
 import CargarPensum from "./features/pensum/components/CargarPensum.tsx";
 import AgregarMateriaModal from "./features/pensum/components/AgregarMateriaModal.tsx";
+import NuevoPensumModal from "./features/pensum/components/NuevoPensumModal.tsx";
 import FiltroPensum from "./features/pensum/components/FiltroPensum.tsx";
 import PoolMaterias from "./features/pensum/components/PoolMaterias.tsx";
 import HorarioPage from "./features/horario/components/HorarioPage.tsx";
@@ -18,6 +19,8 @@ import ConfigurarHorario from "./features/horario/components/ConfigurarHorario.t
 
 import NavBar from "./shared/components/NavBar.tsx";
 import StatusIndicator from "./shared/components/StatusIndicator.tsx";
+import ConfirmModal from "./shared/components/ConfirmModal.tsx";
+import { Trash2 } from "lucide-react";
 import { useUiStatusStore } from "./shared/store/uiStatusStore.ts";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -37,6 +40,8 @@ function DashboardPage() {
   const [showCrear, setShowCrear] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [showAgregarMateria, setShowAgregarMateria] = useState(false);
+  const [showNuevoPensum, setShowNuevoPensum] = useState(false);
+  const [pensumAEliminar, setPensumAEliminar] = useState<Pensum | null>(null);
   const [crearError, setCrearError] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
 
@@ -113,6 +118,43 @@ function DashboardPage() {
     }
   }
 
+  async function handleCrearNuevoPensum(nombre: string) {
+    useUiStatusStore.getState().setStatus("loading", "Creando pensum...");
+    try {
+      const { pensum: nuevo } = await PensumService.create(nombre, []);
+      PensumService.storage.save(nuevo);
+      setPensum(nuevo);
+      setFiltradas([]);
+      setShowNuevoPensum(false);
+      setPensums((prev) => [...prev, nuevo]);
+      useUiStatusStore.getState().setStatus("success", "Pensum creado");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al crear el pensum";
+      useUiStatusStore.getState().setStatus("error", msg);
+      throw e;
+    }
+  }
+
+  async function handleEliminarPensum() {
+    if (!pensumAEliminar) return;
+    const id = pensumAEliminar.id;
+    useUiStatusStore.getState().setStatus("loading", "Eliminando pensum...");
+    try {
+      await PensumService.remove(id);
+      PensumService.storage.remove();
+      setPensum(null);
+      setFiltradas([]);
+      setPensums((prev) => prev.filter((x) => x.id !== id));
+      setPensumAEliminar(null);
+      useHorarioStore.getState().clear();
+      useUiStatusStore.getState().setStatus("success", "Pensum eliminado");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al eliminar el pensum";
+      useUiStatusStore.getState().setStatus("error", msg);
+      setPensumAEliminar(null);
+    }
+  }
+
   if (!syncDone) return <div className="text-center p-8 text-muted">Cargando...</div>;
 
   const pensumActual = pensum;
@@ -126,13 +168,18 @@ function DashboardPage() {
         {/* Pensums section */}
         <div className="min-w-0">
           <section className="border border-border rounded-md p-3">
-            <div className="flex justify-between items-center mb-3">
+            <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
               <h2 className="m-0 text-lg">Pensums</h2>
-              {pensums.length > 0 && (
-                <button type="button" onClick={handleCargarNuevo} className="btn-primary px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
-                  + Cargar pensum
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setShowNuevoPensum(true)} className="btn-primary px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+                  + Nuevo pensum
                 </button>
-              )}
+                {pensums.length > 0 && (
+                  <button type="button" onClick={handleCargarNuevo} className="px-4 py-2 bg-surface text-text border border-border rounded-md cursor-pointer font-semibold text-sm">
+                    + Cargar pensum
+                  </button>
+                )}
+              </div>
             </div>
 
             {showUpload || pensums.length === 0 ? (
@@ -205,11 +252,22 @@ function DashboardPage() {
       {/* Pensum detail */}
       {pensumActual && !showUpload && (
         <section className="mb-6">
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
             <h2 className="m-0 text-lg">{pensumActual.nombre}</h2>
-            <button type="button" onClick={() => setShowAgregarMateria(true)} className="btn-primary px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
-              + Agregar materia
-            </button>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setShowAgregarMateria(true)} className="btn-primary px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+                + Agregar materia
+              </button>
+              <button
+                type="button"
+                onClick={() => setPensumAEliminar(pensumActual)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-transparent text-danger border border-danger rounded-md cursor-pointer font-semibold text-sm hover:bg-danger-bg"
+                title="Eliminar pensum"
+              >
+                <Trash2 className="w-4 h-4" />
+                Eliminar
+              </button>
+            </div>
           </div>
           <FiltroPensum materias={materiasDisponibles} onFilter={setFiltradas} />
           <PoolMaterias materias={filtradas} />
@@ -223,6 +281,21 @@ function DashboardPage() {
           onGuardar={handleAgregarMateria}
         />
       )}
+
+      <NuevoPensumModal
+        isOpen={showNuevoPensum}
+        onClose={() => setShowNuevoPensum(false)}
+        onCrear={handleCrearNuevoPensum}
+      />
+
+      <ConfirmModal
+        isOpen={pensumAEliminar !== null}
+        title="Eliminar pensum"
+        message={`¿Seguro que quieres eliminar el pensum "${pensumAEliminar?.nombre}"? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+        onClose={() => setPensumAEliminar(null)}
+        onConfirm={handleEliminarPensum}
+      />
     </div>
   );
 }

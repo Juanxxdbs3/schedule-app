@@ -23,6 +23,11 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Added
 
+- Crear un pensum vacío por nombre (solo el nombre de la carrera) con el botón
+  "+ Nuevo pensum" del dashboard, para después ir agregando materias manualmente.
+  El backend acepta pensums sin materias (`materias` opcional con default `[]`).
+- Eliminar un pensum desde el dashboard (visible solo cuando el pensum está
+  seleccionado/abierto) con modal de confirmación.
 - Agregar materia manualmente a un pensum ya cargado:
   - Backend: `POST /api/pensums/:id/materias` (valida dueño del pensum, rechaza códigos
     duplicados y usa `estado: "activo"` por defecto).

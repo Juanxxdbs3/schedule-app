@@ -45,6 +45,24 @@
   --color-primary-muted: #ede9fe;
   --color-success-bg: #dcfce7;
   --color-danger-bg: #fef2f2;
+
+  /* Acentos por estado de materia (border/fondo/texto) */
+  --estado-activo-border: #d97706;
+  --estado-activo-bg: #fef3c7;
+  --estado-activo-text: #92400e;
+  --estado-matriculado-border: #16a34a;
+  --estado-matriculado-bg: #dcfce7;
+  --estado-matriculado-text: #166534;
+  --estado-cursado-border: #9ca3af;
+  --estado-cursado-bg: #f3f4f6;
+  --estado-cursado-text: #6b7280;
+  --estado-enespera-border: #2563eb;
+  --estado-enespera-bg: #dbeafe;
+  --estado-enespera-text: #1e40af;
+
+  /* Fondos de resultados en bloques del horario */
+  --resultado-aprobada-bg: #f5f3ff;
+  --resultado-perdida-bg: #fff7ed;
 }
 
 .dark {
@@ -68,6 +86,24 @@
   --color-primary-muted: #362f5c;
   --color-success-bg: #14532d;
   --color-danger-bg: #450a0a;
+
+  /* Acentos por estado de materia — variantes claras para contraste sobre morado oscuro */
+  --estado-activo-border: #fbbf24;
+  --estado-activo-bg: #78350f;
+  --estado-activo-text: #fde68a;
+  --estado-matriculado-border: #22c55e;
+  --estado-matriculado-bg: #14532d;
+  --estado-matriculado-text: #86efac;
+  --estado-cursado-border: #64748b;
+  --estado-cursado-bg: #334155;
+  --estado-cursado-text: #cbd5e1;
+  --estado-enespera-border: #60a5fa;
+  --estado-enespera-bg: #1e3a8a;
+  --estado-enespera-text: #bfdbfe;
+
+  /* Fondos de resultados en bloques — variantes oscuras */
+  --resultado-aprobada-bg: #3a2f66;
+  --resultado-perdida-bg: #4a2b26;
 }
 
 /* Botón primario: sombra con tinte del color primario + hover suave */

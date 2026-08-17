@@ -288,7 +288,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
       <div className="flex justify-between items-center flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <span className={`px-2 py-0.5 rounded-sm text-xs font-semibold ${
-            modo === "edicion" ? "bg-[#dbeafe] text-[#1e40af]" : modo === "curso" ? "bg-success-bg text-[#166534]" : "bg-[#f3f4f6] text-[#6b7280]"
+            modo === "edicion" ? "bg-primary-muted text-primary" : modo === "curso" ? "bg-success-bg text-success" : "bg-muted-block text-muted"
           }`}>
             {modo === "edicion" ? "Modo edición" : modo === "curso" ? "En curso" : "Finalizado"}
           </span>

@@ -14,6 +14,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - Botón "Cancelar" al cargar un nuevo pensum: cierra el área de carga y vuelve a la lista
   de pensums existentes sin recargar la página.
 - Proporciones del dashboard: las tarjetas "Pensums" y "Mis horarios" ahora ocupan 50/50.
+- Contraste de los acentos por estado de materia (texto de bloques en la grilla, badges
+  "En curso"/"Modo edición"/"Finalizado") en modo oscuro: ahora usan tokens con variantes
+  claras sobre el fondo morado oscuro.
 
 ### Added
 

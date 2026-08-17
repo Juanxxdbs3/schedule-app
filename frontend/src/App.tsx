@@ -180,7 +180,7 @@ function DashboardPage() {
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-sm font-semibold ${
-                      h.estado === "finalizado" ? "bg-[#f3f4f6] text-[#6b7280]" : "bg-success-bg text-[#166534]"
+                      h.estado === "finalizado" ? "bg-muted-block text-muted" : "bg-success-bg text-success"
                     }`}>
                       {h.estado === "finalizado" ? "Finalizado" : "Activo"}
                     </span>

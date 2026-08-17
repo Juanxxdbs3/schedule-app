@@ -6,9 +6,9 @@ interface MateriaBlockProps {
 }
 
 const COLOR_BY_ESTADO: Record<string, { border: string; badgeBg: string; badgeText: string }> = {
-  activo: { border: "#d97706", badgeBg: "#fef3c7", badgeText: "#92400e" },
-  matriculado: { border: "#16a34a", badgeBg: "#dcfce7", badgeText: "#166534" },
-  en_espera: { border: "#2563eb", badgeBg: "#dbeafe", badgeText: "#1e40af" },
+  activo: { border: "var(--estado-activo-border)", badgeBg: "var(--estado-activo-bg)", badgeText: "var(--estado-activo-text)" },
+  matriculado: { border: "var(--estado-matriculado-border)", badgeBg: "var(--estado-matriculado-bg)", badgeText: "var(--estado-matriculado-text)" },
+  en_espera: { border: "var(--estado-enespera-border)", badgeBg: "var(--estado-enespera-bg)", badgeText: "var(--estado-enespera-text)" },
   cursado: { border: "var(--color-muted-block)", badgeBg: "var(--color-muted-block)", badgeText: "var(--color-text-muted)" },
 };
 

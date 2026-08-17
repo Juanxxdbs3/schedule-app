@@ -19,10 +19,10 @@ interface MateriaSlotProps {
 }
 
 const COLOR_BY_ESTADO: Record<string, { border: string; bg: string; text: string }> = {
-  activo: { border: "#d97706", bg: "#fef3c7", text: "#92400e" },
-  matriculado: { border: "#16a34a", bg: "#dcfce7", text: "#166534" },
-  cursado: { border: "#9ca3af", bg: "#f3f4f6", text: "#6b7280" },
-  en_espera: { border: "#2563eb", bg: "#dbeafe", text: "#1e40af" },
+  activo: { border: "var(--estado-activo-border)", bg: "var(--estado-activo-bg)", text: "var(--estado-activo-text)" },
+  matriculado: { border: "var(--estado-matriculado-border)", bg: "var(--estado-matriculado-bg)", text: "var(--estado-matriculado-text)" },
+  cursado: { border: "var(--estado-cursado-border)", bg: "var(--estado-cursado-bg)", text: "var(--estado-cursado-text)" },
+  en_espera: { border: "var(--estado-enespera-border)", bg: "var(--estado-enespera-bg)", text: "var(--estado-enespera-text)" },
 };
 
 export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onDuplicate, onMarcar, onEdit }: MateriaSlotProps) {
@@ -47,24 +47,24 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
   tooltipParts.push(`${bloque.horaInicio}–${bloque.horaFin}`);
   const tooltipText = tooltipParts.join(" · ");
 
-  function bgClass() {
-    if (conflicto) return "bg-danger-bg";
-    if (resultado === 'aprobada') return "bg-[#f5f3ff]";
-    if (resultado === 'perdida') return "bg-[#fff7ed]";
-    return "";
-  }
+  const draggingStyle: React.CSSProperties = {
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+    touchAction: isEdicion && !isCursado ? "none" : "auto",
+  };
 
-  function borderColor() {
-    if (conflicto) return "border-danger";
-    if (resultado === 'aprobada') return "border-[#7c3aed]";
-    if (resultado === 'perdida') return "border-[#ea580c]";
-    return `border-[${colors.border}]`;
-  }
-
-  function textColor() {
-    if (conflicto) return "text-danger";
-    return `text-[${colors.text}]`;
-  }
+  const slotStyle: React.CSSProperties = {
+    ...draggingStyle,
+    color: conflicto ? "var(--color-danger)" : colors.text,
+    borderColor: conflicto
+      ? "var(--color-danger)"
+      : resultado === "aprobada"
+        ? "#7c3aed"
+        : resultado === "perdida"
+          ? "#ea580c"
+          : colors.border,
+  };
+  if (resultado === "aprobada") slotStyle.background = "var(--resultado-aprobada-bg)";
+  if (resultado === "perdida") slotStyle.background = "var(--resultado-perdida-bg)";
 
   function makeDragHandler(dir: "up" | "down", cb: (() => void) | undefined) {
     if (!cb) return undefined;
@@ -89,20 +89,15 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
     };
   }
 
-  const draggingStyle: React.CSSProperties = {
-    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-    touchAction: isEdicion && !isCursado ? "none" : "auto",
-  };
-
   return (
     <div
       ref={setNodeRef}
       className={`rounded-sm text-[11px] overflow-visible select-none relative h-full flex flex-col justify-between box-border ${
         isEdicion ? "p-0.5" : "px-1.5 py-1"
-      } ${isEdicion && !isCursado ? "cursor-grab" : "cursor-default"} ${bgClass()} border border-solid ${borderColor()} ${textColor()} ${
+      } ${isEdicion && !isCursado ? "cursor-grab" : "cursor-default"} ${conflicto ? "bg-danger-bg" : ""} border border-solid ${
         isDragging ? "opacity-50 z-[999]" : "opacity-100 z-[1]"
       }`}
-      style={draggingStyle}
+      style={slotStyle}
       {...(isEdicion && !isCursado ? { ...listeners, ...attributes } : {})}
       title={tooltipText}
     >
@@ -181,14 +176,14 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
             <>
               <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar('aprobada'); }}
                 className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
-                  resultado === 'aprobada' ? "bg-[#f5f3ff] border border-solid border-[#7c3aed] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
+                  resultado === 'aprobada' ? "bg-[var(--resultado-aprobada-bg)] border border-solid border-[#7c3aed] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
                 }`}
                 title="Aprobada">
                 <CheckCircle2 className="w-3.5 h-3.5" style={{ color: resultado === 'aprobada' ? "#7c3aed" : "inherit" }} />
               </button>
               <button type="button" onClick={(e) => { e.stopPropagation(); onMarcar('perdida'); }}
                 className={`px-0.5 rounded-sm cursor-pointer text-sm leading-[18px] ${
-                  resultado === 'perdida' ? "bg-[#fff7ed] border border-solid border-[#ea580c] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
+                  resultado === 'perdida' ? "bg-[var(--resultado-perdida-bg)] border border-solid border-[#ea580c] opacity-100" : "bg-transparent border border-solid border-transparent opacity-50"
                 }`}
                 title="Perdida">
                 <XCircle className="w-3.5 h-3.5" style={{ color: resultado === 'perdida' ? "#ea580c" : "inherit" }} />

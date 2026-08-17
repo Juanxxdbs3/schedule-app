@@ -115,7 +115,7 @@ export default function FinalizarHorario({ bloques, materias, onMarcar, onCerrar
           type="button"
           onClick={handleCerrar}
           disabled={!todasMarcadas || cerrando}
-          className={`flex-1 px-5 py-2 text-white border-none rounded-md ${
+          className={`btn-primary flex-1 px-5 py-2 text-white border-none rounded-md ${
             todasMarcadas && !cerrando
               ? "bg-primary cursor-pointer opacity-100"
               : "bg-muted-block cursor-not-allowed opacity-60"

@@ -6,6 +6,11 @@ import { SimpleConflictDetectionStrategy } from "../strategies/SimpleConflictDet
 import { HorarioService } from "../services/HorarioService.ts";
 import { WebLocalStorageHorarioRepository } from "../repositories/WebLocalStorageHorarioRepository.ts";
 import type { IHorarioStorageRepository } from "../repositories/IHorarioStorageRepository.ts";
+import { useUiStatusStore, type UiStatus } from "../../../shared/store/uiStatusStore.ts";
+
+function setStatus(status: UiStatus, message?: string) {
+  useUiStatusStore.getState().setStatus(status, message);
+}
 
 type AddBloqueResult = { ok: true } | { ok: false; error: string };
 
@@ -211,6 +216,7 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     const { horario } = get();
     if (!horario || horario.id !== "nuevo") throw new Error("No hay horario nuevo que guardar");
     set({ loading: true, error: null });
+    setStatus("saving", "Guardando horario...");
 
     try {
       const creado = await HorarioService.create(
@@ -220,10 +226,12 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
       await HorarioService.saveBloques(creado.horario.id, horario.bloques);
       get().storage.save(creado.horario);
       set({ horario: creado.horario, loading: false });
+      setStatus("success", "Horario creado");
       return creado.horario;
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Error al guardar horario";
       set({ error: msg, loading: false });
+      setStatus("error", msg);
       throw e;
     }
   },
@@ -232,12 +240,15 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     const { horario } = get();
     if (!horario || horario.id === "nuevo") return;
     set({ loading: true, error: null });
+    setStatus("saving", "Guardando cambios...");
     try {
       await HorarioService.saveBloques(horario.id, horario.bloques);
       set({ loading: false });
+      setStatus("success", "Cambios guardados");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Error al guardar horario";
       set({ error: msg, loading: false });
+      setStatus("error", msg);
       throw e;
     }
   },
@@ -257,19 +268,34 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
   marcarResultado: async (materiaCodigo, resultado) => {
     const { horario } = get();
     if (!horario) return;
-    await HorarioService.marcarResultado(horario.id, materiaCodigo, resultado);
-    const updated = await HorarioService.getById(horario.id);
-    get().storage.save(updated.horario);
-    set({ horario: updated.horario });
+    try {
+      await HorarioService.marcarResultado(horario.id, materiaCodigo, resultado);
+      const updated = await HorarioService.getById(horario.id);
+      get().storage.save(updated.horario);
+      set({ horario: updated.horario });
+      setStatus("success", resultado ? (resultado === "aprobada" ? "Materia aprobada" : "Materia perdida") : "Resultado deshecho");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al guardar resultado";
+      setStatus("error", msg);
+      throw e;
+    }
   },
 
   finalizar: async () => {
     const { horario } = get();
     if (!horario) return;
-    await HorarioService.finalizar(horario.id);
-    set({
-      horario: { ...horario, estado: "finalizado", finalizadoAt: new Date().toISOString() },
-    });
+    setStatus("saving", "Finalizando semestre...");
+    try {
+      await HorarioService.finalizar(horario.id);
+      set({
+        horario: { ...horario, estado: "finalizado", finalizadoAt: new Date().toISOString() },
+      });
+      setStatus("success", "Semestre finalizado");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al finalizar semestre";
+      setStatus("error", msg);
+      throw e;
+    }
   },
 
   clear: () => {

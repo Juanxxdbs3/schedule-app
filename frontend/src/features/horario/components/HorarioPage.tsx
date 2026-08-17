@@ -7,6 +7,11 @@ import Modal from "../../../shared/components/Modal.tsx";
 import type { Pensum } from "../../pensum/types.ts";
 import type { ModoHorario } from "../types.ts";
 import HorarioScreen from "./HorarioScreen.tsx";
+import { useUiStatusStore } from "../../../shared/store/uiStatusStore.ts";
+
+function setStatus(status: "saving" | "success" | "error", message: string) {
+  useUiStatusStore.getState().setStatus(status, message);
+}
 
 export default function HorarioPage() {
   const params = useParams<{ id: string }>();
@@ -65,11 +70,14 @@ export default function HorarioPage() {
   async function confirmDelete() {
     setShowDeleteConfirm(false);
     setDeleting(true);
+    setStatus("saving", "Eliminando horario...");
     try {
       await HorarioService.delete(id);
       clear();
+      setStatus("success", "Horario eliminado");
       navigate("/dashboard", { replace: true });
     } catch {
+      setStatus("error", "Error al eliminar el horario");
       setDeleting(false);
     }
   }

@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import type { SyntheticEvent } from "react";
 import { PensumService } from "../services/PensumService.ts";
 import type { Materia, Pensum } from "../types.ts";
+import { useUiStatusStore } from "../../../shared/store/uiStatusStore.ts";
 
 interface CargarPensumProps {
   onPensumLoaded: (pensum: Pensum) => void;
@@ -62,11 +63,13 @@ export default function CargarPensum({ onPensumLoaded, onCancel }: CargarPensumP
     if (estado.tipo !== "resumen") return;
 
     setEstado({ tipo: "guardando" });
+    useUiStatusStore.getState().setStatus("saving", "Guardando pensum...");
 
     try {
       const res = await PensumService.create(estado.nombre, estado.materias);
       PensumService.storage.save(res.pensum);
       setEstado({ tipo: "exito" });
+      useUiStatusStore.getState().setStatus("success", "Pensum cargado correctamente");
       onPensumLoaded(res.pensum);
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : "Error al guardar el pensum en el servidor";
@@ -74,6 +77,7 @@ export default function CargarPensum({ onPensumLoaded, onCancel }: CargarPensumP
         tipo: "error",
         mensaje: `${mensaje}. El pensum se guardó solo localmente.`,
       });
+      useUiStatusStore.getState().setStatus("error", mensaje);
     }
   }
 
@@ -148,7 +152,7 @@ export default function CargarPensum({ onPensumLoaded, onCancel }: CargarPensumP
             <button
               type="button"
               onClick={handleGuardar}
-              className="px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-medium"
+              className="btn-primary px-4 py-2.5 bg-primary text-white border-none rounded-md cursor-pointer font-medium"
             >
               Guardar pensum
             </button>
@@ -178,7 +182,7 @@ export default function CargarPensum({ onPensumLoaded, onCancel }: CargarPensumP
             <button
               type="button"
               onClick={handleReintentar}
-              className="px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer"
+              className="btn-primary px-4 py-2.5 bg-primary text-white border-none rounded-md cursor-pointer"
             >
               Intentar de nuevo
             </button>

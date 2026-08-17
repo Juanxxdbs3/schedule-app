@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { AuthService, type Usuario } from "../services/AuthService.ts";
+import { useUiStatusStore } from "../../../shared/store/uiStatusStore.ts";
 
 interface AuthContextValue {
   user: Usuario | null;
@@ -31,9 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await AuthService.login({ email, password });
       const res = await AuthService.me();
       setUser(res.user);
+      useUiStatusStore.getState().setStatus("success", "Sesión iniciada");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error al iniciar sesión";
       setError(message);
+      useUiStatusStore.getState().setStatus("error", message);
       throw err;
     }
   }, []);
@@ -42,9 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       await AuthService.register({ username, email, password });
+      useUiStatusStore.getState().setStatus("success", "Cuenta creada, inicia sesión");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error al registrarse";
       setError(message);
+      useUiStatusStore.getState().setStatus("error", message);
       throw err;
     }
   }, []);

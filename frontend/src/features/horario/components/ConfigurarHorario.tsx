@@ -110,7 +110,7 @@ export default function ConfigurarHorario({
           <button
             type="submit"
             disabled={loading || !pensumId}
-            className={`flex-1 px-4 py-2 text-white border-none rounded-md cursor-pointer text-md font-semibold ${
+            className={`btn-primary flex-1 px-4 py-2 text-white border-none rounded-md cursor-pointer text-md font-semibold ${
               loading || !pensumId ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
             }`}
           >

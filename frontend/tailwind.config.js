@@ -42,6 +42,7 @@ export default {
       },
       fontFamily: {
         sans: 'var(--font-sans)',
+        heading: 'var(--font-heading)',
       },
     },
   },

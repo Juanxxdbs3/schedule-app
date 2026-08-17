@@ -23,8 +23,8 @@
 
   /* Espaciado y forma */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
   --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 16px;
@@ -34,6 +34,7 @@
 
   /* Tipografía */
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Poppins', system-ui, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
@@ -67,4 +68,21 @@
   --color-primary-muted: #362f5c;
   --color-success-bg: #14532d;
   --color-danger-bg: #450a0a;
+}
+
+/* Botón primario: sombra con tinte del color primario + hover suave */
+.btn-primary {
+  box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--color-primary) 30%, transparent),
+    0 4px 12px -2px color-mix(in srgb, var(--color-primary) 35%, transparent);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 2px 4px 0 color-mix(in srgb, var(--color-primary) 40%, transparent),
+    0 8px 18px -4px color-mix(in srgb, var(--color-primary) 45%, transparent);
+  transform: translateY(-1px) scale(1.01);
+}
+
+.btn-primary:disabled {
+  box-shadow: none;
 }

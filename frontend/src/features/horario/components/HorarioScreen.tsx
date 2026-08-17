@@ -309,7 +309,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
         {modo === "curso" && (
           <button type="button" onClick={() => onModoChange("finalizado")}
             disabled={!todasResultadas}
-            className={`px-4 py-1.5 text-white border-none rounded-md text-sm ${
+            className={`btn-primary px-4 py-2 text-white border-none rounded-md text-sm ${
               todasResultadas ? "bg-primary cursor-pointer opacity-100" : "bg-muted-block cursor-not-allowed opacity-60"
             }`}
           >Finalizar semestre</button>
@@ -321,7 +321,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
             }`}>
               {eliminando ? "Eliminando..." : "Eliminar"}
             </button>
-            <button type="button" onClick={onGuardar} disabled={guardarLoading} className={`px-3 py-1 text-sm text-white border-none rounded-md font-medium ${
+            <button type="button" onClick={onGuardar} disabled={guardarLoading} className={`btn-primary px-4 py-2 text-sm text-white border-none rounded-md font-medium ${
               guardarLoading ? "bg-muted-block cursor-not-allowed" : "bg-primary cursor-pointer"
             }`}>
               {guardarLoading ? "Guardando..." : "Guardar"}

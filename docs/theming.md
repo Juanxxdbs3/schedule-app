@@ -32,8 +32,8 @@ la variable. Esto permite cambiar el tema completo sin tocar componentes.
 
   /* Espaciado y forma */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
   --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 16px;
@@ -43,6 +43,7 @@ la variable. Esto permite cambiar el tema completo sin tocar componentes.
 
   /* Tipografía */
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Poppins', system-ui, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
@@ -115,6 +116,24 @@ export default {
 };
 ```
 
+## Tipografía
+
+- Cuerpo de texto: `--font-sans` → **Inter** (importada desde Google Fonts en
+  `frontend/index.html`).
+- Títulos (`h1`–`h3`) y logo del navbar: `--font-heading` → **Poppins**
+  (600–700), aplicada vía `h1, h2, h3 { font-family: var(--font-heading); }`
+  en `index.css` y la utilidad `font-heading` del navbar.
+
+## Botón primario (`btn-primary`)
+
+Los botones `bg-primary` llevan además la clase `btn-primary`, definida en
+`globals.css`, que agrega:
+
+- Sombra sutil con tinte del color primario (`color-mix`), nunca gris neutro.
+- `transition` de `box-shadow`/`transform`/`background-color`.
+- Hover: sombra más fuerte + `translateY(-1px)` + leve `scale(1.01)`; sin
+  efecto cuando el botón está `:disabled`.
+
 ## Reglas para el agente de frontend
 
 1. **Nunca** usar `bg-[#hexcode]` (valores arbitrarios de Tailwind) para
@@ -129,5 +148,6 @@ export default {
    - Contador de créditos cerca del máximo (ej. > 90%) → `text-warning`
    - Confirmación de materia aprobada → ícono/acento en `text-success`
 5. Toggle de dark mode: agregar/quitar la clase `.dark` en `<html>`, guardado
-   en `localStorage` bajo una key propia (ej. `theme-preference`), no depende
-   del backend.
+   en `localStorage` bajo la key `horario-app:theme` (hook `useTheme` +
+   anti-flash en `main.tsx`), no depende del backend. Sin preferencia previa,
+   se respeta `prefers-color-scheme` del sistema.

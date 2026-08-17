@@ -77,7 +77,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={submitting || loading}
-            className={`w-full p-2 text-white border-none rounded-md font-medium ${
+            className={`btn-primary w-full px-3 py-2.5 text-white border-none rounded-md font-medium ${
               submitting ? "cursor-not-allowed bg-muted-block" : "cursor-pointer bg-primary"
             }`}
           >

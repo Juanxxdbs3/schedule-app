@@ -64,7 +64,7 @@ export default function EditBloqueModal({ isOpen, bloque, materiaNombre, onClose
             Cancelar
           </button>
           <button type="submit"
-            className="px-3 py-1.5 text-sm border-none rounded-md bg-primary text-white cursor-pointer">
+            className="btn-primary px-4 py-2 text-sm border-none rounded-md bg-primary text-white cursor-pointer">
             Guardar
           </button>
         </div>

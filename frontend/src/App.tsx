@@ -17,7 +17,8 @@ import HorarioPage from "./features/horario/components/HorarioPage.tsx";
 import ConfigurarHorario from "./features/horario/components/ConfigurarHorario.tsx";
 
 import NavBar from "./shared/components/NavBar.tsx";
-import GlobalStatus from "./shared/components/GlobalStatus.tsx";
+import StatusIndicator from "./shared/components/StatusIndicator.tsx";
+import { useUiStatusStore } from "./shared/store/uiStatusStore.ts";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -97,11 +98,19 @@ function DashboardPage() {
 
   async function handleAgregarMateria(materia: Materia) {
     if (!pensumActual) return;
-    const { pensum: updated } = await PensumService.agregarMateria(pensumActual.id, materia);
-    PensumService.storage.save(updated);
-    setPensum(updated);
-    setPensums((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
-    setShowAgregarMateria(false);
+    useUiStatusStore.getState().setStatus("loading", "Agregando materia...");
+    try {
+      const { pensum: updated } = await PensumService.agregarMateria(pensumActual.id, materia);
+      PensumService.storage.save(updated);
+      setPensum(updated);
+      setPensums((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+      setShowAgregarMateria(false);
+      useUiStatusStore.getState().setStatus("success", "Materia agregada");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al agregar materia";
+      useUiStatusStore.getState().setStatus("error", msg);
+      throw e;
+    }
   }
 
   if (!syncDone) return <div className="text-center p-8 text-muted">Cargando...</div>;
@@ -120,7 +129,7 @@ function DashboardPage() {
             <div className="flex justify-between items-center mb-3">
               <h2 className="m-0 text-lg">Pensums</h2>
               {pensums.length > 0 && (
-                <button type="button" onClick={handleCargarNuevo} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+                <button type="button" onClick={handleCargarNuevo} className="btn-primary px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
                   + Cargar pensum
                 </button>
               )}
@@ -151,7 +160,7 @@ function DashboardPage() {
             <div className="flex justify-between items-center mb-3">
               <h2 className="m-0 text-lg">Mis horarios</h2>
               {pensums.length > 0 && (
-                <button type="button" onClick={() => setShowCrear(!showCrear)} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+                <button type="button" onClick={() => setShowCrear(!showCrear)} className="btn-primary px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
                   + Crear horario
                 </button>
               )}
@@ -198,7 +207,7 @@ function DashboardPage() {
         <section className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h2 className="m-0 text-lg">{pensumActual.nombre}</h2>
-            <button type="button" onClick={() => setShowAgregarMateria(true)} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+            <button type="button" onClick={() => setShowAgregarMateria(true)} className="btn-primary px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
               + Agregar materia
             </button>
           </div>
@@ -234,7 +243,7 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <GlobalStatus />
+      <StatusIndicator />
       <AppRoutes />
     </AuthProvider>
   );

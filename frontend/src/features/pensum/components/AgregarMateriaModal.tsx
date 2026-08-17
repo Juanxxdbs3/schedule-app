@@ -108,7 +108,7 @@ export default function AgregarMateriaModal({ isOpen, onClose, onGuardar }: Agre
             Cancelar
           </button>
           <button type="submit" disabled={guardando}
-            className="px-3 py-1.5 text-sm border-none rounded-md bg-primary text-white cursor-pointer disabled:opacity-60">
+            className="btn-primary px-4 py-2 text-sm border-none rounded-md bg-primary text-white cursor-pointer disabled:opacity-60">
             {guardando ? "Guardando..." : "Guardar"}
           </button>
         </div>

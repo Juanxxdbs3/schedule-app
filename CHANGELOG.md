@@ -5,7 +5,7 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/),
 y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-08-17
 
 ### Fixed
 
@@ -21,3 +21,15 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
   - Backend: `POST /api/pensums/:id/materias` (valida dueño del pensum, rechaza códigos
     duplicados y usa `estado: "activo"` por defecto).
   - Frontend: botón "+ Agregar materia" en el dashboard con formulario en modal.
+- Toggle de modo oscuro en el navbar (ícono sol/luna), con preferencia guardada en
+  `localStorage` (`horario-app:theme`) y default según `prefers-color-scheme` del sistema.
+- Tipografía de títulos: Poppins para `h1`–`h3` y el logo, manteniendo Inter para el cuerpo.
+- Indicador global de estado (toast) en la esquina inferior izquierda con
+  `uiStatusStore` (loading/saving/success/error) conectado a guardar bloques,
+  marcar resultado, finalizar, eliminar, cargar pensum, agregar materia, login y registro.
+
+### Changed
+
+- Radios de la UI: `--radius-md` 8px → 10px, `--radius-lg` 12px → 16px.
+- Botones primarios: clase `btn-primary` con sombra con tinte del color primario,
+  transición suave y hover con elevación/escala; padding vertical ligeramente mayor.

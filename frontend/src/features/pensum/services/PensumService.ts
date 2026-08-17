@@ -33,6 +33,9 @@ export const PensumService = {
 
   getById: (id: string) => apiGet<PensumGetResponse>(`/pensums/${id}`),
 
+  agregarMateria: (pensumId: string, materia: Materia) =>
+    apiPost<PensumGetResponse>(`/pensums/${pensumId}/materias`, materia),
+
   updateMateriaEstado: (pensumId: string, codigo: string, estado: string) =>
     apiPatch<void>(`/pensums/${pensumId}/materias/${codigo}/estado`, { estado }),
 

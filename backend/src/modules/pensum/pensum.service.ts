@@ -1,6 +1,6 @@
 import { IPensumRepository } from "../../domain/interfaces/index.js";
 import { Pensum, Materia, EstadoMateria } from "../../domain/entities/index.js";
-import { NotFoundError } from "../../shared/errors/AppError.js";
+import { NotFoundError, ValidationError } from "../../shared/errors/AppError.js";
 
 export class PensumService {
   constructor(private pensumRepo: IPensumRepository) {}
@@ -19,6 +19,21 @@ export class PensumService {
       throw new NotFoundError("Pensum not found");
     }
     return pensum;
+  }
+
+  async agregarMateria(
+    pensumId: string,
+    userId: string,
+    data: Omit<Materia, "estado"> & { estado?: EstadoMateria },
+  ): Promise<Pensum> {
+    const pensum = await this.getById(pensumId, userId);
+    const materia: Materia = { ...data, estado: data.estado ?? "activo" };
+
+    if (pensum.materias.some((m) => m.codigo === materia.codigo)) {
+      throw new ValidationError(`Ya existe una materia con el código '${materia.codigo}' en este pensum`);
+    }
+
+    return this.pensumRepo.addMateria(pensumId, materia);
   }
 
   async updateMateriaEstado(

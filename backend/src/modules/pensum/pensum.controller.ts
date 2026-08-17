@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { PensumService } from "./pensum.service.js";
-import { createPensumSchema } from "./pensum.validation.js";
+import { createPensumSchema, addMateriaSchema } from "./pensum.validation.js";
 
 export class PensumController {
   constructor(private pensumService: PensumService) {}
@@ -38,6 +38,22 @@ export class PensumController {
       const pensum = await this.pensumService.getById(id, userId);
       res.json({ pensum });
     } catch (error) {
+      next(error);
+    }
+  };
+
+  agregarMateriaHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = (req as any).userId;
+      const id = req.params.id as string;
+      const parsed = addMateriaSchema.parse(req.body);
+      const pensum = await this.pensumService.agregarMateria(id, userId, parsed);
+      res.status(201).json({ pensum });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ error: error.errors });
+        return;
+      }
       next(error);
     }
   };

@@ -99,6 +99,9 @@ class FakePensumRepository implements IPensumRepository {
   async create(): Promise<Pensum> {
     throw new Error("No utilizado en saveBloques");
   }
+  async addMateria(): Promise<Pensum> {
+    throw new Error("No utilizado en saveBloques");
+  }
   async delete(): Promise<void> {
     throw new Error("No utilizado en saveBloques");
   }

@@ -93,6 +93,16 @@ export class PensumRepositoryMongo implements IPensumRepository {
     return toPensum(doc);
   }
 
+  async addMateria(pensumId: string, materia: Materia): Promise<Pensum> {
+    const doc = await PensumModel.findOneAndUpdate(
+      { _id: pensumId },
+      { $push: { materias: materia } },
+      { new: true },
+    );
+    if (!doc) throw new Error("Pensum not found");
+    return toPensum(doc);
+  }
+
   async updateMateriaEstado(
     pensumId: string,
     materiaCodigo: string,

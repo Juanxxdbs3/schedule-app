@@ -1,0 +1,23 @@
+# Changelog
+
+Todos los cambios notables de este proyecto se documentan en este archivo.
+
+El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/),
+y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Fixed
+
+- Al abrir un horario en progreso se llega directo a la vista de curso (aprobar/desaprobar)
+  en lugar de la vista de edición. El modo ya no se resetea al marcar resultados de materias.
+- Botón "Cancelar" al cargar un nuevo pensum: cierra el área de carga y vuelve a la lista
+  de pensums existentes sin recargar la página.
+- Proporciones del dashboard: las tarjetas "Pensums" y "Mis horarios" ahora ocupan 50/50.
+
+### Added
+
+- Agregar materia manualmente a un pensum ya cargado:
+  - Backend: `POST /api/pensums/:id/materias` (valida dueño del pensum, rechaza códigos
+    duplicados y usa `estado: "activo"` por defecto).
+  - Frontend: botón "+ Agregar materia" en el dashboard con formulario en modal.

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { PensumService } from "../pensum.service.js";
 import { FakePensumRepository } from "../../../__tests__/fakes/FakePensumRepository.js";
-import { NotFoundError } from "../../../shared/errors/AppError.js";
+import { NotFoundError, ValidationError } from "../../../shared/errors/AppError.js";
 import type { Materia } from "../../../domain/entities/index.js";
 
 function makeMateria(codigo: string): Materia {
@@ -57,6 +57,51 @@ describe("PensumService", () => {
       const created = await service.create(USER_ID, { nombre: "P1", materias: [makeMateria("M1")] });
 
       await expect(service.getById(created.id, "other-user")).rejects.toThrow(NotFoundError);
+    });
+  });
+
+  describe("agregarMateria", () => {
+    it("agrega una materia y devuelve el pensum actualizado", async () => {
+      const created = await service.create(USER_ID, { nombre: "P1", materias: [makeMateria("M1")] });
+
+      const updated = await service.agregarMateria(created.id, USER_ID, {
+        codigo: "M2", nombre: "Materia M2", creditos: 4, semestre: 2, requiere: ["M1"],
+      });
+
+      expect(updated.materias).toHaveLength(2);
+      const nueva = updated.materias.find((m) => m.codigo === "M2");
+      expect(nueva).toMatchObject({ codigo: "M2", creditos: 4, semestre: 2, requiere: ["M1"] });
+      expect(nueva?.estado).toBe("activo");
+    });
+
+    it("respeta el estado enviado si se especifica", async () => {
+      const created = await service.create(USER_ID, { nombre: "P1", materias: [] });
+
+      const updated = await service.agregarMateria(created.id, USER_ID, {
+        codigo: "M9", nombre: "Materia M9", creditos: 2, semestre: 1, requiere: [], estado: "en_espera",
+      });
+
+      expect(updated.materias.find((m) => m.codigo === "M9")?.estado).toBe("en_espera");
+    });
+
+    it("lanza ValidationError si el código ya existe en el pensum", async () => {
+      const created = await service.create(USER_ID, { nombre: "P1", materias: [makeMateria("M1")] });
+
+      await expect(
+        service.agregarMateria(created.id, USER_ID, {
+          codigo: "M1", nombre: "Duplicada", creditos: 3, semestre: 1, requiere: [],
+        }),
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it("lanza NotFoundError si el pensum no pertenece al usuario", async () => {
+      const created = await service.create(USER_ID, { nombre: "P1", materias: [] });
+
+      await expect(
+        service.agregarMateria(created.id, "other-user", {
+          codigo: "M5", nombre: "Ajena", creditos: 3, semestre: 1, requiere: [],
+        }),
+      ).rejects.toThrow(NotFoundError);
     });
   });
 

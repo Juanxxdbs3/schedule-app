@@ -67,6 +67,18 @@ export class FakePensumRepository implements IPensumRepository {
     return structuredClone(pensum);
   }
 
+  async addMateria(pensumId: string, materia: Materia): Promise<Pensum> {
+    const p = this.pensums.get(pensumId);
+    if (!p) throw new Error("Pensum not found");
+    const updated: Pensum = {
+      ...p,
+      materias: [...p.materias, structuredClone(materia)],
+      updatedAt: new Date(),
+    };
+    this.pensums.set(pensumId, updated);
+    return structuredClone(updated);
+  }
+
   async updateMateriaEstado(
     pensumId: string,
     materiaCodigo: string,

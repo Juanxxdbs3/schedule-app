@@ -7,6 +7,7 @@ export function createPensumRouter(pensumController: PensumController): Router {
 
   router.post("/", authGuard, pensumController.createHandler);
   router.get("/", authGuard, pensumController.listHandler);
+  router.post("/:id/materias", authGuard, pensumController.agregarMateriaHandler);
   router.get("/:id", authGuard, pensumController.getByIdHandler);
   router.patch("/:id/materias/:codigo/estado", authGuard, pensumController.updateMateriaEstadoHandler);
   router.delete("/:id", authGuard, pensumController.deleteHandler);

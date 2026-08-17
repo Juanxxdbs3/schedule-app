@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const materiaSchema = z.object({
+export const materiaSchema = z.object({
   codigo: z.string().min(1),
   nombre: z.string().min(1),
   creditos: z.number().int().positive(),
@@ -13,3 +13,5 @@ export const createPensumSchema = z.object({
   nombre: z.string().min(1),
   materias: z.array(materiaSchema).min(1),
 });
+
+export const addMateriaSchema = materiaSchema.partial({ estado: true });

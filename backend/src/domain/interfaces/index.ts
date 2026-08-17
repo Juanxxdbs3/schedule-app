@@ -17,6 +17,7 @@ export interface IPensumRepository {
   findAllByUserId(userId: string): Promise<Pensum[]>;
   findById(id: string): Promise<Pensum | null>;
   create(data: { userId: string; nombre: string; materias: Materia[] }): Promise<Pensum>;
+  addMateria(pensumId: string, materia: Materia): Promise<Pensum>;
   updateMateriaEstado(pensumId: string, materiaCodigo: string, nuevoEstado: EstadoMateria): Promise<void>;
   delete(id: string): Promise<void>;
 }

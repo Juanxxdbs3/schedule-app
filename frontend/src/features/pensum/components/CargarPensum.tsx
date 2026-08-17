@@ -5,6 +5,7 @@ import type { Materia, Pensum } from "../types.ts";
 
 interface CargarPensumProps {
   onPensumLoaded: (pensum: Pensum) => void;
+  onCancel?: () => void;
 }
 
 type EstadoCarga =
@@ -15,7 +16,7 @@ type EstadoCarga =
   | { tipo: "guardando" }
   | { tipo: "exito" };
 
-export default function CargarPensum({ onPensumLoaded }: CargarPensumProps) {
+export default function CargarPensum({ onPensumLoaded, onCancel }: CargarPensumProps) {
   const [estado, setEstado] = useState<EstadoCarga>({ tipo: "inicial" });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -111,6 +112,18 @@ export default function CargarPensum({ onPensumLoaded }: CargarPensumProps) {
         </label>
       )}
 
+      {estado.tipo === "inicial" && onCancel && (
+        <div className="mt-3 text-center">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-transparent text-muted border border-border rounded-md cursor-pointer"
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+
       {estado.tipo === "validando" && (
         <div className="text-center p-4 text-muted">
           Validando pensum...
@@ -141,7 +154,7 @@ export default function CargarPensum({ onPensumLoaded }: CargarPensumProps) {
             </button>
             <button
               type="button"
-              onClick={handleReintentar}
+              onClick={onCancel ?? handleReintentar}
               className="px-4 py-2 bg-transparent text-muted border border-border rounded-md cursor-pointer"
             >
               Cancelar
@@ -161,13 +174,24 @@ export default function CargarPensum({ onPensumLoaded }: CargarPensumProps) {
           <p className="text-danger font-medium mb-3">
             {estado.mensaje}
           </p>
-          <button
-            type="button"
-            onClick={handleReintentar}
-            className="px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer"
-          >
-            Intentar de nuevo
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleReintentar}
+              className="px-4 py-2 bg-primary text-white border-none rounded-md cursor-pointer"
+            >
+              Intentar de nuevo
+            </button>
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2 bg-transparent text-muted border border-border rounded-md cursor-pointer"
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

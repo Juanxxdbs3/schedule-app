@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useHorarioStore } from "../store/horarioStore.ts";
 import { HorarioService } from "../services/HorarioService.ts";
@@ -23,17 +23,26 @@ export default function HorarioPage() {
   const [ready, setReady] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const modoInicialRef = useRef<string | null>(null);
 
   useEffect(() => {
     setReady(false);
     setPensum(null);
+    modoInicialRef.current = null;
     fetchById(id);
   }, [id]);
 
   useEffect(() => {
     if (!storeHorario || storeHorario.id !== id) return;
     PensumService.getById(storeHorario.pensumId)
-      .then((res) => { setPensum(res.pensum); setModo(storeHorario.estado === "finalizado" ? "finalizado" : "edicion"); setReady(true); })
+      .then((res) => {
+        setPensum(res.pensum);
+        if (modoInicialRef.current !== id) {
+          setModo(storeHorario.estado === "finalizado" ? "finalizado" : "curso");
+          modoInicialRef.current = id;
+        }
+        setReady(true);
+      })
       .catch(() => setReady(true));
   }, [storeHorario, id]);
 

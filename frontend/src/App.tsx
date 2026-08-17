@@ -10,6 +10,7 @@ import { useHorarioStore } from "./features/horario/store/horarioStore.ts";
 import { HorarioService } from "./features/horario/services/HorarioService.ts";
 import type { Horario } from "./features/horario/types.ts";
 import CargarPensum from "./features/pensum/components/CargarPensum.tsx";
+import AgregarMateriaModal from "./features/pensum/components/AgregarMateriaModal.tsx";
 import FiltroPensum from "./features/pensum/components/FiltroPensum.tsx";
 import PoolMaterias from "./features/pensum/components/PoolMaterias.tsx";
 import HorarioPage from "./features/horario/components/HorarioPage.tsx";
@@ -34,6 +35,7 @@ function DashboardPage() {
   const [syncDone, setSyncDone] = useState(false);
   const [showCrear, setShowCrear] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [showAgregarMateria, setShowAgregarMateria] = useState(false);
   const [crearError, setCrearError] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
 
@@ -93,6 +95,15 @@ function DashboardPage() {
     }
   }
 
+  async function handleAgregarMateria(materia: Materia) {
+    if (!pensumActual) return;
+    const { pensum: updated } = await PensumService.agregarMateria(pensumActual.id, materia);
+    PensumService.storage.save(updated);
+    setPensum(updated);
+    setPensums((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    setShowAgregarMateria(false);
+  }
+
   if (!syncDone) return <div className="text-center p-8 text-muted">Cargando...</div>;
 
   const pensumActual = pensum;
@@ -102,9 +113,9 @@ function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-8">
-      <div className="flex gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* Pensums section */}
-        <div className="flex-[7] min-w-0">
+        <div className="min-w-0">
           <section className="border border-border rounded-md p-3">
             <div className="flex justify-between items-center mb-3">
               <h2 className="m-0 text-lg">Pensums</h2>
@@ -116,7 +127,7 @@ function DashboardPage() {
             </div>
 
             {showUpload || pensums.length === 0 ? (
-              <CargarPensum onPensumLoaded={handlePensumLoaded} />
+              <CargarPensum onPensumLoaded={handlePensumLoaded} onCancel={showUpload ? () => setShowUpload(false) : undefined} />
             ) : (
               <div className="flex flex-col gap-2">
                 {pensums.map((p) => (
@@ -135,7 +146,7 @@ function DashboardPage() {
         </div>
 
         {/* Horarios section */}
-        <div className="flex-[3] min-w-0">
+        <div className="min-w-0">
           <section className="border border-border rounded-md p-3">
             <div className="flex justify-between items-center mb-3">
               <h2 className="m-0 text-lg">Mis horarios</h2>
@@ -187,10 +198,21 @@ function DashboardPage() {
         <section className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h2 className="m-0 text-lg">{pensumActual.nombre}</h2>
+            <button type="button" onClick={() => setShowAgregarMateria(true)} className="px-4 py-1.5 bg-primary text-white border-none rounded-md cursor-pointer font-semibold text-sm">
+              + Agregar materia
+            </button>
           </div>
           <FiltroPensum materias={materiasDisponibles} onFilter={setFiltradas} />
           <PoolMaterias materias={filtradas} />
         </section>
+      )}
+
+      {pensumActual && !showUpload && (
+        <AgregarMateriaModal
+          isOpen={showAgregarMateria}
+          onClose={() => setShowAgregarMateria(false)}
+          onGuardar={handleAgregarMateria}
+        />
       )}
     </div>
   );

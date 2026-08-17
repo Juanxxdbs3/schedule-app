@@ -285,7 +285,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-between items-center flex-wrap gap-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className={`px-2 py-0.5 rounded-sm text-xs font-semibold ${
             modo === "edicion" ? "bg-primary-muted text-primary" : modo === "curso" ? "bg-success-bg text-success" : "bg-muted-block text-muted"
@@ -338,27 +338,27 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
 
       {modo === "edicion" ? (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-4 items-start">
             {renderGrid(true)}
-            <div className="bg-surface rounded-md border border-border p-3 sticky top-3">
+            <div className="bg-surface rounded-md border border-border p-3 lg:sticky lg:top-3">
               <h3 className="text-sm mb-2">Materias ({materiasEnPool.length})</h3>
               <div className="flex flex-col gap-1 mb-2">
                 <input type="text" placeholder="Buscar..." value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)}
                   className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text" />
                 <div className="flex gap-1">
                   <select value={filtroSemestre} onChange={(e) => setFiltroSemestre(e.target.value ? Number(e.target.value) : "")}
-                    className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text flex-1">
+                    className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text flex-1 min-w-0">
                     <option value="">Semestre</option>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                   <input type="number" placeholder="Créd. máx" value={filtroCreditos} onChange={(e) => setFiltroCreditos(e.target.value ? Number(e.target.value) : "")}
-                    className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text w-20" />
+                    className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text w-20 shrink-0" />
                 </div>
               </div>
               {materiasEnPool.length === 0 ? (
                 <p className="text-sm text-muted text-center p-3">No hay materias disponibles</p>
               ) : (
-                <div className="flex flex-col gap-2 max-h-[calc(100vh-400px)] overflow-y-auto">
+                <div className="flex flex-col gap-2 max-h-[45vh] lg:max-h-[calc(100vh-400px)] overflow-y-auto">
                   {materiasEnPool.map((m) => <div key={m.codigo} className="text-sm"><MateriaBlock materia={m} /></div>)}
                 </div>
               )}

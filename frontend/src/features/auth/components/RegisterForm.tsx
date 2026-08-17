@@ -48,7 +48,7 @@ export default function RegisterForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-sm border border-border rounded-lg p-5 bg-surface">
+      <div className="w-full max-w-sm mx-4 border border-border rounded-lg p-5 bg-surface">
         <h1 className="mt-0">Crear cuenta</h1>
 
         {displayError && (

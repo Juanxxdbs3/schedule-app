@@ -17,6 +17,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - Contraste de los acentos por estado de materia (texto de bloques en la grilla, badges
   "En curso"/"Modo edición"/"Finalizado") en modo oscuro: ahora usan tokens con variantes
   claras sobre el fondo morado oscuro.
+- Pase de responsividad mobile-first: NavBar con menú hamburguesa, dashboard y filtros
+  apilados en móvil, grilla de materias a 1 columna, horario con grilla+pool apilados y
+  botones en fila propia, modales/formularios con ancho seguro en pantallas angostas.
 
 ### Added
 

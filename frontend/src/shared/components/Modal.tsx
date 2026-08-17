@@ -30,7 +30,7 @@ export default function Modal({ isOpen, onClose, children, title }: ModalProps) 
       onClick={onClose}
     >
       <div
-        className="bg-surface border border-border rounded-lg shadow-lg w-full max-w-md mx-4"
+        className="bg-surface border border-border rounded-lg shadow-lg w-[90vw] max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
         {title && (

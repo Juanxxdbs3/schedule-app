@@ -28,7 +28,7 @@ export default function PoolMaterias({ materias }: PoolMateriasProps) {
       <p className="text-sm text-muted mb-3">
         {ordenadas.length} materia{ordenadas.length !== 1 ? "s" : ""} disponible{ordenadas.length !== 1 ? "s" : ""}
       </p>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
         {ordenadas.map((m) => (
           <MateriaBlock key={m.codigo} materia={m} />
         ))}

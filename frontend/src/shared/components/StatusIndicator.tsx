@@ -18,12 +18,12 @@ export default function StatusIndicator() {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed bottom-4 left-4 z-[9999] flex items-center gap-2.5 px-4 py-2.5 rounded-lg shadow-lg transition-all duration-200 ${
+      className={`fixed bottom-4 left-4 z-[9999] max-w-[calc(100vw-2rem)] flex items-center gap-2.5 px-4 py-2.5 rounded-lg shadow-lg transition-all duration-200 ${
         STYLE_BY_STATUS[status] ?? "bg-primary text-white"
       } ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
     >
       <Icon className={`w-4 h-4 shrink-0 ${status === "loading" || status === "saving" ? "animate-spin" : ""}`} />
-      <span className="text-sm font-medium">{message}</span>
+      <span className="text-sm font-medium min-w-0 truncate">{message}</span>
     </div>
   );
 }

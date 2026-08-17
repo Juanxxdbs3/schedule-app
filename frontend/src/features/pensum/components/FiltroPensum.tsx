@@ -33,7 +33,7 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
   const semestreOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   return (
-    <div className="flex gap-3 flex-wrap items-end mb-4">
+    <div className="flex flex-col md:flex-row md:items-end gap-3 mb-4">
       <div className="flex flex-col gap-1">
         <label htmlFor="filtro-nombre" className="text-sm text-muted font-medium">Nombre</label>
         <input
@@ -42,7 +42,7 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
           placeholder="Buscar materia..."
           value={nombre}
           onChange={handleNombre}
-          className="px-3 py-2 border border-border rounded-md bg-surface text-text min-w-40"
+          className="px-3 py-2 border border-border rounded-md bg-surface text-text w-full md:min-w-40"
         />
       </div>
 
@@ -52,7 +52,7 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
           id="filtro-semestre"
           value={semestre}
           onChange={handleSemestre}
-          className="px-3 py-2 border border-border rounded-md bg-surface text-text min-w-40"
+          className="px-3 py-2 border border-border rounded-md bg-surface text-text w-full md:min-w-40"
         >
           <option value="">Todos</option>
           {semestreOptions.map((s) => (
@@ -70,7 +70,7 @@ export default function FiltroPensum({ materias, onFilter }: FiltroPensumProps) 
           placeholder="Sin límite"
           value={creditosMax}
           onChange={handleCreditos}
-          className="px-3 py-2 border border-border rounded-md bg-surface text-text min-w-30"
+          className="px-3 py-2 border border-border rounded-md bg-surface text-text w-full md:min-w-30"
         />
       </div>
     </div>

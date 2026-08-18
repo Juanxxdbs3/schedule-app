@@ -45,6 +45,8 @@ interface HorarioState {
   moveBloqueLocal: (bloque: Bloque, materias: Materia[]) => AddBloqueResult;
   expandBloqueDown: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
   expandBloqueUp: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
+  shrinkBloqueTop: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
+  shrinkBloqueBottom: (bloqueId: string, materias: Materia[]) => AddBloqueResult;
 
   saveNuevoHorario: () => Promise<Horario>;
   saveBloques: () => Promise<void>;
@@ -203,6 +205,52 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     const nuevoInicio = aMinutos(original.horaInicio) - horario.unidadHoraMinutos;
     const expandido: Bloque = { ...original, horaInicio: fmt(nuevoInicio) };
     const nuevosBloques = horario.bloques.map((b) => (b.id === bloqueId ? expandido : b));
+
+    if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
+      return { ok: false, error: "Se excedería el límite de créditos" };
+    }
+
+    set((s) => ({ horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null }));
+    return { ok: true };
+  },
+
+  shrinkBloqueTop: (bloqueId, materias) => {
+    const { horario } = get();
+    if (!horario) return { ok: false, error: "No hay horario activo" };
+
+    const idx = horario.bloques.findIndex((b) => b.id === bloqueId);
+    if (idx === -1) return { ok: false, error: "Bloque no encontrado" };
+
+    const original = horario.bloques[idx];
+    const span = Math.round((aMinutos(original.horaFin) - aMinutos(original.horaInicio)) / horario.unidadHoraMinutos);
+    if (span <= 1) return { ok: false, error: "Mínimo 1 unidad de hora por materia" };
+
+    const nuevoInicio = aMinutos(original.horaInicio) + horario.unidadHoraMinutos;
+    const achicado: Bloque = { ...original, horaInicio: fmt(nuevoInicio) };
+    const nuevosBloques = horario.bloques.map((b) => (b.id === bloqueId ? achicado : b));
+
+    if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
+      return { ok: false, error: "Se excedería el límite de créditos" };
+    }
+
+    set((s) => ({ horario: s.horario ? { ...s.horario, bloques: nuevosBloques } : null }));
+    return { ok: true };
+  },
+
+  shrinkBloqueBottom: (bloqueId, materias) => {
+    const { horario } = get();
+    if (!horario) return { ok: false, error: "No hay horario activo" };
+
+    const idx = horario.bloques.findIndex((b) => b.id === bloqueId);
+    if (idx === -1) return { ok: false, error: "Bloque no encontrado" };
+
+    const original = horario.bloques[idx];
+    const span = Math.round((aMinutos(original.horaFin) - aMinutos(original.horaInicio)) / horario.unidadHoraMinutos);
+    if (span <= 1) return { ok: false, error: "Mínimo 1 unidad de hora por materia" };
+
+    const nuevoFin = aMinutos(original.horaFin) - horario.unidadHoraMinutos;
+    const achicado: Bloque = { ...original, horaFin: fmt(nuevoFin) };
+    const nuevosBloques = horario.bloques.map((b) => (b.id === bloqueId ? achicado : b));
 
     if (!creditLimit.validar(nuevosBloques, materias, horario.maxCreditos)) {
       return { ok: false, error: "Se excedería el límite de créditos" };

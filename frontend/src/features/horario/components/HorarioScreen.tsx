@@ -46,6 +46,8 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
   const moveBloqueLocal = useHorarioStore((s) => s.moveBloqueLocal);
   const expandBloqueDown = useHorarioStore((s) => s.expandBloqueDown);
   const expandBloqueUp = useHorarioStore((s) => s.expandBloqueUp);
+  const shrinkBloqueTop = useHorarioStore((s) => s.shrinkBloqueTop);
+  const shrinkBloqueBottom = useHorarioStore((s) => s.shrinkBloqueBottom);
   const marcarResultado = useHorarioStore((s) => s.marcarResultado);
   const storeHorario = useHorarioStore((s) => s.horario);
 
@@ -197,6 +199,16 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     if (!r.ok && r.error) setError(r.error);
   }
 
+  function handleShrinkTop(bloqueId: string) {
+    const r = shrinkBloqueTop(bloqueId, materiasTodas);
+    if (!r.ok && r.error) setError(r.error);
+  }
+
+  function handleShrinkBottom(bloqueId: string) {
+    const r = shrinkBloqueBottom(bloqueId, materiasTodas);
+    if (!r.ok && r.error) setError(r.error);
+  }
+
   function handleDuplicateBloque(bloque: Bloque) {
     const duracion = aMinutos(bloque.horaFin) - aMinutos(bloque.horaInicio);
     const filas = generarFilasHora(horario.unidadHoraMinutos);
@@ -285,6 +297,8 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
               onRemoveBloque: handleRemoveBloque,
               onExpandBloqueDown: handleExpandDown,
               onExpandBloqueUp: handleExpandUp,
+              onShrinkBloqueTop: handleShrinkTop,
+              onShrinkBloqueBottom: handleShrinkBottom,
               onDuplicateBloque: handleDuplicateBloque,
               onEditBloque: setEditBloque,
             } : {})}

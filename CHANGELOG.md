@@ -5,6 +5,25 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/),
 y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Scroll táctil roto en las listas de materias (dashboard y pool del horario) porque
+  dnd-kit interceptaba el gesto desde el primer toque. Ahora `MateriaBlock` es
+  arrastrable solo dentro del horario en edición (prop `draggable`), el mouse usa
+  PointerSensor inmediato y el touch usa TouchSensor con long-press de 250ms, así un
+  swipe rápido scrollea normal y mantener presionado arrastra. Hint móvil en el pool:
+  "Mantén presionado y arrastra para mover".
+
+### Added
+
+- Achicar bloques de horario: `shrinkBloqueTop`/`shrinkBloqueBottom` en el store
+  (espejo de `expandBloqueUp/Down`, mínimo 1 unidad de hora). En la grilla, los
+  controles de borde pasan de muescas de arrastre a botones con chevrons: en el borde
+  superior `ChevronUp` (crecer hacia arriba) + `ChevronDown` (achicar desde arriba),
+  espejados en el inferior. En bloques de 1 unidad se ocultan los botones de achicar.
+
 ## [1.1.0] - 2026-08-17
 
 ### Fixed
@@ -20,12 +39,6 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - Pase de responsividad mobile-first: NavBar con menú hamburguesa, dashboard y filtros
   apilados en móvil, grilla de materias a 1 columna, horario con grilla+pool apilados y
   botones en fila propia, modales/formularios con ancho seguro en pantallas angostas.
-- Scroll táctil roto en las listas de materias (dashboard y pool del horario) porque
-  dnd-kit interceptaba el gesto desde el primer toque. Ahora `MateriaBlock` es
-  arrastrable solo dentro del horario en edición (prop `draggable`), el mouse usa
-  PointerSensor inmediato y el touch usa TouchSensor con long-press de 250ms, así un
-  swipe rápido scrollea normal y mantener presionado arrastra. Hint móvil en el pool:
-  "Mantén presionado y arrastra para mover".
 
 ### Added
 

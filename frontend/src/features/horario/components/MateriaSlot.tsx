@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { CheckCircle2, XCircle, Copy, Undo2 } from "lucide-react";
+import { CheckCircle2, XCircle, Copy, Undo2, ChevronUp, ChevronDown } from "lucide-react";
 import type { Bloque, ModoHorario } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 
@@ -13,6 +13,8 @@ interface MateriaSlotProps {
   onRemove?: () => void;
   onExpandDown?: () => void;
   onExpandUp?: () => void;
+  onShrinkTop?: () => void;
+  onShrinkBottom?: () => void;
   onDuplicate?: () => void;
   onMarcar?: (resultado: 'aprobada' | 'perdida' | null) => void;
   onEdit?: (bloque: Bloque) => void;
@@ -25,7 +27,7 @@ const COLOR_BY_ESTADO: Record<string, { border: string; bg: string; text: string
   en_espera: { border: "var(--estado-enespera-border)", bg: "var(--estado-enespera-bg)", text: "var(--estado-enespera-text)" },
 };
 
-export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onDuplicate, onMarcar, onEdit }: MateriaSlotProps) {
+export default function MateriaSlot({ bloque, materia, conflicto, span, modo, resultado, onRemove, onExpandDown, onExpandUp, onShrinkTop, onShrinkBottom, onDuplicate, onMarcar, onEdit }: MateriaSlotProps) {
   const colors = COLOR_BY_ESTADO[materia.estado] ?? COLOR_BY_ESTADO.activo;
   const isEdicion = modo === "edicion";
   const isCursado = materia.estado === "cursado";
@@ -66,27 +68,18 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
   if (resultado === "aprobada") slotStyle.background = "var(--resultado-aprobada-bg)";
   if (resultado === "perdida") slotStyle.background = "var(--resultado-perdida-bg)";
 
-  function makeDragHandler(dir: "up" | "down", cb: (() => void) | undefined) {
-    if (!cb) return undefined;
-    return (e: React.PointerEvent) => {
-      e.stopPropagation();
-      const startY = e.clientY;
-      const threshold = 20;
-      const onMove = (ev: PointerEvent) => {
-        const delta = ev.clientY - startY;
-        if ((dir === "down" && delta > threshold) || (dir === "up" && delta < -threshold)) {
-          cb();
-          cleanup();
-        }
-      };
-      const onUp = () => cleanup();
-      const cleanup = () => {
-        document.removeEventListener("pointermove", onMove);
-        document.removeEventListener("pointerup", onUp);
-      };
-      document.addEventListener("pointermove", onMove);
-      document.addEventListener("pointerup", onUp);
-    };
+  function resizeBtn(handler: (() => void) | undefined, title: string, icon: React.ReactNode) {
+    if (!handler) return null;
+    return (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); handler(); }}
+        title={title}
+        className="w-3.5 h-3.5 p-0 border-none rounded-sm bg-transparent cursor-pointer text-white flex items-center justify-center hover:bg-white/25"
+      >
+        {icon}
+      </button>
+    );
   }
 
   return (
@@ -101,13 +94,13 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
       {...(isEdicion && !isCursado ? { ...listeners, ...attributes } : {})}
       title={tooltipText}
     >
-      {isEdicion && onExpandUp && (
+      {isEdicion && (onExpandUp || onShrinkTop) && (
         <div
-          className="absolute left-0 right-0 top-[-6px] h-3 z-10 select-none"
-          style={{ touchAction: "none", cursor: "ns-resize" }}
-          onPointerDown={makeDragHandler("up", onExpandUp)}
+          className="absolute left-1/2 -translate-x-1/2 top-[-9px] z-10 flex gap-px px-0.5 py-px rounded-sm bg-black/25 select-none"
+          style={{ touchAction: "manipulation" }}
         >
-          <div className="text-center text-[10px] opacity-50 leading-none" style={{ color: colors.border }}>⋮</div>
+          {resizeBtn(onExpandUp, "Crecer hacia arriba", <ChevronUp className="w-3 h-3" />)}
+          {span >= 2 && resizeBtn(onShrinkTop, "Achicar desde arriba", <ChevronDown className="w-3 h-3" />)}
         </div>
       )}
 
@@ -193,13 +186,13 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
         </div>
       )}
 
-      {isEdicion && onExpandDown && span < 5 && (
+      {isEdicion && (onExpandDown || onShrinkBottom) && (
         <div
-          className="absolute left-0 right-0 bottom-[-6px] h-3 z-10 select-none"
-          style={{ touchAction: "none", cursor: "ns-resize" }}
-          onPointerDown={makeDragHandler("down", onExpandDown)}
+          className="absolute left-1/2 -translate-x-1/2 bottom-[-9px] z-10 flex gap-px px-0.5 py-px rounded-sm bg-black/25 select-none"
+          style={{ touchAction: "manipulation" }}
         >
-          <div className="text-center text-[10px] opacity-50 leading-none" style={{ color: colors.border }}>⋮</div>
+          {span >= 2 && resizeBtn(onShrinkBottom, "Achicar desde abajo", <ChevronUp className="w-3 h-3" />)}
+          {resizeBtn(onExpandDown, "Crecer hacia abajo", <ChevronDown className="w-3 h-3" />)}
         </div>
       )}
     </div>

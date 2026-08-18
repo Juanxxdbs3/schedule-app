@@ -46,6 +46,8 @@ interface GridProps {
   onRemoveBloque?: (bloqueId: string) => void;
   onExpandBloqueDown?: (bloqueId: string) => void;
   onExpandBloqueUp?: (bloqueId: string) => void;
+  onShrinkBloqueTop?: (bloqueId: string) => void;
+  onShrinkBloqueBottom?: (bloqueId: string) => void;
   onDuplicateBloque?: (bloque: Bloque) => void;
   onEditBloque?: (bloque: Bloque) => void;
   onMarcarResultado?: (codigo: string, resultado: 'aprobada' | 'perdida' | null) => void;
@@ -57,8 +59,8 @@ const timeClasses = "p-1 font-normal text-xs text-muted text-center border-b bor
 
 export default function Grid({
   bloques, materias, unidadHoraMinutos: u, modo, dias, domingoVisible, onToggleDomingo,
-  onRemoveBloque, onExpandBloqueDown, onExpandBloqueUp, onDuplicateBloque,
-  onEditBloque, onMarcarResultado, resultados,
+  onRemoveBloque, onExpandBloqueDown, onExpandBloqueUp, onShrinkBloqueTop, onShrinkBloqueBottom,
+  onDuplicateBloque, onEditBloque, onMarcarResultado, resultados,
 }: GridProps) {
   const isEdicion = modo === "edicion";
   const filas = generarFilasHora(u);
@@ -185,6 +187,8 @@ export default function Grid({
               onRemove={onRemoveBloque ? () => onRemoveBloque(bloque.id) : undefined}
               onExpandDown={onExpandBloqueDown ? () => onExpandBloqueDown(bloque.id) : undefined}
               onExpandUp={onExpandBloqueUp ? () => onExpandBloqueUp(bloque.id) : undefined}
+              onShrinkTop={onShrinkBloqueTop ? () => onShrinkBloqueTop(bloque.id) : undefined}
+              onShrinkBottom={onShrinkBloqueBottom ? () => onShrinkBloqueBottom(bloque.id) : undefined}
               onDuplicate={onDuplicateBloque ? () => onDuplicateBloque(bloque) : undefined}
               onEdit={onEditBloque ? () => onEditBloque(bloque) : undefined}
               onMarcar={onMarcarResultado ? (r) => onMarcarResultado(materia.codigo, r) : undefined}

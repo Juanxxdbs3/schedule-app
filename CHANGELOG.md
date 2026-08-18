@@ -7,6 +7,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-17
+
 ### Fixed
 
 - Expandir un bloque hacia arriba estando en la primera hora (07:00) producía un

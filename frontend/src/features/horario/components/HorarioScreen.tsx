@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
 import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import { CheckCircle2, XCircle, Hand } from "lucide-react";
+import { CheckCircle2, XCircle, Hand, Download, FileImage } from "lucide-react";
 import type { Horario, Bloque, DiaSemana } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 import type { Pensum } from "../../pensum/types.ts";
 import type { ModoHorario } from "../types.ts";
 import { useHorarioStore } from "../store/horarioStore.ts";
 import { generarFilasHora } from "../utils/generarFilasHora.ts";
+import { generarSvgHorario } from "../utils/exportHorarioSvg.ts";
 import { filtrarMaterias } from "../../../shared/utils/filterMaterias.ts";
 import Grid from "./Grid.tsx";
 import ContadorCreditos from "./ContadorCreditos.tsx";
@@ -279,6 +280,54 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     }
   }
 
+  function descargarBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function diasParaExportar(): DiaSemana[] {
+    return domingoVisible ? diasVisibles : diasVisibles.filter((d) => d !== "domingo");
+  }
+
+  function handleDescargarSvg() {
+    const svg = generarSvgHorario(bloques, materiasTodas, diasParaExportar(), horario.unidadHoraMinutos, resultados);
+    descargarBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), `horario-${horario.semestreLabel}.svg`);
+  }
+
+  async function handleDescargarJpeg() {
+    const svg = generarSvgHorario(bloques, materiasTodas, diasParaExportar(), horario.unidadHoraMinutos, resultados);
+    const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    try {
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("No se pudo renderizar la imagen"));
+        img.src = url;
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas no disponible");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      const jpeg = await new Promise<Blob>((resolve, reject) =>
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Error al convertir a JPEG"))), "image/jpeg", 0.92),
+      );
+      descargarBlob(jpeg, `horario-${horario.semestreLabel}.jpg`);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
   const leyenda = [
     { Icon: CheckCircle2, label: "Aprobada", color: "text-success" },
     { Icon: XCircle, label: "Perdida", color: "text-danger" },
@@ -320,6 +369,17 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
           </span>
           <ContadorCreditos bloques={bloques} materias={materiasTodas} maxCreditos={horario.maxCreditos} />
         </div>
+
+        {modo !== "edicion" && (
+          <div className="flex gap-2">
+            <button type="button" onClick={handleDescargarSvg} title="Descargar horario como SVG" className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-solid border-border rounded-md bg-surface text-text cursor-pointer">
+              <Download className="w-4 h-4" /> SVG
+            </button>
+            <button type="button" onClick={() => void handleDescargarJpeg()} title="Descargar horario como JPEG" className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-solid border-border rounded-md bg-surface text-text cursor-pointer">
+              <FileImage className="w-4 h-4" /> JPEG
+            </button>
+          </div>
+        )}
 
         {modo === "curso" && (
           <div className="flex gap-2 text-xs text-muted">

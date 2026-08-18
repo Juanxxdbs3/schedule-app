@@ -4,17 +4,7 @@ import type { Bloque, DiaSemana, ModoHorario } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 import MateriaSlot from "./MateriaSlot.tsx";
 import { generarFilasHora } from "../utils/generarFilasHora.ts";
-
-export const DIAS_LABEL: Record<DiaSemana, string> = {
-  lunes: "Lun", martes: "Mar", miercoles: "Mié",
-  jueves: "Jue", viernes: "Vie",
-  sabado: "Sáb", domingo: "Dom",
-};
-
-function aMinutos(h: string): number {
-  const [hh, mm] = h.split(":").map(Number);
-  return hh * 60 + mm;
-}
+import { DIAS_LABEL, aMinutos, rowIndexFor, spanFor } from "../utils/gridMath.ts";
 
 function DroppableCell({ dia, horaInicio, horaFin }: { dia: DiaSemana; horaInicio: string; horaFin: string }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -75,28 +65,6 @@ export default function Grid({
   // Build the active set — if domingo is collapsed, exclude it
   const diasEfectivos = domingoVisible ? dias : dias.filter((d) => d !== "domingo");
 
-  function rowIndexFor(hora: string): number {
-    const m = aMinutos(hora);
-    let idx = -1;
-    for (let i = 0; i < filas.length; i++) {
-      if (aMinutos(filas[i]) <= m) idx = i;
-      else break;
-    }
-    return idx;
-  }
-
-  function spanFor(horaInicio: string, horaFin: string): number {
-    const startM = aMinutos(horaInicio);
-    const endM = aMinutos(horaFin);
-    let count = 0;
-    for (const f of filas) {
-      const t = aMinutos(f);
-      if (t >= startM && t < endM) count++;
-      else if (t >= endM) break;
-    }
-    return Math.max(1, count);
-  }
-
   function tieneChoque(bloque: Bloque): boolean {
     return bloques.some(
       (b) => b.id !== bloque.id && b.dia === bloque.dia &&
@@ -115,9 +83,9 @@ export default function Grid({
 
   for (const b of bloques) {
     if (b.dia === "domingo" && !domingoVisible) continue;
-    const rowIdx = rowIndexFor(b.horaInicio);
+    const rowIdx = rowIndexFor(b.horaInicio, filas);
     if (rowIdx === -1) continue;
-    const span = spanFor(b.horaInicio, b.horaFin);
+    const span = spanFor(b.horaInicio, b.horaFin, filas);
     placements.push({ bloque: b, rowIdx, span });
     for (let i = 0; i < span; i++) {
       if (rowIdx + i < filas.length) {

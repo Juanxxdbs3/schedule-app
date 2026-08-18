@@ -33,6 +33,13 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
   controles de borde pasan de muescas de arrastre a botones con chevrons: en el borde
   superior `ChevronUp` (crecer hacia arriba) + `ChevronDown` (achicar desde arriba),
   espejados en el inferior. En bloques de 1 unidad se ocultan los botones de achicar.
+- Exportar el horario desde las vistas "En curso" y "Finalizado": botones SVG y JPEG
+  en el header. `generarSvgHorario` (función pura en `utils/exportHorarioSvg.ts`)
+  dibuja la misma grilla de horas/días que en pantalla con un rectángulo por bloque
+  (color según estado, nombre, profesor, salón, horas y badge aprobada/perdida si hay
+  resultado), reutilizando la lógica de posicionamiento extraída a `utils/gridMath.ts`.
+  La descarga SVG usa Blob + `<a download>`; la JPEG renderiza el SVG en un canvas
+  con fondo blanco (JPEG no soporta transparencia).
 
 ## [1.1.0] - 2026-08-17
 

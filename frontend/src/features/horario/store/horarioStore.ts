@@ -180,6 +180,8 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     if (span >= 5) return { ok: false, error: "Máximo 5 unidades de hora por materia" };
 
     const nuevoFin = aMinutos(original.horaFin) + horario.unidadHoraMinutos;
+    if (nuevoFin > 22 * 60) return { ok: false, error: "Ya estás en la última hora del día, no puedes expandir más abajo" };
+
     const expandido: Bloque = { ...original, horaFin: fmt(nuevoFin) };
     const nuevosBloques = horario.bloques.map((b) => (b.id === bloqueId ? expandido : b));
 
@@ -203,6 +205,8 @@ export const useHorarioStore = create<HorarioState>((set, get) => ({
     if (span >= 5) return { ok: false, error: "Máximo 5 unidades de hora por materia" };
 
     const nuevoInicio = aMinutos(original.horaInicio) - horario.unidadHoraMinutos;
+    if (nuevoInicio < 7 * 60) return { ok: false, error: "Ya estás en la primera hora del día, no puedes expandir más arriba" };
+
     const expandido: Bloque = { ...original, horaInicio: fmt(nuevoInicio) };
     const nuevosBloques = horario.bloques.map((b) => (b.id === bloqueId ? expandido : b));
 

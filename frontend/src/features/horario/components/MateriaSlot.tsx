@@ -74,6 +74,8 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); handler(); }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         title={title}
         className="w-3.5 h-3.5 p-0 border-none rounded-sm bg-transparent cursor-pointer text-white flex items-center justify-center hover:bg-white/25"
       >
@@ -96,8 +98,8 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
     >
       {isEdicion && (onExpandUp || onShrinkTop) && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-[-9px] z-10 flex gap-px px-0.5 py-px rounded-sm bg-black/25 select-none"
-          style={{ touchAction: "manipulation" }}
+          className="absolute left-1/2 -translate-x-1/2 top-[-1px] z-10 flex gap-px px-0.5 py-px rounded-sm bg-black/25 select-none"
+          style={{ touchAction: "manipulation", boxShadow: "0 1px 3px rgba(0,0,0,0.35)" }}
         >
           {resizeBtn(onExpandUp, "Crecer hacia arriba", <ChevronUp className="w-3 h-3" />)}
           {span >= 2 && resizeBtn(onShrinkTop, "Achicar desde arriba", <ChevronDown className="w-3 h-3" />)}
@@ -188,8 +190,8 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
 
       {isEdicion && (onExpandDown || onShrinkBottom) && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-[-9px] z-10 flex gap-px px-0.5 py-px rounded-sm bg-black/25 select-none"
-          style={{ touchAction: "manipulation" }}
+          className="absolute left-1/2 -translate-x-1/2 bottom-[-1px] z-10 flex gap-px px-0.5 py-px rounded-sm bg-black/25 select-none"
+          style={{ touchAction: "manipulation", boxShadow: "0 1px 3px rgba(0,0,0,0.35)" }}
         >
           {span >= 2 && resizeBtn(onShrinkBottom, "Achicar desde abajo", <ChevronUp className="w-3 h-3" />)}
           {resizeBtn(onExpandDown, "Crecer hacia abajo", <ChevronDown className="w-3 h-3" />)}

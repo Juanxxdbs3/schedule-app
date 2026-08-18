@@ -94,6 +94,56 @@ describe("bloque duplicado", () => {
   });
 });
 
+describe("expandBloqueUp", () => {
+  it("expande hacia arriba un bloque que no está en la primera hora", () => {
+    setup([makeBloque("b1", "lunes", "08:00", "10:00")]);
+
+    const r = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("07:00");
+    expect(b.horaFin).toBe("10:00");
+  });
+
+  it("rechaza expandir hacia arriba un bloque que ya empieza a las 07:00", () => {
+    setup([makeBloque("b1", "lunes", "07:00", "10:00")]);
+
+    const r = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toContain("primera hora");
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("07:00");
+    expect(b.horaFin).toBe("10:00");
+  });
+});
+
+describe("expandBloqueDown", () => {
+  it("expande hacia abajo un bloque que no llega a la última hora", () => {
+    setup([makeBloque("b1", "lunes", "07:00", "09:00")]);
+
+    const r = useHorarioStore.getState().expandBloqueDown("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("07:00");
+    expect(b.horaFin).toBe("10:00");
+  });
+
+  it("rechaza expandir hacia abajo un bloque que ya termina a las 22:00", () => {
+    setup([makeBloque("b1", "lunes", "20:00", "22:00")]);
+
+    const r = useHorarioStore.getState().expandBloqueDown("b1", [MATERIA]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toContain("última hora");
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("20:00");
+    expect(b.horaFin).toBe("22:00");
+  });
+});
+
 describe("errores", () => {
   it("devuelve error si el bloque no existe", () => {
     setup([]);

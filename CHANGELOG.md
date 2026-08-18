@@ -9,6 +9,16 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Fixed
 
+- Expandir un bloque hacia arriba estando en la primera hora (07:00) producía un
+  `horaInicio` inválido y el bloque desaparecía de la grilla sin error. Ahora se
+  valida el límite del día: expandir arriba a las 07:00 y expandir abajo a las 22:00
+  se rechazan con mensaje claro.
+- Los botones de crecer/achicar (chevrons) en bloques colocados podían no responder:
+  el `pointerdown`/`touchstart` burbujeaba al elemento draggable (dnd-kit iniciaba
+  un drag con long-press en touch o un click con movimiento en mouse) y las pestañas
+  asomaban a la fila vecina quedando tapadas. Ahora los botones detienen la
+  propagación de esos eventos y las pestañas se apoyan sobre el borde del propio
+  bloque (con sombra ligera) sin invadir la fila de al lado.
 - Scroll táctil roto en las listas de materias (dashboard y pool del horario) porque
   dnd-kit interceptaba el gesto desde el primer toque. Ahora `MateriaBlock` es
   arrastrable solo dentro del horario en edición (prop `draggable`), el mouse usa

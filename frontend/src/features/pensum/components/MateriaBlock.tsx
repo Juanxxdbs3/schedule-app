@@ -3,6 +3,7 @@ import type { Materia } from "../types.ts";
 
 interface MateriaBlockProps {
   materia: Materia;
+  draggable?: boolean;
 }
 
 const COLOR_BY_ESTADO: Record<string, { border: string; badgeBg: string; badgeText: string }> = {
@@ -12,26 +13,28 @@ const COLOR_BY_ESTADO: Record<string, { border: string; badgeBg: string; badgeTe
   cursado: { border: "var(--color-muted-block)", badgeBg: "var(--color-muted-block)", badgeText: "var(--color-text-muted)" },
 };
 
-export default function MateriaBlock({ materia }: MateriaBlockProps) {
+export default function MateriaBlock({ materia, draggable = false }: MateriaBlockProps) {
   const isCursado = materia.estado === "cursado";
   const colors = COLOR_BY_ESTADO[materia.estado] ?? COLOR_BY_ESTADO.activo;
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `pool-${materia.codigo}`,
     data: { type: "materia", materia },
-    disabled: isCursado,
+    disabled: !draggable || isCursado,
   });
 
-  const dragStyle: React.CSSProperties = {
-    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-    touchAction: "none",
-  };
+  const dragStyle: React.CSSProperties = draggable && !isCursado
+    ? {
+        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+        touchAction: "manipulation",
+      }
+    : {};
 
   return (
     <div
       ref={setNodeRef}
       className={`bg-surface border border-solid rounded-md p-3 select-none relative transition-all duration-150 ${
-        isCursado ? "cursor-not-allowed" : "cursor-grab"
+        draggable && !isCursado ? "cursor-grab" : "cursor-default"
       }`}
       style={{
         ...dragStyle,
@@ -39,8 +42,7 @@ export default function MateriaBlock({ materia }: MateriaBlockProps) {
         opacity: isDragging ? 0.3 : isCursado ? 0.6 : 1,
         zIndex: isDragging ? 999 : 1,
       }}
-      {...listeners}
-      {...attributes}
+      {...(draggable && !isCursado ? { ...listeners, ...attributes } : {})}
     >
       <div className="flex justify-between items-start mb-2">
         <span className={`text-sm font-semibold font-mono ${isCursado ? "text-muted" : "text-primary"}`}>

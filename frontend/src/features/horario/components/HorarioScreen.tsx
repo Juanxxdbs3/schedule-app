@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
-import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Hand } from "lucide-react";
 import type { Horario, Bloque, DiaSemana } from "../types.ts";
 import type { Materia } from "../../pensum/types.ts";
 import type { Pensum } from "../../pensum/types.ts";
@@ -17,6 +17,15 @@ import MateriaBlock from "../../pensum/components/MateriaBlock.tsx";
 
 const DIAS_COMPLETO: DiaSemana[] = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
 const DOMINGO_STORAGE_KEY = "horario-app:domingo-visible";
+
+class MousePointerSensor extends PointerSensor {
+  static activators = [
+    {
+      eventName: "onPointerDown",
+      handler: ({ nativeEvent }: { nativeEvent: PointerEvent }) => nativeEvent.pointerType === "mouse",
+    },
+  ] as const;
+}
 
 interface HorarioScreenProps {
   modo: ModoHorario;
@@ -70,7 +79,10 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
     localStorage.setItem(DOMINGO_STORAGE_KEY, String(domingoVisible));
   }, [domingoVisible]);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(
+    useSensor(MousePointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  );
 
   const bloques = storeHorario?.bloques ?? [];
   const resultados = storeHorario?.resultados ?? {};
@@ -342,6 +354,10 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
             {renderGrid(true)}
             <div className="bg-surface rounded-md border border-border p-3 lg:sticky lg:top-3">
               <h3 className="text-sm mb-2">Materias ({materiasEnPool.length})</h3>
+              <p className="md:hidden flex items-center gap-1 text-[11px] text-muted mb-2">
+                <Hand className="w-3 h-3 shrink-0" />
+                Mantén presionado y arrastra para mover
+              </p>
               <div className="flex flex-col gap-1 mb-2">
                 <input type="text" placeholder="Buscar..." value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)}
                   className="px-2 py-1 border border-border rounded-sm text-xs bg-surface text-text" />
@@ -359,7 +375,7 @@ export default function HorarioScreen({ modo, horario, pensum, onModoChange, onG
                 <p className="text-sm text-muted text-center p-3">No hay materias disponibles</p>
               ) : (
                 <div className="flex flex-col gap-2 max-h-[45vh] lg:max-h-[calc(100vh-400px)] overflow-y-auto">
-                  {materiasEnPool.map((m) => <div key={m.codigo} className="text-sm"><MateriaBlock materia={m} /></div>)}
+                  {materiasEnPool.map((m) => <div key={m.codigo} className="text-sm"><MateriaBlock materia={m} draggable /></div>)}
                 </div>
               )}
               <DropZone id="pool-drop" />

@@ -49,7 +49,7 @@ export default function MateriaSlot({ bloque, materia, conflicto, span, modo, re
 
   const draggingStyle: React.CSSProperties = {
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-    touchAction: isEdicion && !isCursado ? "none" : "auto",
+    touchAction: isEdicion && !isCursado ? "manipulation" : "auto",
   };
 
   const slotStyle: React.CSSProperties = {

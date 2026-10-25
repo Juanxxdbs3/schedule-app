@@ -7,6 +7,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-24
+
 ### Added
 
 - Importación guiada de pensum: botón "¿Cómo genero el JSON? Ver prompt" en

@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import { createPensumSchema, formatearErroresZod } from "../pensum.validation.js";
 
 function materia(overrides: Record<string, unknown> = {}) {
@@ -153,5 +154,14 @@ describe("createPensumSchema", () => {
   it("ignora claves extra sin fallar", () => {
     const errores = erroresDeMaterias([materia({ profesor: "Juan", salon: "B201" })]);
     expect(errores).toEqual([]);
+  });
+
+  it("acepta el ejemplo canónico docs/formato-pensum.json", () => {
+    const url = new URL("../../../../../docs/formato-pensum.json", import.meta.url);
+    const json = JSON.parse(readFileSync(url, "utf8")) as unknown;
+
+    const result = createPensumSchema.safeParse(json);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.materias).toHaveLength(8);
   });
 });

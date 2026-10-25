@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import { validarPensumJson } from "../utils/validarPensumJson.ts";
 
 function materia(overrides: Record<string, unknown> = {}) {
@@ -166,5 +167,18 @@ describe("validarPensumJson", () => {
   it("rechaza nombre vacío o ausente", () => {
     expect(erroresDe({ nombre: "  ", materias: [materia()] }).some((e) => e.includes("'nombre' no puede estar vacío"))).toBe(true);
     expect(erroresDe({ materias: [materia()] }).some((e) => e.includes("Falta la clave 'nombre'"))).toBe(true);
+  });
+
+  it("acepta el ejemplo canónico docs/formato-pensum.json", () => {
+    const url = new URL("../../../../../docs/formato-pensum.json", import.meta.url);
+    const json = JSON.parse(readFileSync(url, "utf8")) as unknown;
+
+    const resultado = validarPensumJson(json);
+    expect(resultado.ok).toBe(true);
+    if (!resultado.ok) return;
+
+    expect(resultado.resumen.materias).toBe(8);
+    expect(resultado.resumen.semestres).toBe(3);
+    expect(resultado.resumen.conPrerrequisitos).toBe(6);
   });
 });

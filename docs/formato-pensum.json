@@ -2,6 +2,22 @@
   "nombre": "Ingeniería de Sistemas - Universidad de Cartagena",
   "materias": [
     {
+      "codigo": "FP0416",
+      "nombre": "Física de Campos",
+      "creditos": 3,
+      "semestre": 4,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
+      "codigo": "IA1015",
+      "nombre": "Estructuras de Datos",
+      "creditos": 3,
+      "semestre": 4,
+      "requiere": [],
+      "estado": "cursado"
+    },
+    {
       "codigo": "FP0417",
       "nombre": "Sistemas Dinámicos",
       "creditos": 3,

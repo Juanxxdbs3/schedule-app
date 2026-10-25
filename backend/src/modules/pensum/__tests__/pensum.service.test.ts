@@ -94,6 +94,26 @@ describe("PensumService", () => {
       ).rejects.toThrow(ValidationError);
     });
 
+    it("lanza ValidationError si 'requiere' incluye códigos que no existen en el pensum", async () => {
+      const created = await service.create(USER_ID, { nombre: "P1", materias: [makeMateria("M1")] });
+
+      await expect(
+        service.agregarMateria(created.id, USER_ID, {
+          codigo: "M2", nombre: "Materia M2", creditos: 3, semestre: 2, requiere: ["M1", "NOEXISTE"],
+        }),
+      ).rejects.toThrow(/NOEXISTE/);
+    });
+
+    it("lanza ValidationError si la materia se requiere a sí misma", async () => {
+      const created = await service.create(USER_ID, { nombre: "P1", materias: [] });
+
+      await expect(
+        service.agregarMateria(created.id, USER_ID, {
+          codigo: "M3", nombre: "Materia M3", creditos: 3, semestre: 1, requiere: ["M3"],
+        }),
+      ).rejects.toThrow(/a sí misma/);
+    });
+
     it("lanza NotFoundError si el pensum no pertenece al usuario", async () => {
       const created = await service.create(USER_ID, { nombre: "P1", materias: [] });
 

@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { PensumService } from "./pensum.service.js";
-import { createPensumSchema, addMateriaSchema } from "./pensum.validation.js";
+import {
+  createPensumSchema,
+  addMateriaSchema,
+  formatearErroresZod,
+} from "./pensum.validation.js";
 
 export class PensumController {
   constructor(private pensumService: PensumService) {}
@@ -14,7 +18,8 @@ export class PensumController {
       res.status(201).json({ pensum });
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json({ error: error.errors });
+        const errores = formatearErroresZod(error);
+        res.status(400).json({ error: errores[0], errores });
         return;
       }
       next(error);
@@ -51,7 +56,8 @@ export class PensumController {
       res.status(201).json({ pensum });
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json({ error: error.errors });
+        const errores = formatearErroresZod(error);
+        res.status(400).json({ error: errores[0], errores });
         return;
       }
       next(error);

@@ -1,67 +1,58 @@
 # Prompt para generar el JSON del pensum
 
-Copia y pega esto en un LLM (Claude, ChatGPT, Gemini) junto con el archivo o
-imagen de tu plan de estudios (el flujograma con los módulos y el PDF con
-códigos/créditos).
+> Fuente de verdad del texto: la constante `PROMPT_GENERAR_PENSUM` en
+> `frontend/src/features/pensum/constants/promptGenerarPensum.ts` (es la que
+> muestra el modal de "Cargar pensum"). Este archivo es la referencia
+> documentada; si cambias uno, cambia el otro.
+
+Uso: copia el texto entre las dos líneas `---` en un chat con una IA (ChatGPT,
+Gemini, Claude...) y adjunta tu plan de estudios (imagen, captura, PDF, Word
+o texto). La IA devolverá un JSON que se pega o se sube en la app.
 
 ---
 
-Te voy a compartir el flujograma de mi plan de estudios (con módulos, materias,
-créditos y notas) y/o el PDF oficial con los códigos de cada curso.
+Voy a compartirte mi plan de estudios (puede ser una imagen, captura, PDF, documento de Word o texto; puede traer un flujograma con flechas de prerrequisitos, una lista por semestres, o ambos). Necesito que lo conviertas en un JSON que cargaré en una aplicación. Sigue estos pasos EN ORDEN y no te saltes ninguno.
 
-Necesito que generes un JSON con esta forma EXACTA (no agregues ni quites
-campos, no cambies nombres de claves):
+PASO 1 - Inventario
+Identifica TODAS las materias del documento, semestre por semestre. Si el documento indica el total de materias o el total de créditos, anótalo: lo usarás en el paso 4. Nunca omitas una materia por parecer repetida o poco importante (electivas, inglés I, II, III..., prácticas, etc. son materias distintas y cada una va en su propia entrada).
 
-```json
+PASO 2 - Forma del JSON
+El resultado debe tener EXACTAMENTE esta forma (es solo un ejemplo de estructura y tipos; no copies sus datos):
+
 {
-  "nombre": "string — nombre de mi programa académico",
+  "nombre": "Ingeniería de Sistemas",
   "materias": [
-    {
-      "codigo": "string — código oficial de la materia, tal como aparece en el PDF",
-      "nombre": "string — nombre de la materia",
-      "creditos": "number — número de créditos",
-      "semestre": "number — semestre en el que recomienda el pensum tomarla",
-      "requiere": ["array de codigos — materias que son prerrequisito directo, según las líneas que las conectan en el flujograma"],
-      "estado": "'cursado' si la materia aparece en color gris/aprobada en el flujograma, o 'activo' en cualquier otro caso"
-    }
+    { "codigo": "CFBD002", "nombre": "Cálculo Diferencial", "creditos": 3, "semestre": 1, "requiere": [], "estado": "cursado" },
+    { "codigo": "CFBD221", "nombre": "Cálculo Integral", "creditos": 3, "semestre": 2, "requiere": ["CFBD002"], "estado": "activo" }
   ]
 }
-```
 
-Reglas:
-1. Usa el PDF/imagen para el código, nombre y créditos exactos. Si una
-   materia SÍ tiene código oficial legible, úsalo tal cual. Si NO tiene
-   código oficial legible (o el archivo no lo incluye), genera uno tú mismo,
-   coherente con el resto (mismo patrón de prefijo/longitud que los códigos
-   oficiales que sí existan, o si ninguno tiene código oficial, inventa un
-   prefijo corto basado en el área temática — ej. "PSI" para psicología
-   general, "ELE" para electivas). Nunca dejes un código vacío o nulo.
-2. Usa el flujograma para determinar `semestre` (la columna donde está el
-   bloque) y `requiere` (sigue las líneas que entran a cada bloque).
-3. Si una materia no tiene ninguna línea de entrada, `requiere` debe ser un
-   array vacío `[]`.
-4. Modo por defecto (estricto): si la calidad/resolución de la imagen no te
-   permite determinar con certeza las líneas de prerrequisito o el color de
-   "cursada" para una parte del pensum, detente y pide un archivo mejor antes
-   de generar el JSON — no inventes esa información.
-5. Modo borrador (solo si el usuario lo pide explícitamente, ej. "genéralo
-   como borrador" o "trátalo como archivo de prueba"): en vez de detenerte,
-   genera el JSON completo igualmente. Para cualquier prerrequisito que no
-   puedas determinar con certeza, usa `requiere: []`. Para el estado, si no
-   puedes distinguir el color de "cursada" con confianza, usa `estado: "activo"`
-   para todas (nunca `"cursado"` como default, ya que asumir una materia como
-   ya aprobada sin certeza es más riesgoso que asumirla disponible). Al final
-   del JSON, agrega una nota breve indicando qué códigos son provisionales
-   (inventados) y qué prerrequisitos/estados quedaron en su valor por defecto
-   por falta de certeza — así el estudiante sabe exactamente qué revisar
-   manualmente más adelante, sin que eso bloquee tener un archivo de prueba
-   funcional ya mismo.
-6. No agregues comentarios dentro del JSON — debe ser JSON válido y parseable.
-7. Devuelve el JSON completo, con TODAS las materias del pensum, no solo un
-   ejemplo.
+Reglas por campo (obligatorias, sin excepciones):
+- codigo: texto NO vacío y ÚNICO en todo el JSON. Si la materia tiene código oficial legible, úsalo tal cual. Si no lo tiene, genera uno con el mismo patrón de los códigos oficiales que sí existan; si ninguna materia tiene código, usa un prefijo de 2 o 3 letras de la carrera + número de semestre + consecutivo de 2 dígitos (ejemplo: FT101, FT102, FT201). Jamás dejes un código vacío, null, repetido, ni escribas "N/A" o "SIN CODIGO". La falta de códigos NUNCA es motivo para detenerte: genéralos.
+- nombre: texto, tal como aparece en el documento.
+- creditos: número entero (sin comillas). Si una materia no muestra créditos, no los inventes en silencio: usa 1 y menciónalo en las Notas.
+- semestre: número entero mayor o igual a 1 (el semestre o columna donde aparece la materia).
+- requiere: lista de textos. Cada elemento DEBE ser el "codigo" de OTRA materia que exista en este mismo JSON. Nunca pongas nombres de materias, nunca códigos que no estén en la lista, nunca la propia materia, y evita ciclos (A requiere B y B requiere A). Si el documento tiene flechas o líneas de prerrequisito, síguelas. Si los prerrequisitos aparecen escritos por nombre, conviértelos al código correspondiente. Si una materia no tiene prerrequisitos, o no puedes determinarlos con certeza, usa una lista vacía []. La clave "requiere" SIEMPRE debe existir.
+- estado: SOLO uno de estos dos valores: "cursado" o "activo". Usa "cursado" únicamente si el documento marca esa materia como aprobada (color gris, check, nota aprobatoria...). En cualquier otro caso, o ante la duda, usa "activo".
+
+PASO 3 - Qué hacer si el documento es poco claro
+NO te detengas a pedir un archivo mejor. Genera siempre el JSON completo usando los valores seguros: requiere [] cuando no estés seguro de un prerrequisito y estado "activo" cuando no distingas si está aprobada. Solo si el documento es totalmente ilegible, dilo y pídeme otro archivo. Todo lo que hayas asumido debe quedar listado en las Notas del paso 5.
+
+PASO 4 - Autoverificación (hazla de verdad antes de responder y corrige lo que falle)
+a) La cantidad de materias del JSON es igual a la del documento (y coincide con el total declarado, si existe).
+b) La suma de créditos coincide con el total declarado, si el documento lo indica.
+c) TODOS los objetos tienen exactamente las 6 claves: codigo, nombre, creditos, semestre, requiere, estado.
+d) No hay códigos vacíos ni repetidos.
+e) Cada elemento de "requiere" existe como "codigo" en el JSON, no es la propia materia, y no hay ciclos.
+f) creditos y semestre son números, no textos.
+g) El JSON es válido: comillas dobles, sin comas finales, sin comentarios.
+
+PASO 5 - Formato de la respuesta
+1. Primero, UN solo bloque de código de tipo JSON con el JSON completo y con TODAS las materias (nunca lo abrevies con "..." ni con "etcétera"). Dentro del JSON no puede haber texto ni comentarios.
+2. Debajo del bloque, una sección "Notas" con viñetas cortas: cuántas materias generaste, suma total de créditos, qué códigos fueron inventados (cuáles), qué prerrequisitos no pudiste determinar, qué estados dejaste por defecto, y qué créditos o semestres asumiste.
 
 ---
 
-Cuando lo generes, valida que el JSON parsea correctamente antes de cargarlo en
-la app (por ejemplo pegándolo en un validador JSON online, o simplemente
-abriéndolo con `JSON.parse` en la consola del navegador).
+Cuando la IA responda: copia SOLO el bloque JSON (no las Notas), revisa las Notas
+para saber qué conviene corregir a mano, y pégalo o súbelo en la app. Si la app
+marca un error, dice qué materia falla: pídele a la IA que corrija exactamente eso.

@@ -30,15 +30,15 @@ export default function Modal({ isOpen, onClose, children, title }: ModalProps) 
       onClick={onClose}
     >
       <div
-        className="bg-surface border border-border rounded-lg shadow-lg w-[90vw] max-w-md"
+        className="bg-surface border border-border rounded-lg shadow-lg w-[90vw] max-w-md max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="px-5 pt-5 pb-0">
+          <div className="px-5 pt-5 pb-0 shrink-0">
             <h2 className="text-lg m-0">{title}</h2>
           </div>
         )}
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto overscroll-contain">{children}</div>
       </div>
     </div>
   );

@@ -1,5 +1,28 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+export class ApiError extends Error {
+  errores?: string[];
+
+  constructor(message: string, errores?: string[]) {
+    super(message);
+    this.name = "ApiError";
+    this.errores = errores;
+  }
+}
+
+function extraerMensaje(error: unknown): string {
+  if (typeof error === "string") return error;
+  if (Array.isArray(error)) {
+    const mensajes = error
+      .map((item) =>
+        typeof item === "string" ? item : ((item as { message?: string })?.message ?? ""),
+      )
+      .filter(Boolean);
+    return mensajes.length > 0 ? mensajes.join("\n") : "Request failed";
+  }
+  return "Request failed";
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
@@ -9,8 +32,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || "Request failed");
+    const payload = (await res.json().catch(() => ({ error: res.statusText }))) as {
+      error?: unknown;
+      errores?: unknown;
+    };
+    const errores = Array.isArray(payload.errores)
+      ? payload.errores.filter((e): e is string => typeof e === "string")
+      : undefined;
+    throw new ApiError(extraerMensaje(payload.error), errores);
   }
 
   if (res.status === 204) return undefined as T;

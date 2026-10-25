@@ -33,6 +33,18 @@ export class PensumService {
       throw new ValidationError(`Ya existe una materia con el código '${materia.codigo}' en este pensum`);
     }
 
+    if (materia.requiere.includes(materia.codigo)) {
+      throw new ValidationError(`La materia '${materia.codigo}' no puede requerirse a sí misma`);
+    }
+
+    const codigosExistentes = new Set(pensum.materias.map((m) => m.codigo));
+    const faltantes = materia.requiere.filter((codigo) => !codigosExistentes.has(codigo));
+    if (faltantes.length > 0) {
+      throw new ValidationError(
+        `'requiere' incluye códigos que no existen en este pensum: ${faltantes.join(", ")}`,
+      );
+    }
+
     return this.pensumRepo.addMateria(pensumId, materia);
   }
 

@@ -7,6 +7,66 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Added
+
+- Importación guiada de pensum: botón "¿Cómo genero el JSON? Ver prompt" en
+  "Cargar pensum" que abre un modal con los 3 pasos, el prompt completo para la IA
+  y una sección "Cuando la IA responda". El texto vive en `PROMPT_GENERAR_PENSUM`
+  (`features/pensum/constants/promptGenerarPensum.ts`), con un test que lo compara
+  contra `docs/prompt-generar-pensum.md` para que no se desincronicen.
+- Botón "Copiar prompt" con `navigator.clipboard` y fallback por `textarea` +
+  `execCommand` para contextos no seguros (http en LAN): cambia a "¡Copiado!" con
+  `CheckCircle2` durante 2 s y avisa por el `uiStatusStore`.
+- Pestaña "Pegar JSON" como alternativa a subir archivo: útil en el teléfono, donde
+  guardar un `.json` desde un chat de IA es incómodo. Ambas rutas pasan por el mismo
+  parseo y validación.
+- `validarPensumJson` (`features/pensum/utils/validarPensumJson.ts`): validación pura
+  que acumula TODOS los errores y devuelve un resumen (materias, créditos, semestres,
+  materias con prerrequisitos). Reglas: claves obligatorias, `codigo` no vacío y único,
+  `creditos` numérico > 0, `semestre` entero >= 1, `estado` en el enum, `requiere` con
+  códigos existentes, sin auto-referencia y sin ciclos (DFS).
+- Resumen previo a la carga ("Se detectaron 61 materias, 162 créditos, 9 semestres") y
+  advertencia no bloqueante cuando ninguna materia tiene prerrequisitos.
+- Tests: +19 en backend (`pensum.validation`, `pensum.service`) y +33 en frontend
+  (`validarPensumJson`, `promptGenerarPensum`, `horarioStore`).
+
+### Changed
+
+- El backend valida el pensum completo con zod: `createPensumSchema` acumula errores de
+  campo y cruzados (códigos duplicados, prerrequisitos inexistentes, auto-referencia y
+  ciclos) y responde `400` con `{ error, errores: string[] }`. `materias` sigue siendo
+  opcional con `default []` para crear pensums vacíos.
+- `POST /api/pensums/:id/materias` verifica que los códigos de `requiere` existan en ese
+  pensum y que la materia no se requiera a sí misma.
+- `shared/api/api.ts` expone `ApiError.errores` y arma un mensaje legible cuando el
+  backend devuelve una lista de errores.
+- El `Modal` compartido limita su altura a `90vh` y hace scroll interno del cuerpo, para
+  que los modales largos quepan en pantallas de 375px de ancho.
+- El resize de bloques (expandir/achicar) navega por índices de fila de
+  `generarFilasHora(horario.unidadHoraMinutos)` (`indicesDelBloque` en `gridMath.ts`) en
+  lugar de sumar o restar minutos. Con unidades que no dividen limpio (por ejemplo 70)
+  o con la pausa de mediodía, las horas resultantes ahora siempre son filas reales.
+
+### Fixed
+
+- Con unidad de 70 minutos, expandir hacia arriba desde las 13:00 daba 11:50 (una hora
+  que no existe en la grilla); ahora da 12:00. Igual para expandir/achicar hacia abajo.
+- Expandir un bloque podía solaparlo con otro del mismo día: el estado inválido llegaba
+  a Zustand y se persistía al guardar. Ahora `expandBloqueUp`/`expandBloqueDown` validan
+  el choque y rechazan con "Hay un choque de horario con otro bloque".
+- Si las horas de un bloque no coinciden con una fila (datos viejos o cambio de unidad),
+  el resize se rechaza con un mensaje claro en vez de aplicar un valor inválido.
+- Tocar el padding o el espacio entre los chevrons de resize iniciaba el drag del bloque:
+  los contenedores ahora detienen `pointerdown`/`touchstart` como los botones.
+- `docs/formato-pensum.json` referenciaba dos códigos inexistentes (`FP0416`, `IA1015`)
+  y ya no pasaba la validación de `requiere`; se agregaron como materias de semestre 4
+  y hay tests de guardia en frontend y backend.
+
+### Removed
+
+- `PensumService.validateJSON` (validación duplicada y parcial): la reemplaza
+  `validarPensumJson`, que además reporta todos los errores a la vez.
+
 ## [1.2.0] - 2026-08-17
 
 ### Fixed

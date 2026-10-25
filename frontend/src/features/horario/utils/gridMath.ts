@@ -21,6 +21,29 @@ export function rowIndexFor(hora: string, filas: string[]): number {
   return idx;
 }
 
+export interface IndicesBloque {
+  /** Índice de la fila donde empieza el bloque. */
+  inicio: number;
+  /** Índice de la fila donde termina el bloque (exclusiva: el bloque dura fin - inicio filas). */
+  fin: number;
+}
+
+/**
+ * Traduce las horas de un bloque a índices de fila de la grilla.
+ * Devuelve null si alguna hora no coincide exactamente con una fila (datos viejos
+ * o unidad de hora distinta) o si el fin no es posterior al inicio.
+ */
+export function indicesDelBloque(
+  horaInicio: string,
+  horaFin: string,
+  filas: string[],
+): IndicesBloque | null {
+  const inicio = filas.indexOf(horaInicio);
+  const fin = filas.indexOf(horaFin);
+  if (inicio === -1 || fin === -1 || fin <= inicio) return null;
+  return { inicio, fin };
+}
+
 export function spanFor(horaInicio: string, horaFin: string, filas: string[]): number {
   const startM = aMinutos(horaInicio);
   const endM = aMinutos(horaFin);

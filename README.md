@@ -107,7 +107,10 @@ necessary.
 
 1. Open `http://localhost:5173` (dev) or your deployed URL (prod).
 2. Register a new user (username, email, password).
-3. Upload a pensum JSON file (format: `docs/formato-pensum.json`).
+3. Load a pensum: upload a `.json` file (format: `docs/formato-pensum.json`) or paste
+   the JSON. If you don't have one, click "¿Cómo genero el JSON? Ver prompt", copy the
+   prompt, give it to an AI together with your study plan, and paste back the result.
+   The app validates the whole pensum and shows a summary before saving it.
 4. Go to the pensum page, click "Crear horario", set max credits and slot
    duration.
 5. Drag subjects from the sidebar into the grid. Conflicts and credit limits
@@ -126,6 +129,7 @@ necessary.
 | POST   | /api/pensums | Yes | Upload pensum |
 | GET    | /api/pensums | Yes | List user pensums |
 | GET    | /api/pensums/:id | Yes | Get pensum by id |
+| POST   | /api/pensums/:id/materias | Yes | Add a single materia |
 | PATCH  | /api/pensums/:id/materias/:codigo/estado | Yes | Update materia state |
 | DELETE | /api/pensums/:id | Yes | Delete pensum |
 | POST   | /api/horarios | Yes | Create horario |
@@ -144,10 +148,10 @@ necessary.
 # All tests
 npm test
 
-# Backend only (53 tests)
+# Backend only (80 tests)
 cd backend && npx vitest run
 
-# Frontend only (17 tests)
+# Frontend only (65 tests)
 cd frontend && npx vitest run
 ```
 
@@ -156,10 +160,18 @@ cd frontend && npx vitest run
 | Suite | Tests |
 |-------|-------|
 | Backend unit: auth.service | 8 |
-| Backend unit: pensum.service | 9 |
+| Backend unit: pensum.service | 15 |
+| Backend unit: pensum.validation | 21 |
 | Backend unit: horario.service | 25 |
-| Backend unit: saveBloques | 7 |
-| Backend unit: strategies | 4 |
-| Frontend unit: strategies | 9 |
+| Backend unit: horario.service.saveBloques | 7 |
+| Backend unit: creditLimitStrategy | 4 |
+| **Backend subtotal** | **80** |
+| Frontend unit: horarioStore | 22 |
+| Frontend unit: validarPensumJson | 19 |
+| Frontend unit: promptGenerarPensum | 2 |
 | Frontend unit: generarFilasHora | 8 |
-| **Total** | **70** |
+| Frontend unit: exportHorarioSvg | 5 |
+| Frontend unit: conflictDetectionStrategy | 5 |
+| Frontend unit: creditLimitStrategy | 4 |
+| **Frontend subtotal** | **65** |
+| **Total** | **145** |

@@ -233,9 +233,11 @@ fases — cada una depende de la anterior.
 - [x] Tests unitarios: `SimpleCreditLimitStrategy`, `SimpleConflictDetectionStrategy` (casos límite)
 - [x] Test de integración: `horario.repository.mongo` con `mongodb-memory-server`
 - [x] Test de integración: `auth.routes` con `supertest`
-- [x] Tests de componentes: `MateriaSlot`, `Grid` (testing-library)
+- [ ] Tests de componentes: `MateriaSlot`, `Grid` (testing-library) — **pendiente**:
+      no existen; el proyecto no tiene `@testing-library/react` ni `jsdom` y no se
+      instalaron (se retiró la marca en la sesión 16 para no documentar tests falsos)
 - [x] Test de `horarioStore` (acciones puras)
-- [x] Unit tests backend total: 47 tests · Frontend: 17 tests
+- [x] Tests unitarios al cerrar la fase: backend 47 · frontend 17
 
 ## Fase 8 — Integración final
  
@@ -253,4 +255,46 @@ fases — cada una depende de la anterior.
 - [x] Script `npm start` + frontend/.env.production
 - [x] Cookie JWT con `secure: true` en producción
 - [x] CORS desactivado en producción (same-origin)
-- [x] Backend tests: 53 · Frontend tests: 17 · Total: 70
+- [x] Backend tests: 80 · Frontend tests: 65 · Total: 145
+
+## Fase 9 — Sesión 15: carga guiada de pensum (agente: frontend + backend)
+
+- [x] `PROMPT_GENERAR_PENSUM` como fuente única del texto
+      (`features/pensum/constants/promptGenerarPensum.ts`), con test que lo compara
+      contra el cuerpo entre las líneas `---` de `docs/prompt-generar-pensum.md`
+- [x] Modal "Cómo generar tu JSON" (`ModalPromptPensum.tsx`): 3 pasos, prompt en
+      `<pre>` con scroll táctil, "Copiar prompt" (`navigator.clipboard` + fallback
+      `textarea`/`execCommand`), estado "¡Copiado!" y sección "Cuando la IA responda"
+- [x] Pestaña "Pegar JSON" en `CargarPensum.tsx`: mismo `JSON.parse` y la misma
+      validación que subir archivo; "Cancelar" intacto
+- [x] `validarPensumJson` (frontend, función pura) y `createPensumSchema` (backend,
+      zod) acumulan todos los errores: claves faltantes, `codigo` vacío o duplicado,
+      `creditos`/`semestre` numéricos, `estado` en el enum, `requiere` inexistente,
+      auto-referencia y ciclos (DFS)
+- [x] Resumen previo a la carga (materias, créditos, semestres) y advertencia no
+      bloqueante si ninguna materia tiene prerrequisitos
+- [x] `POST /api/pensums/:id/materias` valida que `requiere` exista en ese pensum
+- [x] `ApiError.errores` en `shared/api/api.ts` y `Modal` con `max-h 90vh` + scroll
+      interno del cuerpo para que quepa a 375px de ancho
+- [x] `docs/formato-pensum.json` corregido (faltaban `FP0416` e `IA1015`) y protegido
+      con tests de guardia en frontend y backend
+
+## Fase 10 — Sesión 16: deuda técnica del resize (agente: frontend)
+
+- [x] Resize por índice de fila real: `expandBloqueUp/Down` y `shrinkBloqueTop/Bottom`
+      usan `generarFilasHora(horario.unidadHoraMinutos)` + `indicesDelBloque`
+      (`gridMath.ts`) en vez de sumar/restar minutos contra `7*60`/`22*60`. Con unidad
+      70, expandir arriba desde 13:00 da 12:00 (antes 11:50)
+- [x] Rechazo con mensaje claro cuando `horaInicio`/`horaFin` no coinciden con una fila
+      (datos viejos o cambio de unidad), en vez de aplicar un valor inválido
+- [x] `expandBloqueUp`/`expandBloqueDown` validan choque con
+      `IConflictDetectionStrategy` contra los demás bloques del mismo día y rechazan
+      con "Hay un choque de horario con otro bloque". Achicar no valida choques
+      (no puede crearlos)
+- [x] Máximo 5 filas y mínimo 1 fila se calculan con la diferencia de índices
+- [x] `onPointerDown`/`onTouchStart` con `stopPropagation` también en los contenedores
+      de los chevrons (arriba y abajo), no solo en los botones
+- [x] Tests del store: unidad 70 (expandir arriba/abajo, achicar arriba/abajo), borde
+      del mediodía (12:00 ↔ 13:00), choque al expandir en ambos sentidos, vecino en
+      otro día (permitido), horas fuera de grilla y máximo de 5 filas
+- [ ] Tests de componentes (`MateriaSlot`, `Grid`): siguen pendientes, ver Fase 7

@@ -9,8 +9,8 @@ function makeBloque(id: string, dia: DiaSemana, inicio: string, fin: string): Bl
   return { id, materiaCodigo: MATERIA.codigo, dia, horaInicio: inicio, horaFin: fin };
 }
 
-function setup(bloques: Bloque[]) {
-  useHorarioStore.getState().initNuevoHorario("pensum-1", "2026-1", 30, 60);
+function setup(bloques: Bloque[], unidadHoraMinutos = 60) {
+  useHorarioStore.getState().initNuevoHorario("pensum-1", "2026-1", 30, unidadHoraMinutos);
   for (const b of bloques) {
     const r = useHorarioStore.getState().addBloqueLocal(b, [MATERIA]);
     if (!r.ok) throw new Error(r.error);
@@ -154,5 +154,157 @@ describe("errores", () => {
 
     const bottom = useHorarioStore.getState().shrinkBloqueBottom("no-existe", [MATERIA]);
     expect(bottom.ok).toBe(false);
+  });
+});
+
+describe("resize por filas reales (unidad 70)", () => {
+  it("expande hacia arriba desde las 13:00 a la fila anterior real (12:00), no a 11:50", () => {
+    setup([makeBloque("b1", "lunes", "13:00", "15:20")], 70);
+
+    const r = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("12:00");
+    expect(b.horaFin).toBe("15:20");
+  });
+
+  it("expande hacia abajo a la fila siguiente real (15:20), no a 14:10 + 70", () => {
+    setup([makeBloque("b1", "lunes", "13:00", "14:10")], 70);
+
+    const r = useHorarioStore.getState().expandBloqueDown("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("13:00");
+    expect(b.horaFin).toBe("15:20");
+  });
+
+  it("achica desde arriba a la fila siguiente real (14:10), no a 13:00 + 70", () => {
+    setup([makeBloque("b1", "lunes", "13:00", "15:20")], 70);
+
+    const r = useHorarioStore.getState().shrinkBloqueTop("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("14:10");
+    expect(b.horaFin).toBe("15:20");
+  });
+
+  it("achica desde abajo a la fila anterior real (14:10)", () => {
+    setup([makeBloque("b1", "lunes", "13:00", "15:20")], 70);
+
+    const r = useHorarioStore.getState().shrinkBloqueBottom("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("13:00");
+    expect(b.horaFin).toBe("14:10");
+  });
+});
+
+describe("resize en el borde del mediodía", () => {
+  it("expandir hacia arriba desde las 13:00 salta la pausa y usa la fila de las 12:00", () => {
+    setup([makeBloque("b1", "lunes", "13:00", "14:00")]);
+
+    const r = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("12:00");
+    expect(b.horaFin).toBe("14:00");
+  });
+
+  it("expandir hacia abajo un bloque que termina a las 12:00 usa la fila de las 13:00", () => {
+    setup([makeBloque("b1", "lunes", "11:00", "12:00")]);
+
+    const r = useHorarioStore.getState().expandBloqueDown("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("11:00");
+    expect(b.horaFin).toBe("13:00");
+  });
+});
+
+describe("expandir no permite choques", () => {
+  it("rechaza expandir hacia arriba sobre otro bloque del mismo día", () => {
+    setup([
+      makeBloque("vecino", "lunes", "07:00", "08:00"),
+      makeBloque("b1", "lunes", "08:00", "09:00"),
+    ]);
+
+    const r = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toBe("Hay un choque de horario con otro bloque");
+
+    const b = useHorarioStore.getState().horario!.bloques.find((x) => x.id === "b1")!;
+    expect(b.horaInicio).toBe("08:00");
+    expect(b.horaFin).toBe("09:00");
+  });
+
+  it("rechaza expandir hacia abajo sobre otro bloque del mismo día", () => {
+    setup([
+      makeBloque("b1", "lunes", "08:00", "09:00"),
+      makeBloque("vecino", "lunes", "09:00", "10:00"),
+    ]);
+
+    const r = useHorarioStore.getState().expandBloqueDown("b1", [MATERIA]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toBe("Hay un choque de horario con otro bloque");
+
+    const b = useHorarioStore.getState().horario!.bloques.find((x) => x.id === "b1")!;
+    expect(b.horaInicio).toBe("08:00");
+    expect(b.horaFin).toBe("09:00");
+  });
+
+  it("permite expandir cuando el bloque vecino está en otro día", () => {
+    setup([
+      makeBloque("vecino", "martes", "07:00", "08:00"),
+      makeBloque("b1", "lunes", "08:00", "09:00"),
+    ]);
+
+    const r = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(r.ok).toBe(true);
+
+    const b = useHorarioStore.getState().horario!.bloques.find((x) => x.id === "b1")!;
+    expect(b.horaInicio).toBe("07:00");
+  });
+});
+
+describe("resize con horas fuera de la grilla", () => {
+  it("rechaza el resize si el inicio no coincide con una fila", () => {
+    setup([makeBloque("b1", "lunes", "11:50", "13:00")], 70);
+
+    const r = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toContain("no coinciden con las filas");
+
+    const b = useHorarioStore.getState().horario!.bloques[0];
+    expect(b.horaInicio).toBe("11:50");
+    expect(b.horaFin).toBe("13:00");
+  });
+
+  it("rechaza también el resto de operaciones de resize", () => {
+    setup([makeBloque("b1", "lunes", "07:00", "11:50")], 70);
+
+    const s = useHorarioStore.getState();
+    expect(s.expandBloqueDown("b1", [MATERIA]).ok).toBe(false);
+    expect(s.shrinkBloqueTop("b1", [MATERIA]).ok).toBe(false);
+    expect(s.shrinkBloqueBottom("b1", [MATERIA]).ok).toBe(false);
+  });
+});
+
+describe("máximo de filas", () => {
+  it("rechaza expandir un bloque que ya ocupa 5 filas", () => {
+    setup([makeBloque("b1", "lunes", "07:00", "12:00")]);
+
+    const down = useHorarioStore.getState().expandBloqueDown("b1", [MATERIA]);
+    expect(down.ok).toBe(false);
+    if (!down.ok) expect(down.error).toContain("Máximo 5");
+
+    const up = useHorarioStore.getState().expandBloqueUp("b1", [MATERIA]);
+    expect(up.ok).toBe(false);
+    if (!up.ok) expect(up.error).toContain("Máximo 5");
   });
 });
